@@ -23,7 +23,7 @@ Convenience function to parse a schema file directly.
 
 It is also possible to generate types programmatically, using the classes below. They are all available in the `avsc.types` namespace.
 
-### `class Type`
+### Class `Type`
 
 "Abstract" base Avro type class. All implementations (see below) have the following methods:
 
@@ -35,35 +35,35 @@ It is also possible to generate types programmatically, using the classes below.
 
 Implementations:
 
-#### `class ArrayType(schema, [opts])`
+#### Class `ArrayType(schema, [opts])`
 ##### `type.itemsType`
 
-#### `class EnumType(schema, [opts])`
+#### Class `EnumType(schema, [opts])`
 ##### `type.name`
 ##### `type.doc`
 ##### `type.symbols`
 
-#### `class FixedType(schema, [opts])`
+#### Class `FixedType(schema, [opts])`
 ##### `type.name`
 ##### `type.size`
 
-#### `class MapType(schema, [opts])`
+#### Class `MapType(schema, [opts])`
 ##### `type.valuesType`
 
-#### `class PrimitiveType(name)`
+#### Class `PrimitiveType(name)`
 
-#### `class RecordType(schema, [opts])`
+#### Class `RecordType(schema, [opts])`
 ##### `type.name`
 ##### `type.doc`
 ##### `type.fields`
 ##### `type.getRecordConstructor()`
 
-#### `class UnionType(schema, [opts])`
+#### Class `UnionType(schema, [opts])`
 ##### `type.types`
 
 # Records
 
-### `class Record(...)`
+### Class `Record(...)`
 
 Specific record class, programmatically generated for each record schema.
 
@@ -77,16 +77,28 @@ Specific record class, programmatically generated for each record schema.
 
 The following streams are available:
 
-### `avsc.Decoder([opts])`
+### Class `avsc.Decoder([opts])`
 
 + `opts` {Object} Decoding options. Available keys:
   + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
   + `type` {AvroType} Required when reading a non-container file. When reading a container file, this will be used as reader type.
 
-### `avsc.Encoder([opts])`
+#### Event `'metadata'`
+
++ `schema` {Object} The context will be set to the stream itself. To override the writer type, set the `writerType` property inside the callback.
+
+#### Event `'data'`
+
++ `data` Decoded element.
+
+### Class `avsc.Encoder([opts])`
 
 + `opts` {Object} Encoding options. Available keys:
   + `containerFile` {Boolean} Defaults to `true`.
   + `type` {AvroType} Inferred if writing `Record` instances.
   + `codec` {String}
   + `blockSize` {Number}
+
+#### Event `'data'`
+
++ `data` {Buffer} Encoded block (if `containerFile` above is `true`) or element (otherwise).
