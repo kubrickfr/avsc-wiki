@@ -9,6 +9,7 @@ Parse a schema and return an instance of the corresponding `Type`.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
   + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped inside an object with a single key. Setting this to `true` will prevent this, slightly improving performance (encoding is then done on the first type which validates).
+  + `typeHook` {Function} Function called after each new Avro type is instantiated. The new type is available as `this` and the relevant schema as first and only argument.
 
 ### `avsc.parseFile(path, [opts])`
 
@@ -20,7 +21,7 @@ Convenience function to parse a schema file directly.
 
 # Avro types
 
-It is also possible to generate types programmatically, using the classes below.
+It is also possible to generate types programmatically, using the classes below. They are all available in the `avsc.types` namespace.
 
 ### `class Type`
 
@@ -72,3 +73,20 @@ Specific record class, programmatically generated for each record schema.
 #### `record.$isValid()`
 #### `record.$type`
 
+# Reading and writing files
+
+The following streams are available:
+
+### `avsc.Decoder([opts])`
+
++ `opts` {Object} Decoding options. Available keys:
+  + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
+  + `type` {AvroType} Required when reading a non-container file. When reading a container file, this will be used as reader type.
+
+### `avsc.Encoder([opts])`
+
++ `opts` {Object} Encoding options. Available keys:
+  + `containerFile` {Boolean} Defaults to `true`.
+  + `type` {AvroType} Inferred if writing `Record` instances.
+  + `codec` {String}
+  + `blockSize` {Number}
