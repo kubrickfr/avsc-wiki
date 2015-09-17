@@ -28,38 +28,83 @@ It is also possible to generate types programmatically, using the classes below.
 "Abstract" base Avro type class. All implementations (see below) have the following methods:
 
 ##### `type.random()`
+
+Generate a random instance of this type.
+
 ##### `type.decode(buf)`
+
++ `buf` {Buffer} Bytes containing a serialized object of the correct type.
+
 ##### `type.encode(obj, [opts])`
+
+Returns a `Buffer` containing the Avro serialization of `obj`.
+
++ `obj` {Object} The instance to encode. It must be of type `type`.
++ `opts` {Object} Encoding options. Currently available:
+  + `size` {Number} The initial size of the buffer used to encode the object. Setting this appropriately will speed up encoding by reducing the number of resizes. Defaults to `1024`.
+  + `unsafe` {Boolean} Do not check that the instance is valid before encoding it. This can yield a significant speed boost.
+
 ##### `type.isValid(obj)`
+
+Check whether `obj` is a valid representation of `type`.
+
++ `obj` {Object} The object to validate.
+
 ##### `type.getTypeName()`
 
-Implementations:
+Get the type's name (e.g. `'int'`, `'record'`, ...).
+
+
+#### Class `PrimitiveType(name)`
+
+The common type used for `null`, `boolean`, `int`, `long`, `float`, `double`, `bytes`, and `string`.
+
 
 #### Class `ArrayType(schema, [opts])`
+
 ##### `type.itemsType`
 
+The `type` of the array's items.
+
+
 #### Class `EnumType(schema, [opts])`
+
 ##### `type.name`
 ##### `type.doc`
 ##### `type.symbols`
 
+The enum's name, documentation, and symbols list.
+
+Instances of this type will either be represented as wrapped objects (according to the Avro spec), or as their value directly (if `unwrapUnions` was set when parsing the schema).
+
+
 #### Class `FixedType(schema, [opts])`
+
 ##### `type.name`
 ##### `type.size`
 
+Instances of this type will be `Buffer`s.
+
+
 #### Class `MapType(schema, [opts])`
+
 ##### `type.valuesType`
 
-#### Class `PrimitiveType(name)`
 
 #### Class `RecordType(schema, [opts])`
+
 ##### `type.name`
 ##### `type.doc`
 ##### `type.fields`
+
 ##### `type.getRecordConstructor()`
 
+The `Record` constructor for instances of this type.
+
 #### Class `UnionType(schema, [opts])`
+
 ##### `type.types`
+
 
 # Records
 
@@ -72,6 +117,7 @@ Specific record class, programmatically generated for each record schema.
 #### `record.$encode([opts])`
 #### `record.$isValid()`
 #### `record.$type`
+
 
 # Reading and writing files
 
