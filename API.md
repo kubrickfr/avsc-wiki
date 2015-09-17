@@ -75,7 +75,7 @@ Specific record class, programmatically generated for each record schema.
 
 # Reading and writing files
 
-The following streams are available:
+**Not yet implemented.**
 
 ### Class `avsc.Decoder([opts])`
 
