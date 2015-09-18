@@ -9,7 +9,7 @@ Parse a schema and return an instance of the corresponding `Type`.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
   + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped inside an object with a single key. Setting this to `true` will prevent this, slightly improving performance (encoding is then done on the first type which validates).
-  + `typeHook` {Function} Function called after each new Avro type is instantiated. The new type is available as `this` and the relevant schema as first and only argument.
+  + `typeHook` {Function} Function called after each new Avro type is instantiated. The new type is available as `this` and the relevant schema as first and only argument. **Not yet implemented.**
 
 ### `avsc.parseFile(path, [opts])`
 
@@ -49,6 +49,12 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 Check whether `obj` is a valid representation of `type`.
 
 + `obj` {Object} The object to validate.
+
+##### `type.asReaderOf(writerType)`
+
+Returns a type suitable for reading a file written using a different schema.
+
++ `writerType` {Type} A compatible `type`.
 
 ##### `type.getTypeName()`
 
@@ -127,11 +133,20 @@ Specific record class, programmatically generated for each record schema.
 
 + `opts` {Object} Decoding options. Available keys:
   + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
-  + `type` {AvroType} Required when reading a non-container file. When reading a container file, this will be used as reader type.
+  + `type` {AvroType} Required when reading a non-container file. When reading a container file, this will be used to generate a reader type adapted to the writer's schema.
+
+#### `getReaderType()`
+
+The type used to read the file.
+
+#### `getWriterType()`
+
+The type used to write the file. Only available when reading a container file.
 
 #### Event `'metadata'`
 
-+ `schema` {Object} The context will be set to the stream itself. To override the writer type, set the `writerType` property inside the callback.
++ `meta` {Object} The header's metadata, containing the raw schema and codec.
++ `sync` {Buffer} Sync marker for the file.
 
 #### Event `'data'`
 
@@ -141,9 +156,13 @@ Specific record class, programmatically generated for each record schema.
 
 + `opts` {Object} Encoding options. Available keys:
   + `containerFile` {Boolean} Defaults to `true`.
-  + `type` {AvroType} Inferred if writing `Record` instances.
+  + `type` {AvroType} Writer type. As a convenience, this will be inferred if writing `Record` instances (from the first one passed).
   + `codec` {String}
   + `blockSize` {Number}
+
+#### `getWriterType()`
+
+Get the type used to serialize the records.
 
 #### Event `'data'`
 
