@@ -25,7 +25,11 @@ It is also possible to generate types programmatically, using the classes below.
 
 ### Class `Type`
 
-"Abstract" base Avro type class. All implementations (see below) have the following methods:
+"Abstract" base Avro type class. All implementations (see below) have the following property and methods:
+
+##### `type.type`
+
+The type's name (e.g. `'int'`, `'record'`, ...).
 
 ##### `type.random()`
 
@@ -50,16 +54,6 @@ Check whether `obj` is a valid representation of `type`.
 
 + `obj` {Object} The object to validate.
 
-##### `type.asReaderOf(writerType)`
-
-Returns a type suitable for reading a file written using a different schema.
-
-+ `writerType` {Type} A compatible `type`.
-
-##### `type.getTypeName()`
-
-Get the type's name (e.g. `'int'`, `'record'`, ...).
-
 
 #### Class `PrimitiveType(name)`
 
@@ -68,7 +62,7 @@ The common type used for `null`, `boolean`, `int`, `long`, `float`, `double`, `b
 
 #### Class `ArrayType(schema, [opts])`
 
-##### `type.itemsType`
+##### `type.items`
 
 The `type` of the array's items.
 
@@ -94,7 +88,7 @@ Instances of this type will be `Buffer`s.
 
 #### Class `MapType(schema, [opts])`
 
-##### `type.valuesType`
+##### `type.values`
 
 
 #### Class `RecordType(schema, [opts])`
@@ -106,6 +100,13 @@ Instances of this type will be `Buffer`s.
 ##### `type.getRecordConstructor()`
 
 The `Record` constructor for instances of this type.
+
+##### `type.asReaderOf(writerType)`
+
+Returns a type suitable for reading a file written using a different schema.
+
++ `writerType` {Type} A compatible `type`.
+
 
 #### Class `UnionType(schema, [opts])`
 
