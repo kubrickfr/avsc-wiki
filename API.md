@@ -45,7 +45,7 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
 + `opts` {Object} Encoding options. Currently available:
-  + `size` {Number} The initial size of the buffer used to encode the object. Setting this appropriately will speed up encoding by reducing the number of resizes. Defaults to `1024`.
+  + `buffer`, used to serialize the object into (a slice will be returned). If not passed, or if the serialized object doesn't fit into the passed buffer, a new one will be created.
   + `unsafe` {Boolean} Do not check that the instance is valid before encoding it. This can yield a significant speed boost.
 
 ##### `type.isValid(obj)`
