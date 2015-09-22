@@ -9,7 +9,7 @@ Parse a schema and return an instance of the corresponding `Type`.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
   + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped inside an object with a single key. Setting this to `true` will prevent this, slightly improving performance (encoding is then done on the first type which validates).
-  + `typeHook` {Function} Function called after each new Avro type is instantiated. The new type is available as `this` and the relevant schema as first and only argument. **Not yet implemented.**
+  + `typeHook` {Function} Function called after each new Avro type is instantiated. The new type is available as `this` and the relevant schema as first and only argument.
 
 ### `avsc.parseFile(path, [opts])`
 
@@ -58,9 +58,9 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 + `buf` {Buffer} Bytes containing a serialized object of the correct type.
 + `adapter` {Adapter} To read records serialized using another schema. See `createAdapter`.
 
-##### `type.createAdapter(type)`
+##### `type.createAdapter(writerType)`
 
-+ `type` {Type} Writer type.
++ `writerType` {Type} Writer type.
 
 
 #### Class `PrimitiveType(name)`
@@ -138,11 +138,20 @@ Specific record class, programmatically generated for each record schema.
 
 **Not yet implemented.**
 
-### Class `avsc.Decoder([opts])`
+### `avsc.createReadStream(path, [opts])`
+
++ `path` {String}
++ `opts` {Object} Decoding options. Available keys:
+  + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file or not by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
+  + `readerType` {AvroType} Required when reading a non-container file. When reading a container file, this will be used to generate a reader type adapted to the writer's schema.
+  + `includeBuffer` {Boolean}
+
+
+### Class `Decoder([opts])`
 
 + `opts` {Object} Decoding options. Available keys:
-  + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
-  + `type` {AvroType} Required when reading a non-container file. When reading a container file, this will be used to generate a reader type adapted to the writer's schema.
+  + `readerType` {AvroType} Reader type.
+  + `includeBuffer` {Boolean}
 
 #### `getReaderType()`
 
@@ -150,7 +159,7 @@ The type used to read the file.
 
 #### `getWriterType()`
 
-The type used to write the file. Only available when reading a container file.
+The type used to write the file.
 
 #### Event `'metadata'`
 
@@ -159,13 +168,14 @@ The type used to write the file. Only available when reading a container file.
 
 #### Event `'data'`
 
-+ `data` Decoded element.
++ `data` {...} Decoded element.
++ `buf` {Buffer} (Only if `includeBuffer` is set.)
+
 
 ### Class `avsc.Encoder([opts])`
 
 + `opts` {Object} Encoding options. Available keys:
-  + `containerFile` {Boolean} Defaults to `true`.
-  + `type` {AvroType} Writer type. As a convenience, this will be inferred if writing `Record` instances (from the first one passed).
+  + `writerType` {AvroType} Writer type. As a convenience, this will be inferred if writing `Record` instances (from the first one passed).
   + `codec` {String}
   + `blockSize` {Number}
 
@@ -175,4 +185,4 @@ Get the type used to serialize the records.
 
 #### Event `'data'`
 
-+ `data` {Buffer} Encoded block (if `containerFile` above is `true`) or element (otherwise).
++ `data` {Buffer} Encoded block.
