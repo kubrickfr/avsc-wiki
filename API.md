@@ -21,7 +21,7 @@ Convenience function to parse a schema file directly.
 
 # Avro types
 
-Serializing a `type` back to JSON (e.g. using `JSON.stringify`) will return a valid Avro schema!
+Serializing a `type` back to JSON (e.g. using `JSON.stringify`) will return a valid equivalent Avro schema!
 
 It is also possible to generate types programmatically, using the classes below. They are all available in the `avsc.types` namespace.
 
@@ -128,7 +128,7 @@ Returns a type suitable for reading a file written using a different schema.
 Specific record class, programmatically generated for each record schema.
 
 #### `Record.random()`
-#### `Record.decode(buf)`
+#### `Record.decode(buf, [adapter])`
 #### `record.$encode([opts])`
 #### `record.$isValid()`
 #### `record.$type`
