@@ -25,7 +25,11 @@ It is also possible to generate types programmatically, using the classes below.
 
 ### Class `Type`
 
-"Abstract" base Avro type class. All implementations (see below) have the following property and methods:
+"Abstract" base Avro type class.
+
+Serializing a `type` back to JSON (e.g. using `JSON.stringify`) will return a valid Avro schema.
+
+All implementations (see below) have the following property and methods:
 
 ##### `type.type`
 
@@ -35,9 +39,11 @@ The type's name (e.g. `'int'`, `'record'`, ...).
 
 Generate a random instance of this type.
 
-##### `type.decode(buf)`
+##### `type.isValid(obj)`
 
-+ `buf` {Buffer} Bytes containing a serialized object of the correct type.
+Check whether `obj` is a valid representation of `type`.
+
++ `obj` {Object} The object to validate.
 
 ##### `type.encode(obj, [opts])`
 
@@ -48,11 +54,14 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
   + `buffer`, used to serialize the object into (a slice will be returned). If not passed, or if the serialized object doesn't fit into the passed buffer, a new one will be created.
   + `unsafe` {Boolean} Do not check that the instance is valid before encoding it. This can yield a significant speed boost.
 
-##### `type.isValid(obj)`
+##### `type.decode(buf, [adapter])`
 
-Check whether `obj` is a valid representation of `type`.
++ `buf` {Buffer} Bytes containing a serialized object of the correct type.
++ `adapter` {Adapter} To read records serialized using another schema. See `createAdapter`.
 
-+ `obj` {Object} The object to validate.
+#### `type.createAdapter(type)`
+
++ `type` {Type} Writer type.
 
 
 #### Class `PrimitiveType(name)`
