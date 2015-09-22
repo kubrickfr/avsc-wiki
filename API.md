@@ -21,15 +21,14 @@ Convenience function to parse a schema file directly.
 
 # Avro types
 
+Serializing a `type` back to JSON (e.g. using `JSON.stringify`) will return a valid Avro schema!
+
 It is also possible to generate types programmatically, using the classes below. They are all available in the `avsc.types` namespace.
+
 
 ### Class `Type`
 
-"Abstract" base Avro type class.
-
-Serializing a `type` back to JSON (e.g. using `JSON.stringify`) will return a valid Avro schema.
-
-All implementations (see below) have the following property and methods:
+"Abstract" base Avro type class. All implementations (see below) have the following property and methods:
 
 ##### `type.type`
 
@@ -59,7 +58,7 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 + `buf` {Buffer} Bytes containing a serialized object of the correct type.
 + `adapter` {Adapter} To read records serialized using another schema. See `createAdapter`.
 
-#### `type.createAdapter(type)`
+##### `type.createAdapter(type)`
 
 + `type` {Type} Writer type.
 
