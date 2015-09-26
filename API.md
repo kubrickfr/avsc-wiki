@@ -62,7 +62,7 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 
 + `writerType` {Type} Writer type.
 
-##### `type.toString`
+##### `type.toString()`
 
 Return the canonical version of the schema.
 
@@ -156,10 +156,22 @@ Return readable stream of an Avro file's (either container object file or fragme
   + `readerType` {AvroType} Reader type.
   + `includeBuffer` {Boolean}
 
-#### Event `'metadata'`
+#### Event `'meta'`
 
++ `writerType` {Type} The type used to write the file.
 + `meta` {Object} The header's metadata, containing the raw schema and codec.
-+ `sync` {Buffer} Sync marker for the file.
+
+#### Event `'data'`
+
++ `data` {...} Decoded element. If `includeBuffer` was set, `data` will be an object `{obj, buf}`.
+
+
+### Class `RawDecoder([opts])`
+
++ `opts` {Object} Decoding options. Available keys:
+  + `writerType` {Type}
+  + `readerType` {Type}
+  + `includeBuffer` {Boolean}
 
 #### Event `'data'`
 
