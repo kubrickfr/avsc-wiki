@@ -44,23 +44,27 @@ Check whether `obj` is a valid representation of `type`.
 
 + `obj` {Object} The object to validate.
 
-##### `type.encode(obj, [opts])`
+##### `type.encode(obj, [size,] [unsafe])`
 
 Returns a `Buffer` containing the Avro serialization of `obj`.
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
-+ `opts` {Object} Encoding options. Currently available:
-  + `buffer`, used to serialize the object into (a slice will be returned). If not passed, or if the serialized object doesn't fit into the passed buffer, a new one will be created.
-  + `unsafe` {Boolean} Do not check that the instance is valid before encoding it. This can yield a significant speed boost.
++ `size`, used to serialize the object into (a slice will be returned). If not passed, or if the serialized object doesn't fit into the passed buffer, a new one will be created.
++ `unsafe` {Boolean} Do not check that the instance is valid before encoding it. Use this if you are sure the object satisfies the schema for a significant speed boost.
 
-##### `type.decode(buf, [adapter])`
+##### `type.decode(buf, [adapter,] [unsafe])`
 
 + `buf` {Buffer} Bytes containing a serialized object of the correct type.
 + `adapter` {Adapter} To read records serialized using another schema. See `createAdapter`.
++ `unsafe` {Boolean} Do not check that the entire buffer has been read. This can be useful when using an adapter which only decodes fields at the start of the buffer, allowing decoding to bail early.
 
 ##### `type.createAdapter(writerType)`
 
 + `writerType` {Type} Writer type.
+
+##### `type.toString`
+
+Return the canonical version of the schema.
 
 
 #### Class `PrimitiveType(name)`
@@ -138,13 +142,12 @@ Specific record class, programmatically generated for each record schema.
 
 **Not yet implemented.**
 
-### `avsc.createReadStream(path, [opts])`
+### `avsc.decodeFile(path, [opts])`
 
 + `path` {String}
-+ `opts` {Object} Decoding options. Available keys:
-  + `containerFile` {Boolean} By default the stream will try to infer whether the input comes from a container file or not by looking at the first four bytes (depending on whether they match Avro's magic bytes or not). This option can be used to explicitly enforce this.
-  + `readerType` {AvroType} Required when reading a non-container file. When reading a container file, this will be used to generate a reader type adapted to the writer's schema.
-  + `includeBuffer` {Boolean}
++ `opts` {Object} Decoding options, passed either to `Decoder` or `RawDecoder`.
+
+Return readable stream of an Avro file's (either container object file or fragments) contents.
 
 
 ### Class `Decoder([opts])`
@@ -153,14 +156,6 @@ Specific record class, programmatically generated for each record schema.
   + `readerType` {AvroType} Reader type.
   + `includeBuffer` {Boolean}
 
-#### `getReaderType()`
-
-The type used to read the file.
-
-#### `getWriterType()`
-
-The type used to write the file.
-
 #### Event `'metadata'`
 
 + `meta` {Object} The header's metadata, containing the raw schema and codec.
@@ -168,8 +163,7 @@ The type used to write the file.
 
 #### Event `'data'`
 
-+ `data` {...} Decoded element.
-+ `buf` {Buffer} (Only if `includeBuffer` is set.)
++ `data` {...} Decoded element. If `includeBuffer` was set, `data` will be an object `{obj, buf}`.
 
 
 ### Class `avsc.Encoder([opts])`
@@ -179,9 +173,6 @@ The type used to write the file.
   + `codec` {String}
   + `blockSize` {Number}
 
-#### `getWriterType()`
-
-Get the type used to serialize the records.
 
 #### Event `'data'`
 
