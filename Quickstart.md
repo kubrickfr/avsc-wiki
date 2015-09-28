@@ -1,4 +1,9 @@
-`avsc`'s API is built around [`Type`](API#class-type) objects.
+This page is meant to provide an overview of `avsc`'s API and how to use it.
+
+[`Type`](API#class-type) objects are its main building block:
+
++ [What is a `Type`?](#what-is-a-type)
++ [How do I get a `Type`?](#how-do-i-get-a-type)
 
 
 ## What is a `Type`?

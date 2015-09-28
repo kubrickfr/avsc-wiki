@@ -1,11 +1,11 @@
 # Benchmarks
 
-Displayed rates were computed over 100000 records, taking the median of 10
+Displayed rates were computed over 100,000 records, taking the median of 10
 runs. Percentages are relative to the fastest throughput for the schema. `-1`
 values indicate that the library doesn't support the schema.
 
 All benchmarks were run on a MacBook Air (1.7GHz processor). The code is
-available in the `benchmarks/` folder of the main `avsc` repository.
+available in the `benchmarks` folder of the main `avsc` repository.
 
 
 ## Decoding
