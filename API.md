@@ -8,9 +8,6 @@
 
 ### `parse(schema, [opts])`
 
-Parse a schema and return an instance of the corresponding
-[`Type`](#class-type).
-
 + `schema` {Object|String} Schema (type object or type name string).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
@@ -23,12 +20,15 @@ Parse a schema and return an instance of the corresponding
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
-### `parseFile(path, [opts])`
+Parse a schema and return an instance of the corresponding
+[`Type`](#class-type).
 
-Convenience function to parse a schema file directly.
+### `parseFile(path, [opts])`
 
 + `path` {String} Path to schema file.
 + `opts` {Object} Parsing options (identical to those of `parse`).
+
+Convenience function to parse a schema file directly.
 
 
 ## Avro types
@@ -57,7 +57,7 @@ The type's name (e.g. `'int'`, `'record'`, ...).
 
 ##### `type.random()`
 
-Generate a random instance of this type.
+Returns a random instance of this type.
 
 
 ##### `type.isValid(obj)`
@@ -89,15 +89,18 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
   can be useful when using an resolver which only decodes fields at the start of
   the buffer, allowing decoding to bail early.
 
+Deserialize a buffer into its corresponding value.
+
 
 ##### `type.createResolver(writerType)`
 
 + `writerType` {Type} Writer type.
 
-Create a resolver that can be be passed to the `type`'s `decode` method. This
-will enable decoding objects which had been serialized using `writerType`,
-according to the Avro [resolution rules][schema-resolution]. If the schemas are
-incompatible, this method will throw an error.
+Create a resolver that can be be passed to the `type`'s
+[`decode`](#typedecodebuf-resolver-unsafe) method. This will enable decoding
+objects which had been serialized using `writerType`, according to the Avro
+[resolution rules][schema-resolution]. If the schemas are incompatible, this
+method will throw an error.
 
 
 ##### `type.toString()`

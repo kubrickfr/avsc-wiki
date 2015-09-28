@@ -72,8 +72,8 @@ var personType = avsc.parse({
 });
 ```
 
-Since schemas are often stored in JSON files, `avsc` also exposes a `parseFile`
-method just for that:
+Since schemas are often stored in separate JSON files, `avsc` also exposes a
+`parseFile` method for just that:
 
 ```javascript
 var couponType = avsc.parseFile('schemas/Coupon.avsc');
