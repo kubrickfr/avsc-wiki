@@ -107,7 +107,7 @@ unions are only used to make a field nullable). For this reason, `avsc`
 provides an `unwrapUnions` option, which will decode unions directly into their
 value.
 
-To recap:
+For example:
 
 ```javascript
 var schema = ['null', 'string'];

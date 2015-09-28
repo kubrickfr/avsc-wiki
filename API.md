@@ -6,7 +6,7 @@
 
 ## Parsing schemas
 
-### `avsc.parse(schema, [opts])`
+### `parse(schema, [opts])`
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type).
@@ -23,7 +23,7 @@ Parse a schema and return an instance of the corresponding
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
-### `avsc.parseFile(path, [opts])`
+### `parseFile(path, [opts])`
 
 Convenience function to parse a schema file directly.
 
@@ -114,7 +114,7 @@ used to compare schemas for equality.
 
 ##### `Type.fromSchema(schema, [opts])`
 
-Alias for `avsc.parse`.
+Alias for `parse`.
 
 
 #### Class `PrimitiveType(name)`
@@ -246,7 +246,7 @@ instantiate new records of a given type.
 As a convenience, the following function is available to read an Avro object
 container file stored locally:
 
-### `avsc.decodeFile(path, [opts])`
+### `decodeFile(path, [opts])`
 
 + `path` {String} Path to Avro file.
 + `opts` {Object} Decoding options, passed to `BlockDecoder`.

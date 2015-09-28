@@ -1,4 +1,4 @@
-`avsc`'s API is built around `Type`s.
+`avsc`'s API is built around [`Type`](API#class-type) objects.
 
 
 ## What is a `Type`?
@@ -23,7 +23,7 @@ var s = stringType.decode(buf); // === 'Hi'!
 ```
 
 Each `type` also provides other methods which can be useful. Here are two
-(refer to the API for the full list):
+(refer to the [API documentation](API#avro-types) for the full list):
 
 + Type compatibility checks:
 
@@ -78,6 +78,9 @@ method just for that:
 ```javascript
 var couponType = avsc.parseFile('schemas/Coupon.avsc');
 ```
+
+[`parse`](API#parseschema-opts) and [`parseFile`](API#parsefilepath-opts) also
+have a few options which you can find in the API documentation.
 
 
 ## What else?
