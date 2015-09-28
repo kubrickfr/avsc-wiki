@@ -1,3 +1,3 @@
 + [Quickstart](Quickstart)
 + [API](Api)
-+ [Advanced usage](Advanced)
++ [Advanced usage](Advanced-usage)
