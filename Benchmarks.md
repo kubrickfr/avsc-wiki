@@ -1,5 +1,8 @@
 # Benchmarks
 
+Percentages are relative to the fastest throughput for the schema.
+
+
 ## Decoding
 
 ```
