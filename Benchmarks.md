@@ -1,6 +1,7 @@
 # Benchmarks
 
-Percentages are relative to the fastest throughput for the schema.
+Percentages are relative to the fastest throughput for the schema. All
+benchmarks were run on a MacBook Air with an 1.7GHz processor.
 
 
 ## Decoding
