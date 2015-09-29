@@ -53,7 +53,7 @@ an existing schema. `avsc` exposes a `parse` method to do the heavy lifting:
 
 ```javascript
 // Equivalent to what we did earlier.
-var stringType = avsc.parse('string');
+var stringType = avsc.parse({type: 'string'});
 
 // A slightly more complex type.
 var mapType = avsc.parse({type: 'map', values: 'long'});
@@ -77,15 +77,15 @@ var personType = avsc.parse({
 });
 ```
 
-Since schemas are often stored in separate JSON files, `avsc` also exposes a
-`parseFile` method for just that:
+Since schemas are often stored in separate JSON files, passing a string to
+`parse` will attempt to load a schema from that path:
 
 ```javascript
-var couponType = avsc.parseFile('schemas/Coupon.avsc');
+var couponType = avsc.parse('schemas/Coupon.avsc');
 ```
 
-[`parse`](API#parseschema-opts) and [`parseFile`](API#parsefilepath-opts) also
-have a few options which you can find in the API documentation.
+[`parse`](API#parseschema-opts) has a few options which you can find in the API
+documentation.
 
 
 ## What else?

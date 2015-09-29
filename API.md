@@ -8,7 +8,7 @@
 
 ### `parse(schema, [opts])`
 
-+ `schema` {Object|String} Schema (type object or type name string).
++ `schema` {Object|String} Schema (type object or path to schema file).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
@@ -22,13 +22,6 @@
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type).
-
-### `parseFile(path, [opts])`
-
-+ `path` {String} Path to schema file.
-+ `opts` {Object} Parsing options (identical to those of `parse`).
-
-Convenience function to parse a schema file directly.
 
 
 ## Avro types

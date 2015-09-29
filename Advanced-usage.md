@@ -44,12 +44,10 @@ var v2 = avsc.parse({
   ]
 });
 
+// We instantiate the resolver once.
 var resolver = v2.createResolver(v1);
-```
 
-We can then see it in action!
-
-```javascript
+// And pass it whenever we want to decode from the previous version.
 var buf = v1.encode({name: 'Ann', age: 25}); // Encode using old schema.
 var obj = v2.decode(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
 ```
@@ -111,7 +109,7 @@ For example:
 
 ```javascript
 var schema = ['null', 'string'];
-var buf = new Buffer([1, 6, 48, 69, 21]);
+var buf = new Buffer([2, 6, 48, 69, 21]);
 
 var wrappedType = avsc.parse(schema);
 wrappedType.decode(buf); // === {string: 'Hi!'}
