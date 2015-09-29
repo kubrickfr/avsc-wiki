@@ -8,7 +8,10 @@
 
 ### `parse(schema, [opts])`
 
-+ `schema` {Object|String} Schema (type object or path to schema file).
++ `schema` {Object|String} A JavaScript object representing an Avro schema
+  (e.g. `{type: 'array', items: 'int'}`). As a convenience, you can also pass
+  in a string, which will be interpreted as a path to a file containing a
+  JSON-serialized Avro schema.
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
@@ -106,11 +109,6 @@ used to compare schemas for equality.
 
 + `algorithm` {String} Algorithm to use to generate the schema's
   [fingerprint][]. Defaults to `md5`.
-
-
-##### `Type.fromSchema(schema, [opts])`
-
-Alias for `parse`.
 
 
 #### Class `PrimitiveType(name)`
@@ -239,15 +237,27 @@ instantiate new records of a given type.
 
 ## Streams
 
-As a convenience, the following function is available to read an Avro object
-container file stored locally:
+The following functions are available for common operations on container files:
 
 ### `decodeFile(path, [opts])`
 
-+ `path` {String} Path to Avro file.
++ `path` {String} Path to Avro container file.
 + `opts` {Object} Decoding options, passed to `BlockDecoder`.
 
 Returns a readable stream of decoded objects from an Avro container file.
+
+
+### `getFileHeader(path, [opts])`
+
++ `path` {String} Path to Avro container file.
++ `opts` {Object} Options:
+  + `decode` {Boolean} Decode schema and codec metadata (otherwise they will be
+    returned as bytes). Defaults to true.
+
+Extract header from an Avro container file synchronously. If no header is
+present (i.e. the path doesn't point to a valid Avro container file), `null` is
+returned.
+
 
 For other use-cases, the following stream classes are available in the
 `avsc.streams` namespace:
@@ -304,6 +314,8 @@ with no headers or blocks.
     fit a single element, it will be increased appropriately. Defaults to 64kB.
   + `omitHeader` {Boolean} Don't emit the header. This can be useful when
     appending to an existing container file. Defaults to `false`.
+  + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
+    inside the file. If unspecified, a random value will be generated.
   + `unsafe` {Boolean} Whether to check each record before encoding it.
     Defaults to `true`.
 
