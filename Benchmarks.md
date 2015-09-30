@@ -4,7 +4,7 @@ Displayed rates were computed over 100,000 records, taking the median of 10
 runs. Percentages are relative to the fastest throughput for the schema. `-1`
 values indicate that the library doesn't support the schema.
 
-All benchmarks were run on a MacBook Air (1.7GHz processor). The code is
+All benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
 available in the `benchmarks` folder of the main `avsc` repository.
 
 
@@ -14,18 +14,18 @@ available in the `benchmarks` folder of the main `avsc` repository.
 library          java-avro      node-avro-io     node-avsc      node-json     python-fastavro
                        ops    %          ops   %       ops    %       ops   %             ops   %
 schema
-ArrayString.avsc   1333354  100       168208  12    905364   67    933778  70          124155   9
-Bytes.avsc         3425019  100       365112  10   1068876   31    611305  17          483808  14
-Cake.avsc           403309  100           -1  -1    115395   28     94199  23           22342   5
-Coupon.avsc        1242237  100        60955   4    290590   23    281907  22           53553   4
-Double.avsc        4950980  100       316707   6   3301198   66   1338197  27          558435  11
-Enum.avsc          3657786   91       385443   9   3982641  100   1913830  48          469684  11
-Human.avsc         1452605  100        82425   5    498063   34    329794  22          101258   6
-Int.avsc           4017684  100       403430  10   2910795   72   2016750  50          465666  11
-Long.avsc          4008418  100       386055   9   1816200   45   1809810  45          329801   8
-Person.avsc        2167419  100           -1  -1   1586244   73    768013  35          190789   8
-String.avsc        3527611  100       293975   8   2983329   84   1607787  45          412093  11
-User.avsc           543478  100           -1  -1    115933   21    101874  18           17080   3
+ArrayString.avsc   1444170  100       180434  12   1116972   77   1015760  70          137981   9
+Bytes.avsc         3690489   99       400372  10   1455208   39    693466  18          554559  15
+Cake.avsc           469595  100           -1  -1    137547   29    112013  23           26348   5
+Coupon.avsc        1444104  100        71385   4    345052   23    337949  23           62860   4
+Double.avsc        5509683  100       369948   6   5162606   93   1653687  30          679017  12
+Enum.avsc          3899835   59       486224   7   6563342  100   2203458  33          569725   8
+Human.avsc         1748257   99       100706   5    619877   35    392293  22          118434   6
+Int.avsc           4464374   98       489672  10   4535021  100   2299179  50          549700  12
+Long.avsc          4291924  100       419211   9   2278246   53   2024138  47          358293   8
+Person.avsc        2275669  100           -1  -1   1766738   77    827108  36          194667   8
+String.avsc        3335149   99       277700   8   2913463   87   1669694  50          411436  12
+User.avsc           571625  100           -1  -1    119607   20    107774  18           18427   3
 ```
 
 ## Encoding
@@ -34,16 +34,16 @@ User.avsc           543478  100           -1  -1    115933   21    101874  18   
 library          java-avro      node-avro-io    node-avsc      node-json      python-fastavro
                        ops    %          ops  %       ops    %       ops    %             ops   %
 schema
-ArrayString.avsc    729958   85        17158  2    279543   32    856244   99          108645  12
-Bytes.avsc         1196898  100        78853  6    644118   53    180587   15          447893  37
-Cake.avsc           168380  100           -1 -1    103997   61     50583   30           13635   8
-Coupon.avsc         727009  100         6438  0    302544   41    130612   17           42179   5
-Double.avsc        1315088   98           -1 -1    807702   60   1341094  100          515322  38
-Enum.avsc               -1   -1        55772  3    754863   44   1680202   99          392083  23
-Human.avsc          865279  100        13741  1    370070   42    150127   17           76748   8
-Int.avsc           1240742   62        64575  3    840674   42   1986039  100          412469  20
-Long.avsc          1280031   87        36167  2    829022   56   1466763   99          262829  17
-Person.avsc         906625  100           -1 -1    619858   68    842436   92          139652  15
-String.avsc        1212165   74        70248  4    536671   32   1636948   99          322442  19
-User.avsc           245129   86           -1 -1    283556  100     66724   23           13041   4
+ArrayString.avsc    750492   77        18392  1    355901   36    963256  100          120425  12
+Bytes.avsc         1287214   97        85220  6   1320270  100    201507   15          497583  37
+Cake.avsc           186441  100           -1 -1    127475   68     59808   32           15884   8
+Coupon.avsc         788386  100         7121  0    442838   56    153475   19           49827   6
+Double.avsc        1438851   89           -1 -1   1597551   99   1600710  100          617162  38
+Enum.avsc               -1   -1        67312  2   1519959   67   2260376  100          468035  20
+Human.avsc          932401  100        15996  1    521640   55    179512   19           91596   9
+Int.avsc           1366161   57        76585  3   1817656   76   2384937  100          483512  20
+Long.avsc          1349881   76        38350  2   1755053  100   1628519   92          321225  18
+Person.avsc         915711   86           -1 -1   1056454  100    906174   85          149767  14
+String.avsc        1210347   74        68354  4    756733   46   1630107   99          322277  19
+User.avsc           253374   78           -1 -1    323148  100     74405   23           14354   4
 ```
