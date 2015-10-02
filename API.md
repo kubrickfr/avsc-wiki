@@ -19,7 +19,7 @@
     inside an object with a single key. Setting this to `true` will prevent
     this, slightly improving performance (encoding is then done on the first
     type which validates).
-  + `typeHook` {Function} Function called after each new Avro type is
+  + `typeHook(schema)` {Function} Function called after each new Avro type is
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
@@ -56,6 +56,23 @@ The type's name (e.g. `'int'`, `'record'`, ...).
 Returns a random instance of this type.
 
 
+##### `type.clone(obj, [opts])`
+
++ `obj` {Object} The object to copy.
++ `opts` {Object} Options:
+  + `fieldHook(obj, recordType)` {Function} Function called when each record
+    field is instantiated. The field will be available as `this`. The value
+    returned by this function will be used instead of `obj`.
+  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
+    representations into actual `Buffer` objects.
+  + `coerceUnions` {Boolean} Coerce values corresponding to unions to the
+    union's first type. This is to support encoding of field defaults as
+    mandated by the spec (and should rarely come in useful otherwise).
+
+Deep copy an object into a valid representation of `type`. An error will be
+thrown if this is not possible.
+
+
 ##### `type.isValid(obj)`
 
 + `obj` {Object} The object to validate.
@@ -63,29 +80,52 @@ Returns a random instance of this type.
 Check whether `obj` is a valid representation of `type`.
 
 
-##### `type.encode(obj, [size,] [unsafe])`
+##### `type.decode(buf, [pos,] [resolver,] [noCheck])`
+
++ `buf` {Buffer} Buffer to read from.
++ `pos` {Number} Offset.
++ `resolver` {Resolver} Optional resolver.
++ `noCheck` {Boolean}
+
+For decoding many objects, prefer the use of decoding streams. Returns {obj,
+bytesRead}.
+
+
+##### `type.encode(obj, buf, [pos,] [noCheck])`
+
++ `obj` {Object} The object to encode.
++ `buf` {Buffer} Buffer to write to.
++ `pos` {Number} Offset.
++ `noCheck` {Boolean}
+
+For encoding many objects, prefer the use of encoding streams. Returns the
+number of bytes written.
+
+
+##### `type.fromBuffer(buf, [resolver,] [noCheck])`
+
++ `buf` {Buffer} Bytes containing a serialized object of the correct type.
++ `resolver` {Resolver} To decode records serialized from another schema. See
+  [`createResolver`](#typecreateresolverwritertype) for how to create an
+  resolver.
++ `noCheck` {Boolean} Do not check that the entire buffer has been read. This
+  can be useful when using an resolver which only decodes fields at the start of
+  the buffer, allowing decoding to bail early.
+
+Deserialize a buffer into its corresponding value.
+
+
+##### `type.toBuffer(obj, [noCheck])`
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
 + `size` {Number}, Size in bytes used to initialize the buffer into which the
   object will be serialized. If the serialized object doesn't fit, a resize
   will be necessary. Defaults to 1024 bytes.
-+ `unsafe` {Boolean} Do not check that the instance is valid before encoding
++ `noCheck` {Boolean} Do not check that the instance is valid before encoding
   it. Serializing invalid objects is undefined behavior, so use this only if
   you are sure the object satisfies the schema.
 
 Returns a `Buffer` containing the Avro serialization of `obj`.
-
-
-##### `type.decode(buf, [resolver,] [unsafe])`
-
-+ `buf` {Buffer} Bytes containing a serialized object of the correct type.
-+ `resolver` {Resolver} To decode records serialized from another schema. See
-  `createResolver` for how to create an resolver.
-+ `unsafe` {Boolean} Do not check that the entire buffer has been read. This
-  can be useful when using an resolver which only decodes fields at the start of
-  the buffer, allowing decoding to bail early.
-
-Deserialize a buffer into its corresponding value.
 
 
 ##### `type.createResolver(writerType)`
@@ -93,22 +133,68 @@ Deserialize a buffer into its corresponding value.
 + `writerType` {Type} Writer type.
 
 Create a resolver that can be be passed to the `type`'s
-[`decode`](#typedecodebuf-resolver-unsafe) method. This will enable decoding
+[`decode`](#typefrombufferbuf-resolver-nocheck) method. This will enable decoding
 objects which had been serialized using `writerType`, according to the Avro
 [resolution rules][schema-resolution]. If the schemas are incompatible, this
 method will throw an error.
 
 
-##### `type.toString()`
+#### `type.fromString(str)`
 
-Returns the [canonical version of the schema][canonical-schema]. This can be
-used to compare schemas for equality.
++ `str` {String} String representing a JSON-serialized object.
+
+Deserialize a JSON-encoded object of this type.
+
+
+##### `type.toString([obj])`
+
++ `obj` {Object} The object to serialize. If not specified, this method will
+  return the [canonical version][canonical-schema] of this type's schema (which
+  can then be used to compare schemas for equality).
+
+Serialize an object into a JSON-encoded string.
 
 
 ##### `type.createFingerprint(algorithm)`
 
 + `algorithm` {String} Algorithm to use to generate the schema's
   [fingerprint][]. Defaults to `md5`.
+
+
+##### `Type.fromSchema(schema, [opts])`
+
++ `schema` {Object|String}` A JavaScript object representing an Avro schema
+  (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
+  interpreted as a type name, to be looked up in the `registry` (note the
+  difference with [`parse`](#parseschema-opts), which interprets strings as
+  paths).
++ `opts` {Object} Parsing options. The following keys are currently supported:
+  + `namespace` {String} Optional parent namespace.
+  + `registry` {Object} Optional registry of predefined type names.
+  + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped
+    inside an object with a single key. Setting this to `true` will prevent
+    this, slightly improving performance (encoding is then done on the first
+    type which validates).
+  + `typeHook(schema)` {Function} Function called after each new Avro type is
+    instantiated. The new type is available as `this` and the relevant schema
+    as first and only argument.
+
+Return a type from a JS schema. This method is called internally by `parse`.
+
+
+##### `Type.createRegistry()`
+
+Returns a dictionary containing the names of all Avro primitives. This is
+useful to prime a registry to be passed to `parse` or `Type.fromSchema`.
+
+
+##### `Type.\_\_reset(size)`
+
++ `size` {Number} New buffer size in bytes.
+
+This method resizes the internal buffer used to encode all types. You should
+only ever need to call this if you are encoding very large objects and need to
+reclaim memory.
 
 
 #### Class `PrimitiveType(name)`
@@ -226,11 +312,13 @@ instantiate new records of a given type.
 
 #### `Record.random()`
 
-#### `Record.decode(buf, [resolver,] [unsafe])`
-
-#### `record.$encode([size,] [unsafe])`
+#### `Record.fromBuffer(buf, [resolver,] [noCheck])`
 
 #### `record.$isValid()`
+
+#### `record.$toBuffer([noCheck])`
+
+#### `record.$toString()`
 
 #### `record.$type`
 
@@ -316,7 +404,7 @@ with no headers or blocks.
     appending to an existing container file. Defaults to `false`.
   + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
     inside the file. If unspecified, a random value will be generated.
-  + `unsafe` {Boolean} Whether to check each record before encoding it.
+  + `noCheck` {Boolean} Whether to check each record before encoding it.
     Defaults to `true`.
 
 A duplex stream to create Avro container object files.
@@ -334,7 +422,7 @@ A duplex stream to create Avro container object files.
     batches. Use this option to control how often batches are emitted. If it is
     too small to fit a single record, it will be increased automatically.
     Defaults to 64kB.
-  + `unsafe` {Boolean} Whether to check each record before encoding it.
+  + `noCheck` {Boolean} Whether to check each record before encoding it.
     Defaults to `true`.
 
 The encoding equivalent of `RawDecoder`.
