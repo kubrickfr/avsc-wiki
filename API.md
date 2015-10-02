@@ -18,7 +18,8 @@
   + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped
     inside an object with a single key. Setting this to `true` will prevent
     this, slightly improving performance (encoding is then done on the first
-    type which validates).
+    type which validates). JSON encoding isn't supported for unwrapped unions
+    yet.
   + `typeHook(schema)` {Function} Function called after each new Avro type is
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
