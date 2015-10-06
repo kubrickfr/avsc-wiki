@@ -9,9 +9,11 @@
 ### `parse(schema, [opts])`
 
 + `schema` {Object|String} A JavaScript object representing an Avro schema
-  (e.g. `{type: 'array', items: 'int'}`). As a convenience, you can also pass
-  in a string, which will be interpreted as a path to a file containing a
-  JSON-serialized Avro schema.
+  (e.g. `{type: 'array', items: 'int'}`). As a convenience, when passing in
+  a string which contains a slash, it will be interpreted as a path to a file
+  containing a JSON-serialized Avro schema (so `parse('./Schema.avsc')` will
+  load the schema from the file `Schema.avsc` in the current working
+  directory).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
@@ -33,7 +35,14 @@ Parse a schema and return an instance of the corresponding
 All the classes below are available in the `avsc.types` namespace:
 
 + [`Type`](#class-type)
-+ [`PrimitiveType`](#class-primitivetypename)
++ [`NullType`](#class-nulltype)
++ [`BooleanType`](#class-booleantype)
++ [`IntType`](#class-inttype)
++ [`LongType`](#class-longtype)
++ [`FloatType`](#class-floattype)
++ [`DoubleType`](#class-doubletype)
++ [`StringType`](#class-stringtype)
++ [`BytesType`](#class-bytestype)
 + [`ArrayType`](#class-arraytypeschema-opts)
 + [`EnumType`](#class-enumtypeschema-opts)
 + [`FixedType`](#class-fixedtypeschema-opts)
@@ -45,11 +54,6 @@ All the classes below are available in the `avsc.types` namespace:
 ### Class `Type`
 
 "Abstract" base Avro type class. All implementations inherit from it.
-
-
-##### `type.type`
-
-The type's name (e.g. `'int'`, `'record'`, ...).
 
 
 ##### `type.random()`
@@ -66,9 +70,9 @@ Returns a random instance of this type.
     returned by this function will be used instead of `obj`.
   + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
     representations into actual `Buffer` objects.
-  + `coerceUnions` {Boolean} Coerce values corresponding to unions to the
-    union's first type. This is to support encoding of field defaults as
-    mandated by the spec (and should rarely come in useful otherwise).
+  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
+    first type. This is to support encoding of field defaults as mandated by
+    the spec (and should rarely come in useful otherwise).
 
 Deep copy an object into a valid representation of `type`. An error will be
 thrown if this is not possible.
@@ -81,15 +85,14 @@ thrown if this is not possible.
 Check whether `obj` is a valid representation of `type`.
 
 
-##### `type.decode(buf, [pos,] [resolver,] [noCheck])`
+##### `type.decode(buf, [pos,] [resolver])`
 
 + `buf` {Buffer} Buffer to read from.
 + `pos` {Number} Offset.
 + `resolver` {Resolver} Optional resolver.
-+ `noCheck` {Boolean}
 
 For decoding many objects, prefer the use of decoding streams. Returns {obj,
-bytesRead}.
+n}.
 
 
 ##### `type.encode(obj, buf, [pos,] [noCheck])`
@@ -198,94 +201,80 @@ only ever need to call this if you are encoding very large objects and need to
 reclaim memory.
 
 
-#### Class `PrimitiveType(name)`
-
-The common type used for `null`, `boolean`, `int`, `long`, `float`, `double`,
-`bytes`, and `string`. It has no other properties than the base `Type`'s.
-
-
 #### Class `ArrayType(schema, [opts])`
 
-##### `type.items`
+##### `type.getItemsType()``
 
 The type of the array's items.
 
 
 #### Class `EnumType(schema, [opts])`
 
-##### `type.name`
+##### `type.getFullName()``
 
-The type's name.
+The type's fully qualified name.
 
-##### `type.symbols`
+##### `type.getSymbols()``
 
-Array of strings, representing the enum's valid values.
+Returs a copy of the type's symbols (an array of strings representing the
+enum's valid values).
 
-##### `type.aliases`
+##### `type.getAliases()``
 
 Optional type aliases. These are used when adapting a schema from another type.
-
-##### `type.doc`
-
-Optional documentation.
+Unlike the array returned by `getSymbols`, you can add, edit, and remove
+aliases from this list.
 
 
 #### Class `FixedType(schema, [opts])`
 
-##### `type.name`
+##### `type.getFullName()``
 
-The type's name.
+The type's fully qualified name.
 
-##### `type.size`
+##### `type.getSize()`
 
 The size in bytes of instances of this type.
 
-##### `type.aliases`
+##### `type.getAliases()``
 
 Optional type aliases. These are used when adapting a schema from another type.
+Unlike the array returned by `getSymbols`, you can add, edit, and remove
+aliases from this list.
 
 
 #### Class `MapType(schema, [opts])`
 
-##### `type.values`
+##### `type.getValuesType()`
 
 The type of the map's values (keys are always strings).
 
 
 #### Class `RecordType(schema, [opts])`
 
-##### `type.name`
+##### `type.getFullName()`
 
-The type's name.
+The type's fully qualified name.
 
-##### `type.fields`
+##### `type.getFields()`
 
-The array of fields contained in this record. Each field is an object with the
-following keys:
+Returns a copy of the array of fields contained in this record. Each field is
+an object with the following methods:
 
-+ `name`
-+ `type`
-+ `default` (can be undefined).
-+ `aliases` (can be undefined).
-+ `doc` (can be undefined).
++ `getName()`
++ `getType()`
++ `getDefault()`
++ `getAliases()`
 
 ##### `type.getRecordConstructor()`
 
 The `Record` constructor for instances of this type.
 
-##### `type.asReaderOf(writerType)`
-
-+ `writerType` {Type} A compatible `type`.
-
-Returns a type suitable for reading a file written using a different schema.
-
-##### `type.aliases`
+##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
-
-##### `type.doc`
-
-Optional documentation.
+Unlike the array returned by `getSymbols`, you can add, edit, and remove
+aliases from this list.
 
 
 #### Class `UnionType(schema, [opts])`
@@ -294,7 +283,7 @@ Instances of this type will either be represented as wrapped objects (according
 to the Avro spec), or as their value directly (if `unwrapUnions` was set when
 parsing the schema).
 
-##### `type.types`
+##### `type.getTypes()`
 
 The possible types that this union can take.
 
@@ -315,13 +304,15 @@ instantiate new records of a given type.
 
 #### `Record.fromBuffer(buf, [resolver,] [noCheck])`
 
+#### `record.$clone()`
+
+#### `record.$getType()`
+
 #### `record.$isValid()`
 
 #### `record.$toBuffer([noCheck])`
 
 #### `record.$toString()`
-
-#### `record.$type`
 
 
 ## Streams
