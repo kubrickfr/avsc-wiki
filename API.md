@@ -8,18 +8,13 @@
 
 ### `parse(schema, [opts])`
 
-+ `schema` {Object|String} A JavaScript object representing an Avro schema
-  (e.g. `{type: 'array', items: 'int'}`). As a convenience, when passing in
-  a string which contains a slash, it will be interpreted as a path to a file
-  containing a JSON-serialized Avro schema (so `parse('./Schema.avsc')`
-  will load the schema from the file `Schema.avsc` in the current working
-  directory).
-+ `opts` {Object} Parsing options. The following keys are currently supported:
-  + `namespace` {String} Optional parent namespace.
-  + `registry` {Object} Optional registry of predefined type names.
-  + `typeHook(schema)` {Function} Function called after each new Avro type is
-    instantiated. The new type is available as `this` and the relevant schema
-    as first and only argument.
++ `schema` {Object|String} An Avro schema, represented by one of:
+  + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
+  + A path to a file containing a JSON-stringified schema (e.g.
+    `'./Schema.avsc'`).
+  + A schema object (e.g. `{type: 'array', items: 'int'}`).
++ `opts` {Object} Parsing options forwarded to
+  [`Type.fromSchema`](#typefromschemaobj-opts).
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type).
@@ -30,20 +25,22 @@ Parse a schema and return an instance of the corresponding
 All the classes below are available in the `avsc.types` namespace:
 
 + [`Type`](#class-type)
-+ [`NullType`](#class-nulltype)
-+ [`BooleanType`](#class-booleantype)
-+ [`IntType`](#class-inttype)
-+ [`LongType`](#class-longtype)
-+ [`FloatType`](#class-floattype)
-+ [`DoubleType`](#class-doubletype)
-+ [`StringType`](#class-stringtype)
-+ [`BytesType`](#class-bytestype)
-+ [`ArrayType`](#class-arraytypeschema-opts)
-+ [`EnumType`](#class-enumtypeschema-opts)
-+ [`FixedType`](#class-fixedtypeschema-opts)
-+ [`MapType`](#class-maptypeschema-opts)
-+ [`RecordType`](#class-recordtypeschema-opts)
-+ [`UnionType`](#class-uniontypeschema-opts)
++ Primitive types:
+  + `BooleanType`
+  + `BytesType`
+  + `DoubleType`
+  + `FloatType`
+  + `IntType`
+  + `LongType`
+  + `NullType`
+  + `StringType`
++ Complex types:
+  + [`ArrayType`](#class-arraytypeschema-opts)
+  + [`EnumType`](#class-enumtypeschema-opts)
+  + [`FixedType`](#class-fixedtypeschema-opts)
+  + [`MapType`](#class-maptypeschema-opts)
+  + [`RecordType`](#class-recordtypeschema-opts)
+  + [`UnionType`](#class-uniontypeschema-opts)
 
 
 ### Class `Type`
@@ -117,9 +114,6 @@ Deserialize a buffer into its corresponding value.
 ##### `type.toBuffer(obj, [noCheck])`
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
-+ `size` {Number}, Size in bytes used to initialize the buffer into which the
-  object will be serialized. If the serialized object doesn't fit, a resize
-  will be necessary. Defaults to 1024 bytes.
 + `noCheck` {Boolean} Do not check that the instance is valid before encoding
   it. Serializing invalid objects is undefined behavior, so use this only if
   you are sure the object satisfies the schema.
@@ -138,7 +132,7 @@ objects which had been serialized using `writerType`, according to the Avro
 method will throw an error.
 
 
-#### `type.fromString(str)`
+##### `type.fromString(str)`
 
 + `str` {String} String representing a JSON-serialized object.
 
@@ -148,8 +142,8 @@ Deserialize a JSON-encoded object of this type.
 ##### `type.toString([obj])`
 
 + `obj` {Object} The object to serialize. If not specified, this method will
-  return the [canonical version][canonical-schema] of this type's schema (which
-  can then be used to compare schemas for equality).
+  return the [canonical version][canonical-schema] of this type's schema
+  instead (which can then be used to compare schemas for equality).
 
 Serialize an object into a JSON-encoded string.
 
@@ -161,8 +155,7 @@ Serialize an object into a JSON-encoded string.
 
 Returns `0` if both objects are equal according to their [sort
 order][sort-order], `-1` if the first is smaller than the second , and `1`
-otherwise. Both objects are assumed to be valid instances of `type`, no checks
-are performed by this method.
+otherwise. Comparing invalid objects is undefined behavior.
 
 
 ##### `type.compareBuffers(buf1, buf2)`
@@ -170,21 +163,18 @@ are performed by this method.
 + `buf1` {Buffer} Buffer containing Avro encoding of an instance of `type`.
 + `buf2` {Buffer} Buffer containing Avro encoding of an instance of `type`.
 
-Similar to `type.compare`, but doesn't require deserializing instances.
+Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
+instances.
 
 
 ##### `Type.fromSchema(obj, [opts])`
 
-+ `schema` {Object|String}` A JavaScript object representing an Avro schema
++ `schema` {Object|String} A JavaScript object representing an Avro schema
   (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
   interpreted as a type name, to be looked up in the `registry`.
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
-  + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped
-    inside an object with a single key. Setting this to `true` will prevent
-    this, slightly improving performance (encoding is then done on the first
-    type which validates).
   + `typeHook(schema)` {Function} Function called after each new Avro type is
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
@@ -197,7 +187,7 @@ internally by `parse`.
 
 Returns a copy of the default registry used to look up type names. It contains
 the names of all Avro primitives. This is useful to prime a registry to be
-passed to `parse` or `Type.fromSchema`.
+passed to [`Type.fromSchema`](#typefromschemaobj-opts).
 
 
 ##### `type.getFingerprint(algorithm)`
@@ -206,7 +196,7 @@ passed to `parse` or `Type.fromSchema`.
   [fingerprint][]. Defaults to `md5`.
 
 
-##### `Type.\_\_reset(size)`
+##### `Type.__reset(size)`
 
 + `size` {Number} New buffer size in bytes.
 
@@ -217,23 +207,23 @@ reclaim memory.
 
 #### Class `ArrayType(schema, [opts])`
 
-##### `type.getItemsType()``
+##### `type.getItemsType()`
 
 The type of the array's items.
 
 
 #### Class `EnumType(schema, [opts])`
 
-##### `type.getFullName()``
+##### `type.getFullName()`
 
 The type's fully qualified name.
 
-##### `type.getSymbols()``
+##### `type.getSymbols()`
 
 Returs a copy of the type's symbols (an array of strings representing the
 enum's valid values).
 
-##### `type.getAliases()``
+##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 Unlike the array returned by `getSymbols`, you can add, edit, and remove
@@ -242,7 +232,7 @@ aliases from this list.
 
 #### Class `FixedType(schema, [opts])`
 
-##### `type.getFullName()``
+##### `type.getFullName()`
 
 The type's fully qualified name.
 
@@ -250,7 +240,7 @@ The type's fully qualified name.
 
 The size in bytes of instances of this type.
 
-##### `type.getAliases()``
+##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 Unlike the array returned by `getSymbols`, you can add, edit, and remove
@@ -295,10 +285,6 @@ aliases from this list.
 
 #### Class `UnionType(schema, [opts])`
 
-Instances of this type will either be represented as wrapped objects (according
-to the Avro spec), or as their value directly (if `unwrapUnions` was set when
-parsing the schema).
-
 ##### `type.getTypes()`
 
 The possible types that this union can take.
@@ -320,7 +306,7 @@ instantiate new records of a given type.
 
 #### `record.$clone()`
 
-#### `record.$compare()`
+#### `record.$compare(obj)`
 
 #### `record.$getType()`
 

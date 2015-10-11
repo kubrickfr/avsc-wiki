@@ -13,7 +13,7 @@ and writer's schemas are compatible). We can do this by creating an appropriate
 var avsc = require('avsc');
 
 // A schema's first version.
-var v1 = avsc.createType({
+var v1 = avsc.parse({
   type: 'record',
   name: 'Person',
   fields: [
@@ -23,7 +23,7 @@ var v1 = avsc.createType({
 });
 
 // The updated version.
-var v2 = avsc.createType({
+var v2 = avsc.parse({
   type: 'record',
   name: 'Person',
   fields: [
@@ -45,7 +45,7 @@ var v2 = avsc.createType({
 });
 
 // We instantiate the resolver once.
-var resolver = v2.createResolver(v1);
+var resolver = v2.parse(v1);
 
 // And pass it whenever we want to decode from the previous version.
 var buf = v1.encode({name: 'Ann', age: 25}); // Encode using old schema.
@@ -82,7 +82,7 @@ var typeHook = function (schema) {
 };
 
 // We pass the above hook in the parsing options.
-var type = avsc.createType({
+var type = avsc.parse({
   type: 'record',
   name: 'Recommendation',
   fields: [
@@ -111,10 +111,10 @@ For example:
 var schema = ['null', 'string'];
 var buf = new Buffer([2, 6, 48, 69, 21]);
 
-var wrappedType = avsc.createType(schema);
+var wrappedType = avsc.parse(schema);
 wrappedType.decode(buf); // === {string: 'Hi!'}
 
-var unwrappedType = avsc.createType(schema, {unwrapUnions: true});
+var unwrappedType = avsc.parse(schema, {unwrapUnions: true});
 unwrappedType.decode(buf); // === 'Hi!'
 ```
 
