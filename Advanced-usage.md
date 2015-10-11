@@ -13,7 +13,7 @@ and writer's schemas are compatible). We can do this by creating an appropriate
 var avsc = require('avsc');
 
 // A schema's first version.
-var v1 = avsc.parse({
+var v1 = avsc.createType({
   type: 'record',
   name: 'Person',
   fields: [
@@ -23,7 +23,7 @@ var v1 = avsc.parse({
 });
 
 // The updated version.
-var v2 = avsc.parse({
+var v2 = avsc.createType({
   type: 'record',
   name: 'Person',
   fields: [
@@ -82,7 +82,7 @@ var typeHook = function (schema) {
 };
 
 // We pass the above hook in the parsing options.
-var type = avsc.parse({
+var type = avsc.createType({
   type: 'record',
   name: 'Recommendation',
   fields: [
@@ -111,10 +111,10 @@ For example:
 var schema = ['null', 'string'];
 var buf = new Buffer([2, 6, 48, 69, 21]);
 
-var wrappedType = avsc.parse(schema);
+var wrappedType = avsc.createType(schema);
 wrappedType.decode(buf); // === {string: 'Hi!'}
 
-var unwrappedType = avsc.parse(schema, {unwrapUnions: true});
+var unwrappedType = avsc.createType(schema, {unwrapUnions: true});
 unwrappedType.decode(buf); // === 'Hi!'
 ```
 

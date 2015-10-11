@@ -11,17 +11,12 @@
 + `schema` {Object|String} A JavaScript object representing an Avro schema
   (e.g. `{type: 'array', items: 'int'}`). As a convenience, when passing in
   a string which contains a slash, it will be interpreted as a path to a file
-  containing a JSON-serialized Avro schema (so `parse('./Schema.avsc')` will
-  load the schema from the file `Schema.avsc` in the current working
+  containing a JSON-serialized Avro schema (so `parse('./Schema.avsc')`
+  will load the schema from the file `Schema.avsc` in the current working
   directory).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
-  + `unwrapUnions` {Boolean} By default, Avro expects all unions to be wrapped
-    inside an object with a single key. Setting this to `true` will prevent
-    this, slightly improving performance (encoding is then done on the first
-    type which validates). JSON encoding isn't supported for unwrapped unions
-    yet.
   + `typeHook(schema)` {Function} Function called after each new Avro type is
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
@@ -159,19 +154,30 @@ Deserialize a JSON-encoded object of this type.
 Serialize an object into a JSON-encoded string.
 
 
-##### `type.createFingerprint(algorithm)`
+##### `type.compare(obj1, obj2)`
 
-+ `algorithm` {String} Algorithm to use to generate the schema's
-  [fingerprint][]. Defaults to `md5`.
++ `obj1` {Object} Instance of `type`.
++ `obj2` {Object} Instance of `type`.
+
+Returns `0` if both objects are equal according to their [sort
+order][sort-order], `-1` if the first is smaller than the second , and `1`
+otherwise. Both objects are assumed to be valid instances of `type`, no checks
+are performed by this method.
 
 
-##### `Type.fromSchema(schema, [opts])`
+##### `type.compareBuffers(buf1, buf2)`
+
++ `buf1` {Buffer} Buffer containing Avro encoding of an instance of `type`.
++ `buf2` {Buffer} Buffer containing Avro encoding of an instance of `type`.
+
+Similar to `type.compare`, but doesn't require deserializing instances.
+
+
+##### `Type.fromSchema(obj, [opts])`
 
 + `schema` {Object|String}` A JavaScript object representing an Avro schema
   (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
-  interpreted as a type name, to be looked up in the `registry` (note the
-  difference with [`parse`](#parseschema-opts), which interprets strings as
-  paths).
+  interpreted as a type name, to be looked up in the `registry`.
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
@@ -183,13 +189,21 @@ Serialize an object into a JSON-encoded string.
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
-Return a type from a JS schema. This method is called internally by `parse`.
+Return a type from a corresponding JS schema object. This method is called
+internally by `parse`.
 
 
-##### `Type.createRegistry()`
+##### `Type.getDefaultRegistry()`
 
-Returns a dictionary containing the names of all Avro primitives. This is
-useful to prime a registry to be passed to `parse` or `Type.fromSchema`.
+Returns a copy of the default registry used to look up type names. It contains
+the names of all Avro primitives. This is useful to prime a registry to be
+passed to `parse` or `Type.fromSchema`.
+
+
+##### `type.getFingerprint(algorithm)`
+
++ `algorithm` {String} Algorithm to use to generate the schema's
+  [fingerprint][]. Defaults to `md5`.
 
 
 ##### `Type.\_\_reset(size)`
@@ -261,10 +275,12 @@ The type's fully qualified name.
 Returns a copy of the array of fields contained in this record. Each field is
 an object with the following methods:
 
-+ `getName()`
-+ `getType()`
-+ `getDefault()`
 + `getAliases()`
++ `getDefault()`
++ `getName()`
++ `getOrder()`
++ `setOrder(order)`
++ `getType()`
 
 ##### `type.getRecordConstructor()`
 
@@ -300,11 +316,11 @@ lets us provide the following convenience methods:
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type.
 
-#### `Record.random()`
-
-#### `Record.fromBuffer(buf, [resolver,] [noCheck])`
+#### `Record.getType()`
 
 #### `record.$clone()`
+
+#### `record.$compare()`
 
 #### `record.$getType()`
 
@@ -319,7 +335,7 @@ instantiate new records of a given type.
 
 The following functions are available for common operations on container files:
 
-### `decodeFile(path, [opts])`
+### `createFileDecoder(path, [opts])`
 
 + `path` {String} Path to Avro container file.
 + `opts` {Object} Decoding options, passed to `BlockDecoder`.
@@ -327,7 +343,7 @@ The following functions are available for common operations on container files:
 Returns a readable stream of decoded objects from an Avro container file.
 
 
-### `getFileHeader(path, [opts])`
+### `extractFileHeader(path, [opts])`
 
 + `path` {String} Path to Avro container file.
 + `opts` {Object} Options:
@@ -339,34 +355,14 @@ present (i.e. the path doesn't point to a valid Avro container file), `null` is
 returned.
 
 
-For other use-cases, the following stream classes are available in the
-`avsc.streams` namespace:
+The following stream classes are available in the `avsc.streams` namespace:
 
++ [`RawDecoder`](#rawdecodertype-opts)
++ [`FrameDecoder`](#framedecodertype-opts)
 + [`BlockDecoder`](#blockdecoderopts)
-+ [`RawDecoder`](#rawdecoderopts)
-+ [`BlockEncoder`](#blockencoderopts)
-+ [`RawEncoder`](#rawencoderopts)
-
-
-### Class `BlockDecoder([opts])`
-
-+ `opts` {Object} Decoding options. Available keys:
-  + `decode` {Boolean} Whether to decode records before returning them.
-    Defaults to `true`.
-  + `parseOpts` {Object} Options passed to instantiate the writer's `Type`.
-
-A duplex stream which decodes bytes coming from on Avro object container file.
-
-#### Event `'metadata'`
-
-+ `type` {Type} The type used to write the file.
-+ `codec` {String} The codec's name.
-+ `header` {Object} The file's header, containing in particular the raw schema
-  and codec.
-
-#### Event `'data'`
-
-+ `data` {Object|Buffer} Decoded element or raw bytes.
++ [`RawEncoder`](#rawencodertype-opts)
++ [`FrameEncoder`](#frameencodertype-opts)
++ [`BlockEncoder`](#blockencodertype-opts)
 
 
 ### Class `RawDecoder(type, [opts])`
@@ -382,6 +378,76 @@ with no headers or blocks.
 #### Event `'data'`
 
 + `data` {Object|Buffer} Decoded element or raw bytes.
+
+
+### Class `FrameDecoder(type, [opts])`
+
++ `type` {Type} Writer type. Required since the input doesn't contain a header.
++ `opts` {Object} Decoding options. Available keys:
+  + `decode` {Boolean} Whether to decode records before returning them.
+    Defaults to `true`.
+
+A duplex stream which can be used to decode a stream of serialized Avro objects
+with no headers or blocks.
+
+#### Event `'data'`
+
++ `data` {Object|Buffer} Decoded element or raw bytes.
+
+
+### Class `BlockDecoder([opts])`
+
++ `opts` {Object} Decoding options. Available keys:
+  + `decode` {Boolean} Whether to decode records before returning them.
+    Defaults to `true`.
+  + `typeOpts` {Object} Options passed to instantiate the writer's `Type`.
+
+A duplex stream which decodes bytes coming from on Avro object container file.
+
+#### Event `'metadata'`
+
++ `type` {Type} The type used to write the file.
++ `codec` {String} The codec's name.
++ `header` {Object} The file's header, containing in particular the raw schema
+  and codec.
+
+#### Event `'data'`
+
++ `data` {Object|Buffer} Decoded element or raw bytes.
+
+
+### Class `RawEncoder(type, [opts])`
+
++ `type` {Type} The type to use for encoding.
++ `opts` {Object} Encoding options. Available keys:
+  + `batchSize` {Number} To increase performance, records are serialized in
+    batches. Use this option to control how often batches are emitted. If it is
+    too small to fit a single record, it will be increased automatically.
+    Defaults to 64kB.
+  + `noCheck` {Boolean} Whether to check each record before encoding it.
+    Defaults to `true`.
+
+The encoding equivalent of `RawDecoder`.
+
+#### Event `'data'`
+
++ `data` {Buffer} Serialized bytes.
+
+
+### Class `FrameEncoder(type, [opts])`
+
++ `type` {Type} The type to use for encoding.
++ `opts` {Object} Encoding options. Available keys:
+  + `frameSize` {Number} Frame size in bytes. Defaults to 1024. Currently only
+    one record is encoded per frame.
+  + `noCheck` {Boolean} Whether to check each record before encoding it.
+    Defaults to `true`.
+
+The encoding equivalent of `RawDecoder`.
+
+#### Event `'data'`
+
++ `data` {Buffer} Serialized bytes.
 
 
 ### Class `BlockEncoder(type, [opts])`
@@ -406,24 +472,7 @@ A duplex stream to create Avro container object files.
 + `data` {Buffer} Serialized bytes.
 
 
-### Class `RawEncoder(type, [opts])`
-
-+ `type` {Type} The type to use for encoding.
-+ `opts` {Object} Encoding options. Available keys:
-  + `batchSize` {Number} To increase performance, records are serialized in
-    batches. Use this option to control how often batches are emitted. If it is
-    too small to fit a single record, it will be increased automatically.
-    Defaults to 64kB.
-  + `noCheck` {Boolean} Whether to check each record before encoding it.
-    Defaults to `true`.
-
-The encoding equivalent of `RawDecoder`.
-
-#### Event `'data'`
-
-+ `data` {Buffer} Serialized bytes.
-
-
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
+[sort-order]: https://avro.apache.org/docs/current/spec.html#order
 [fingerprint]: https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
