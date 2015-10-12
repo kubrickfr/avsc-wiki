@@ -167,11 +167,12 @@ Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
 instances.
 
 
-##### `Type.fromSchema(obj, [opts])`
+##### `Type.fromSchema(schema, [opts])`
 
 + `schema` {Object|String} A JavaScript object representing an Avro schema
   (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
-  interpreted as a type name, to be looked up in the `registry`.
+  interpreted as a type name, to be looked up in the registry (see `opts`
+  below).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names.
@@ -179,8 +180,7 @@ instances.
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
-Return a type from a corresponding JS schema object. This method is called
-internally by `parse`.
+Parses a schema into its corresponding type.
 
 
 ##### `Type.getDefaultRegistry()`
@@ -192,8 +192,8 @@ passed to [`Type.fromSchema`](#typefromschemaobj-opts).
 
 ##### `type.getFingerprint(algorithm)`
 
-+ `algorithm` {String} Algorithm to use to generate the schema's
-  [fingerprint][]. Defaults to `md5`.
++ `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
+  Defaults to `md5`.
 
 
 ##### `Type.__reset(size)`
@@ -297,24 +297,38 @@ constructor when its schema is parsed. It is available using the `RecordType`'s
 `getRecordConstructor` methods. This makes decoding records more efficient and
 lets us provide the following convenience methods:
 
-### Class `Record(...)`
+#### Class `Record(...)`
 
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type.
 
-#### `Record.getType()`
+##### `record.$clone()`
 
-#### `record.$clone()`
+Deep copy the record.
 
-#### `record.$compare(obj)`
+##### `record.$compare(obj)`
 
-#### `record.$getType()`
+Compare the record to another.
 
-#### `record.$isValid()`
+##### `record.$getType()`
 
-#### `record.$toBuffer([noCheck])`
+Get the record's `type`.
 
-#### `record.$toString()`
+##### `record.$isValid()`
+
+Check whether the record is valid.
+
+##### `record.$toBuffer([noCheck])`
+
+Return binary encoding of record.
+
+##### `record.$toString()`
+
+Return JSON-stringified record.
+
+##### `Record.getType()`
+
+Convenience class method to get the record's type.
 
 
 ## Streams

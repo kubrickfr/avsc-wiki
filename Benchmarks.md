@@ -5,7 +5,7 @@ runs. Percentages are relative to the fastest throughput for the schema. `-1`
 values indicate that the library doesn't support the schema.
 
 All benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
-available in the `benchmarks` folder of the main `avsc` repository.
+available in `etc/benchmarks/`.
 
 
 ## Decoding
