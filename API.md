@@ -1,7 +1,7 @@
 + [Parsing schemas](#parsing-schemas)
 + [Avro types](#avro-types)
 + [Records](#records)
-+ [Streams](#streams)
++ [Files and streams](#files-and-streams)
 
 
 ## Parsing schemas
@@ -81,21 +81,26 @@ Check whether `obj` is a valid representation of `type`.
 
 + `buf` {Buffer} Buffer to read from.
 + `pos` {Number} Offset.
-+ `resolver` {Resolver} Optional resolver.
++ `resolver` {Resolver} Optional resolver to decode records serialized from
+  another schema. See [`createResolver`](#typecreateresolverwritertype) for how
+  to create one.
 
-For decoding many objects, prefer the use of decoding streams. Returns {obj,
-n}.
+Returns `{object: object, offset: offset}` if `buf` contains a valid encoding
+of `type` (`object` being the decoded object, and `offset` the new offset in
+the buffer). Returns `{offset: -1}` when the buffer is too short.
+
 
 
 ##### `type.encode(obj, buf, [pos,] [noCheck])`
 
 + `obj` {Object} The object to encode.
 + `buf` {Buffer} Buffer to write to.
-+ `pos` {Number} Offset.
-+ `noCheck` {Boolean}
++ `pos` {Number} Offset to start writing at.
++ `noCheck` {Boolean} Do not check that the instance is valid before encoding
+  it. Serializing invalid objects is undefined behavior, so use this only if
+  you are sure the object satisfies the schema.
 
-For encoding many objects, prefer the use of encoding streams. Returns the
-number of bytes written.
+Encode an object into an existing buffer. Returns the new offset.
 
 
 ##### `type.fromBuffer(buf, [resolver,] [noCheck])`
@@ -126,10 +131,11 @@ Returns a `Buffer` containing the Avro serialization of `obj`.
 + `writerType` {Type} Writer type.
 
 Create a resolver that can be be passed to the `type`'s
-[`decode`](#typefrombufferbuf-resolver-nocheck) method. This will enable decoding
-objects which had been serialized using `writerType`, according to the Avro
-[resolution rules][schema-resolution]. If the schemas are incompatible, this
-method will throw an error.
+[`decode`](#typedecodebuf-pos-resolver) and
+[`fromBuffer`](#typefrombufferbuf-resolver-nocheck) methods. This will enable
+decoding objects which had been serialized using `writerType`, according to the
+Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
+this method will throw an error.
 
 
 ##### `type.fromString(str)`
@@ -167,7 +173,7 @@ Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
 instances.
 
 
-##### `Type.fromSchema(schema, [opts])`
+##### `Type.fromSchema(obj, [opts])`
 
 + `schema` {Object|String} A JavaScript object representing an Avro schema
   (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
@@ -193,7 +199,7 @@ passed to [`Type.fromSchema`](#typefromschemaobj-opts).
 ##### `type.getFingerprint(algorithm)`
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
-  Defaults to `md5`.
+  Defaults to `md5`. In the browser, only `md5` is supported.
 
 
 ##### `Type.__reset(size)`
@@ -274,13 +280,13 @@ an object with the following methods:
 
 ##### `type.getRecordConstructor()`
 
-The `Record` constructor for instances of this type.
+The [`Record`](Api#class-record) constructor for instances of this type.
 
 ##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
-Unlike the array returned by `getSymbols`, you can add, edit, and remove
-aliases from this list.
+Unlike the array returned by `getFields`, you can add, edit, and remove aliases
+from this list.
 
 
 #### Class `UnionType(schema, [opts])`
@@ -292,10 +298,14 @@ The possible types that this union can take.
 
 ## Records
 
-Each [`RecordType`](#class-recordtype-opts) generates a corresponding `Record`
-constructor when its schema is parsed. It is available using the `RecordType`'s
-`getRecordConstructor` methods. This makes decoding records more efficient and
-lets us provide the following convenience methods:
+Each [`RecordType`](#class-recordtypeschema-opts) generates a corresponding
+`Record` constructor when its schema is parsed. It is available using the
+`RecordType`'s `getRecordConstructor` methods. This helps make decoding and
+encoding records more efficient.
+
+All prototype methods below are prefixed with `$` to avoid clashing with an
+existing record field (`$` is a valid idenfifier in JavaScript, but not in
+Avro).
 
 #### Class `Record(...)`
 
@@ -331,92 +341,112 @@ Return JSON-stringified record.
 Convenience class method to get the record's type.
 
 
-## Streams
+## Files and streams
 
-The following functions are available for common operations on container files:
+*Not available in the browser.*
 
-### `createFileDecoder(path, [opts])`
+The following convenience functions are available for common operations on
+container files:
+
+#### `createFileDecoder(path, [opts])`
 
 + `path` {String} Path to Avro container file.
-+ `opts` {Object} Decoding options, passed to `BlockDecoder`.
++ `opts` {Object} Decoding options, passed to
+  [`BlockDecoder`](Api#class-blockdecoderopts).
 
 Returns a readable stream of decoded objects from an Avro container file.
 
 
-### `extractFileHeader(path, [opts])`
+#### `extractFileHeader(path, [opts])`
 
 + `path` {String} Path to Avro container file.
 + `opts` {Object} Options:
   + `decode` {Boolean} Decode schema and codec metadata (otherwise they will be
-    returned as bytes). Defaults to true.
+    returned as bytes). Defaults to `true`.
 
 Extract header from an Avro container file synchronously. If no header is
 present (i.e. the path doesn't point to a valid Avro container file), `null` is
 returned.
 
 
-The following stream classes are available in the `avsc.streams` namespace:
+For more specific use-cases, the following stream classes are available in the
+`avsc.streams` namespace:
 
-+ [`RawDecoder`](#rawdecodertype-opts)
-+ [`FrameDecoder`](#framedecodertype-opts)
 + [`BlockDecoder`](#blockdecoderopts)
-+ [`RawEncoder`](#rawencodertype-opts)
-+ [`FrameEncoder`](#frameencodertype-opts)
++ [`RawDecoder`](#rawdecodertype-opts)
 + [`BlockEncoder`](#blockencodertype-opts)
++ [`RawEncoder`](#rawencodertype-opts)
 
 
-### Class `RawDecoder(type, [opts])`
-
-+ `type` {Type} Writer type. Required since the input doesn't contain a header.
-+ `opts` {Object} Decoding options. Available keys:
-  + `decode` {Boolean} Whether to decode records before returning them.
-    Defaults to `true`.
-
-A duplex stream which can be used to decode a stream of serialized Avro objects
-with no headers or blocks.
-
-#### Event `'data'`
-
-+ `data` {Object|Buffer} Decoded element or raw bytes.
-
-
-### Class `FrameDecoder(type, [opts])`
-
-+ `type` {Type} Writer type. Required since the input doesn't contain a header.
-+ `opts` {Object} Decoding options. Available keys:
-  + `decode` {Boolean} Whether to decode records before returning them.
-    Defaults to `true`.
-
-A duplex stream which can be used to decode a stream of serialized Avro objects
-with no headers or blocks.
-
-#### Event `'data'`
-
-+ `data` {Object|Buffer} Decoded element or raw bytes.
-
-
-### Class `BlockDecoder([opts])`
+#### Class `BlockDecoder([opts])`
 
 + `opts` {Object} Decoding options. Available keys:
+  + `codecs` {Object} Dictionary of decompression functions, keyed by codec
+    name. A decompression function has the signature `fn(compressedData, cb)` where
+    `compressedData` is a buffer of compressed data, and must call `cb(err,
+    uncompressedData)` on completion. The default contains handlers for the
+    `'null'` and `'deflate'` codecs.
   + `decode` {Boolean} Whether to decode records before returning them.
     Defaults to `true`.
   + `typeOpts` {Object} Options passed to instantiate the writer's `Type`.
 
 A duplex stream which decodes bytes coming from on Avro object container file.
 
-#### Event `'metadata'`
+##### Event `'metadata'`
 
 + `type` {Type} The type used to write the file.
 + `codec` {String} The codec's name.
 + `header` {Object} The file's header, containing in particular the raw schema
   and codec.
 
-#### Event `'data'`
+##### Event `'data'`
 
 + `data` {Object|Buffer} Decoded element or raw bytes.
 
 
-### Class `RawEncoder(type, [opts])`
+#### Class `RawDecoder(type, [opts])`
+
++ `type` {Type} Writer type. Required since the input doesn't contain a header.
++ `opts` {Object} Decoding options. Available keys:
+  + `decode` {Boolean} Whether to decode records before returning them.
+    Defaults to `true`.
+
+A duplex stream which can be used to decode a stream of serialized Avro objects
+with no headers or blocks.
+
+##### Event `'data'`
+
++ `data` {Object|Buffer} Decoded element or raw bytes.
+
+
+#### Class `BlockEncoder(type, [opts])`
+
++ `type` {Type} The type to use for encoding.
++ `opts` {Object} Encoding options. Available keys:
+  + `blockSize` {Number} Maximum uncompressed size of each block data. A new
+    block will be started when this number is exceeded. If it is too small to
+    fit a single element, it will be increased appropriately. Defaults to 64kB.
+  + `codec` {String} Name of codec to use for encoding. See `codecs` option
+    below to support arbitrary compression functions.
+  + `codecs` {Object} Dictionary of compression functions, keyed by codec
+    name. A compression function has the signature `fn(uncompressedData, cb)` where
+    `uncompressedData` is a buffer of uncompressed data, and must call `cb(err,
+    compressedData)` on completion. The default contains handlers for the
+    `'null'` and `'deflate'` codecs.
+  + `noCheck` {Boolean} Bypass record validation.
+  + `omitHeader` {Boolean} Don't emit the header. This can be useful when
+    appending to an existing container file. Defaults to `false`.
+  + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
+    inside the file. If unspecified, a random value will be generated.
+
+A duplex stream to create Avro container object files.
+
+##### Event `'data'`
+
++ `data` {Buffer} Serialized bytes.
+
+
+#### Class `RawEncoder(type, [opts])`
 
 + `type` {Type} The type to use for encoding.
 + `opts` {Object} Encoding options. Available keys:
@@ -424,50 +454,11 @@ A duplex stream which decodes bytes coming from on Avro object container file.
     batches. Use this option to control how often batches are emitted. If it is
     too small to fit a single record, it will be increased automatically.
     Defaults to 64kB.
-  + `noCheck` {Boolean} Whether to check each record before encoding it.
-    Defaults to `true`.
+  + `noCheck` {Boolean} Bypass record validation.
 
 The encoding equivalent of `RawDecoder`.
 
-#### Event `'data'`
-
-+ `data` {Buffer} Serialized bytes.
-
-
-### Class `FrameEncoder(type, [opts])`
-
-+ `type` {Type} The type to use for encoding.
-+ `opts` {Object} Encoding options. Available keys:
-  + `frameSize` {Number} Frame size in bytes. Defaults to 1024. Currently only
-    one record is encoded per frame.
-  + `noCheck` {Boolean} Whether to check each record before encoding it.
-    Defaults to `true`.
-
-The encoding equivalent of `RawDecoder`.
-
-#### Event `'data'`
-
-+ `data` {Buffer} Serialized bytes.
-
-
-### Class `BlockEncoder(type, [opts])`
-
-+ `type` {Type} The type to use for encoding.
-+ `opts` {Object} Encoding options. Available keys:
-  + `codec` {String} Name of codec to use for encoding.
-  + `blockSize` {Number} Maximum uncompressed size of each block data. A new
-    block will be started when this number is exceeded. If it is too small to
-    fit a single element, it will be increased appropriately. Defaults to 64kB.
-  + `omitHeader` {Boolean} Don't emit the header. This can be useful when
-    appending to an existing container file. Defaults to `false`.
-  + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
-    inside the file. If unspecified, a random value will be generated.
-  + `noCheck` {Boolean} Whether to check each record before encoding it.
-    Defaults to `true`.
-
-A duplex stream to create Avro container object files.
-
-#### Event `'data'`
+##### Event `'data'`
 
 + `data` {Buffer} Serialized bytes.
 

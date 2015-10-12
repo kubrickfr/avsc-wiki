@@ -1,6 +1,5 @@
 + [Schema evolution](#schema-evolution)
 + [Type hooks](#type-hooks)
-+ [Unwrapping unions](#unwrapping-unions)
 
 
 ## Schema evolution
@@ -45,15 +44,15 @@ var v2 = avsc.parse({
 });
 
 // We instantiate the resolver once.
-var resolver = v2.parse(v1);
+var resolver = v2.createResolver(v1);
 
 // And pass it whenever we want to decode from the previous version.
-var buf = v1.encode({name: 'Ann', age: 25}); // Encode using old schema.
-var obj = v2.decode(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
+var buf = v1.toBuffer({name: 'Ann', age: 25}); // Encode using old schema.
+var obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
 ```
 
-Reader's schemas are also very useful for performance, letting us decode only
-fields that are needed.
+Reader's schemas are also very useful for performance, only decoding fields
+that are needed.
 
 
 ## Type hooks
@@ -91,33 +90,3 @@ var type = avsc.parse({
   ]
 }, {typeHook: typeHook});
 ```
-
-## Unwrapping unions
-
-The Avro specification mandates the use of single-key maps to represent decoded
-union values (except `null`, which is never wrapped). The map's unique key is
-the name of the selected type . So the string `Hi!` would be represented by
-`{string: 'Hi!'}` for the union schema `["null", "string"]`.
-
-This makes serializing decoded values unambiguous (union schemas disallow
-multiple types with the same name), but is overkill in most cases (e.g. when
-unions are only used to make a field nullable). For this reason, `avsc`
-provides an `unwrapUnions` option, which will decode unions directly into their
-value.
-
-For example:
-
-```javascript
-var schema = ['null', 'string'];
-var buf = new Buffer([2, 6, 48, 69, 21]);
-
-var wrappedType = avsc.parse(schema);
-wrappedType.decode(buf); // === {string: 'Hi!'}
-
-var unwrappedType = avsc.parse(schema, {unwrapUnions: true});
-unwrappedType.decode(buf); // === 'Hi!'
-```
-
-When the types inside a union are unambiguous, this option can greatly simplify
-union-heavy schemas. It also provides a performance boost to decoding (at a
-small cost to encoding).
