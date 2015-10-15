@@ -125,7 +125,7 @@ serialized Avro records along with their schema. Reading them is as simple as
 calling [`createFileDecoder`](Api#createfiledecoderpath-opts):
 
 ```javascript
-var personStream = avsc.createFileDecoder('persons.avro');
+var personStream = avsc.createFileDecoder('./persons.avro');
 ```
 
 `personStream` is a [readable stream][rstream] of decoded records, which we can
@@ -151,6 +151,13 @@ To access a file's header synchronously, there also exists an
 
 ```javascript
 var header = avsc.extractFileHeader('persons.avro');
+```
+
+Writing to an Avro container file is possible using
+[`createFileEncoder`](Api#createfileencoderpath-type-opts):
+
+```javascript
+var encoder = avsc.createFileEncoder('./processed.avro', type);
 ```
 
 

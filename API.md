@@ -356,6 +356,15 @@ container files:
 
 Returns a readable stream of decoded objects from an Avro container file.
 
+#### `createFileEncoder(path, type, [opts])`
+
++ `path` {String} Destination path.
++ `type` {Type} Type used to serialize.
++ `opts` {Object} Encoding options, passed to
+  [`BlockEncoder`](Api#class-blockencodertype-opts).
+
+Returns a writable stream of objects. These will end up serialized into an Avro
+container file.
 
 #### `extractFileHeader(path, [opts])`
 
