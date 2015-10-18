@@ -62,8 +62,6 @@ Returns a random instance of this type.
     returned by this function will be used instead of `obj`.
   + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
     representations into actual `Buffer` objects.
-  + `roundFloats` {Boolean} Enable rounding of `double`s and `long`s to 32 bit
-    floats.
   + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
     first type. This is to support encoding of field defaults as mandated by
     the spec (and should rarely come in useful otherwise).
@@ -186,19 +184,13 @@ instances.
   below).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
-  + `registry` {Object} Optional registry of predefined type names.
+  + `registry` {Object} Optional registry of predefined type names. By default
+    only Avro primitives have their names defined.
   + `typeHook(schema)` {Function} Function called after each new Avro type is
     instantiated. The new type is available as `this` and the relevant schema
     as first and only argument.
 
 Parses a schema into its corresponding type.
-
-
-##### `Type.getDefaultRegistry()`
-
-Returns a copy of the default registry used to look up type names. It contains
-the names of all Avro primitives. This is useful to prime a registry to be
-passed to [`Type.fromSchema`](#typefromschemaobj-opts).
 
 
 ##### `type.getFingerprint(algorithm)`
