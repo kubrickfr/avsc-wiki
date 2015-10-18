@@ -62,6 +62,8 @@ Returns a random instance of this type.
     returned by this function will be used instead of `obj`.
   + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
     representations into actual `Buffer` objects.
+  + `roundFloats` {Boolean} Enable rounding of `double`s and `long`s to 32 bit
+    floats.
   + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
     first type. This is to support encoding of field defaults as mandated by
     the spec (and should rarely come in useful otherwise).
@@ -88,7 +90,6 @@ Check whether `obj` is a valid representation of `type`.
 Returns `{object: object, offset: offset}` if `buf` contains a valid encoding
 of `type` (`object` being the decoded object, and `offset` the new offset in
 the buffer). Returns `{offset: -1}` when the buffer is too short.
-
 
 
 ##### `type.encode(obj, buf, [pos,] [noCheck])`
