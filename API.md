@@ -82,14 +82,15 @@ Check whether `obj` is a valid representation of `type`.
 ##### `type.decode(buf, [pos,] [resolver])`
 
 + `buf` {Buffer} Buffer to read from.
-+ `pos` {Number} Offset.
++ `pos` {Number} Offset to start reading from.
 + `resolver` {Resolver} Optional resolver to decode records serialized from
   another schema. See [`createResolver`](#typecreateresolverwritertype) for how
   to create one.
 
 Returns `{object: object, offset: offset}` if `buf` contains a valid encoding
 of `type` (`object` being the decoded object, and `offset` the new offset in
-the buffer). Returns `{offset: -1}` when the buffer is too short.
+the buffer). Returns `{object: undefined, offset: -1}` when the buffer is too
+short.
 
 
 ##### `type.encode(obj, buf, [pos,] [noCheck])`
@@ -101,7 +102,10 @@ the buffer). Returns `{offset: -1}` when the buffer is too short.
   it. Serializing invalid objects is undefined behavior, so use this only if
   you are sure the object satisfies the schema.
 
-Encode an object into an existing buffer. Returns the new offset.
+Encode an object into an existing buffer. If encoding was successful, returns
+the new (non-negative) offset, otherwise returns `-N` where `N` is the
+(positive) number of bytes by which the buffer was short.
+
 
 
 ##### `type.fromBuffer(buf, [resolver,] [noCheck])`
