@@ -149,8 +149,6 @@ thrown if this is not possible.
 
 Check whether `obj` is a valid representation of `type`.
 
-*This method can be overridden to provide custom type validation logic.*
-
 ##### `type.compare(obj1, obj2)`
 
 + `obj1` {Object} Instance of `type`.
@@ -198,17 +196,17 @@ only ever need to call this if you are encoding very large objects and need to
 reclaim memory.
 
 
-#### Class `AbstractLongType(opts)`
+#### Class `AbstractLongType([opts])`
 
 + `opts` {Object} Options. As a convenience, any keys matching the names of the
   methods below will be attached to `this` (similar to the [simplified stream
   API](https://nodejs.org/api/stream.html#stream_simplified_constructor_api)).
   This can be used to create a custom long type without inheritance (see
-  [Custom long types][custom-long] for examples).
-  Additionally, the following options are supported:
+  [Custom long types][custom-long] for examples). Additionally, the following
+  keys are supported:
 
   + `manualMode` {Boolean} Do not automatically unpack bytes before passing
-    them to [`read`](#typereadbuf) and `pack` bytes returned by
+    them to [`read`](#typereadbuf) and pack bytes returned by
     [`write`](#typewriteobj). Defaults to `false`.
 
 This class provides an interface to support arbitrary long representations.
@@ -217,11 +215,12 @@ also available [here][custom-long]):
 
 ##### `type.read(buf)`
 
-+ `buf` {Buffer} Encoded long.
++ `buf` {Buffer} Encoded long. If `manualMode` is off (the default), `buf` will
+  be an 8-byte buffer containing the long's unpacked representation. Otherwise,
+  `buf` will contain a variable length buffer with the long's packed
+  representation.
 
-If `manualMode` is off (the default), `buf` will be an 8-byte buffer
-containing the long's unpacked representation. Otherwise, `buf` will contain a
-variable length buffer with the long's packed representation.
+This method should return the corresponding decoded long.
 
 ##### `type.write(obj)`
 
@@ -237,7 +236,7 @@ return an already packed buffer (of variable length).
   works correctly on data JSON-serialized according to the Avro spec, this
   method should at least support numbers as input.
 
-This method should return a valid decoded long.
+This method should return the corresponding decoded long.
 
 It might also be useful to support other kinds of input (typically the
 output of the long's `toJSON` method) to enable serializing large numbers
@@ -245,11 +244,11 @@ without loss of precision (at the cost of violating the Avro spec).
 
 ##### `type.isValid(obj)`
 
-See corresponding `Type` method.
+See base `Type` method.
 
 ##### `type.compare(obj1, obj2)`
 
-See corresponding `Type` method.
+See base `Type` method.
 
 
 #### Class `ArrayType(schema, [opts])`

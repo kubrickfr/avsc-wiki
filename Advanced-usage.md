@@ -96,28 +96,28 @@ var type = avsc.parse({
 ## Custom long types
 
 JavaScript represents all numbers as doubles internally, which means than it is
-possible to lose precision when using very large numbers (greater than
-9,007,199,254,740,991 or smaller than a similar bound). For example:
+possible to lose precision when using very large numbers (absolute value
+greater than `9e+12` or so). For example:
 
 ```javascript
 Number.parseInt('9007199254740995') === 9007199254740996 // true
 ```
 
 In most cases, these bounds are so large that this is not a problem (timestamps
-fit nicely inside the supported precision), however it might happen that the
-full long range must be supported. (To avoid silently corrupting data, the
-default `LongType` implementation will throw an error when encountering a
-number outside the supported precision.)
+fit nicely inside the supported precision). However it might happen that the
+full long range must be supported. For this reason, `avsc` lets us define
+custom long implementations. (To avoid silently corrupting data, the default
+`LongType` will throw an error when encountering a number outside the supported
+precision.)
 
-JavaScript has several implementations of 64 bit integers, with different
-characteristics (e.g. some are faster but do not run in the browser). Rather
-than choose a particular one, `avsc` provides a generic
+There are multiple JavaScript libraries to represent 64 bit integers, with
+different characteristics (e.g. some are faster but do not run in the browser).
+Rather than choose a particular one, `avsc` provides a generic
 [`AbstractLongType`](Api#abstractlongtypeopts) which can be adapted to each.
-
-Here are a few examples of using it with various implementations (refer to the
+Below are a few examples of using it with various implementations (refer to the
 API for details on each option):
 
-+ [`node-int64`](https://www.npmjs.com/package/node-int64)
++ [`node-int64`](https://www.npmjs.com/package/node-int64):
 
   ```javascript
   var longType = new avsc.types.AbstractLongType({
@@ -148,11 +148,23 @@ API for details on each option):
   });
   ```
 
-Either of the above can then be used in place of the default `LongType` to
-provide full 64 bit support when decoding and encoding Avro:
+Any such implementation can then be used in place of the default `LongType` to
+provide full 64 bit support when decoding and encoding binary encodings from
+any schema. To do so, add it to the type `registry` using the `long` key:
 
 ```javascript
-var type = avsc.parse('./Schema.avsc', {registry: {'long': longType}});
+// Our schema here is very simple, but this would work for arbitrarily complex
+// ones (applying to all longs inside of it).
+var type = avsc.parse('long', {registry: {'long': longType}});
+
+// Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
+// rounded when represented as a double):
+var buf = new Buffer([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
+
+// Assuming we  using the `node-int64` implementation.
+var obj = new Int64(buf);
+var encoded = type.toBuffer(obj); // == buf
+var decoded = type.fromBuffer(buf); // == obj (No precision loss.)
 ```
 
 Because the built-in JSON parser is itself limited by JavaScript's internal
