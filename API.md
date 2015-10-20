@@ -31,7 +31,7 @@ All the classes below are available in the `avsc.types` namespace:
   + `DoubleType`
   + `FloatType`
   + `IntType`
-  + `LongType`
+  + `LongType`, [`AbstractLongType`](#class-abstractlongtypeopts)
   + `NullType`
   + `StringType`
 + Complex types:
@@ -47,11 +47,9 @@ All the classes below are available in the `avsc.types` namespace:
 
 "Abstract" base Avro type class. All implementations inherit from it.
 
-
 ##### `type.random()`
 
 Returns a random instance of this type.
-
 
 ##### `type.clone(obj, [opts])`
 
@@ -69,13 +67,11 @@ Returns a random instance of this type.
 Deep copy an object into a valid representation of `type`. An error will be
 thrown if this is not possible.
 
-
 ##### `type.isValid(obj)`
 
 + `obj` {Object} The object to validate.
 
 Check whether `obj` is a valid representation of `type`.
-
 
 ##### `type.decode(buf, [pos,] [resolver])`
 
@@ -89,7 +85,6 @@ Returns `{object: object, offset: offset}` if `buf` contains a valid encoding
 of `type` (`object` being the decoded object, and `offset` the new offset in
 the buffer). Returns `{object: undefined, offset: -1}` when the buffer is too
 short.
-
 
 ##### `type.encode(obj, buf, [pos,] [noCheck])`
 
@@ -105,7 +100,6 @@ the new (non-negative) offset, otherwise returns `-N` where `N` is the
 (positive) number of bytes by which the buffer was short.
 
 
-
 ##### `type.fromBuffer(buf, [resolver,] [noCheck])`
 
 + `buf` {Buffer} Bytes containing a serialized object of the correct type.
@@ -118,7 +112,6 @@ the new (non-negative) offset, otherwise returns `-N` where `N` is the
 
 Deserialize a buffer into its corresponding value.
 
-
 ##### `type.toBuffer(obj, [noCheck])`
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
@@ -127,7 +120,6 @@ Deserialize a buffer into its corresponding value.
   you are sure the object satisfies the schema.
 
 Returns a `Buffer` containing the Avro serialization of `obj`.
-
 
 ##### `type.createResolver(writerType)`
 
@@ -140,13 +132,11 @@ decoding objects which had been serialized using `writerType`, according to the
 Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
 this method will throw an error.
 
-
 ##### `type.fromString(str)`
 
 + `str` {String} String representing a JSON-serialized object.
 
 Deserialize a JSON-encoded object of this type.
-
 
 ##### `type.toString([obj])`
 
@@ -155,7 +145,6 @@ Deserialize a JSON-encoded object of this type.
   instead (which can then be used to compare schemas for equality).
 
 Serialize an object into a JSON-encoded string.
-
 
 ##### `type.compare(obj1, obj2)`
 
@@ -166,7 +155,6 @@ Returns `0` if both objects are equal according to their [sort
 order][sort-order], `-1` if the first is smaller than the second , and `1`
 otherwise. Comparing invalid objects is undefined behavior.
 
-
 ##### `type.compareBuffers(buf1, buf2)`
 
 + `buf1` {Buffer} Buffer containing Avro encoding of an instance of `type`.
@@ -174,7 +162,6 @@ otherwise. Comparing invalid objects is undefined behavior.
 
 Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
 instances.
-
 
 ##### `Type.fromSchema(obj, [opts])`
 
@@ -192,12 +179,10 @@ instances.
 
 Parses a schema into its corresponding type.
 
-
 ##### `type.getFingerprint(algorithm)`
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
   Defaults to `md5`. In the browser, only `md5` is supported.
-
 
 ##### `Type.__reset(size)`
 
@@ -206,6 +191,60 @@ Parses a schema into its corresponding type.
 This method resizes the internal buffer used to encode all types. You should
 only ever need to call this if you are encoding very large objects and need to
 reclaim memory.
+
+
+#### Class `AbstractLongType(opts)`
+
++ `opts` {Object} Options. As a convenience, any keys matching the names of the
+  methods below will be attached to `this` (similar to the [simplified stream
+  API](https://nodejs.org/api/stream.html#stream_simplified_constructor_api)).
+  This can be used to create a custom long type without inheritance (see
+  [Custom long types][custom-long] for examples).
+  Additionally, the following options are supported:
+
+  + `manualMode` {Boolean} Do not automatically unpack bytes before passing
+    them to [`read`](#typereadbuf) and `pack` bytes returned by
+    [`write`](#typewriteobj). Defaults to `false`.
+
+This class provides an interface to support arbitrary long representations.
+Doing so requires implementing the following methods (a couple examples are
+also available [here][custom-long]):
+
+##### `type.read(buf)`
+
++ `buf` {Buffer} Encoded long.
+
+If `manualMode` is off (the default), `buf` will be an 8-byte buffer
+containing the long's unpacked representation. Otherwise, `buf` will contain a
+variable length buffer with the long's packed representation.
+
+##### `type.write(obj)`
+
++ `obj` {...} Decoded long.
+
+If `manualMode` is off (the default), this method should return an 8-byte
+buffer with the long's unpacked representation. Otherwise, `write` should
+return an already packed buffer (of variable length).
+
+##### `type.fromJSON(obj)`
+
++ `obj` {Number|...} Parsed object. To ensure that the `fromString` method
+  works correctly on data JSON-serialized according to the Avro spec, this
+  method should at least support numbers as input.
+
+This method should return a valid decoded long.
+
+It might also be useful to support other kinds of input (typically the
+output of the long's `toJSON` method) to enable serializing large numbers
+without loss of precision (at the cost of violating the Avro spec).
+
+##### `type.isValid(obj)`
+
+See corresponding `Type` method.
+
+##### `type.compare(obj1, obj2)`
+
+See corresponding `Type` method.
 
 
 #### Class `ArrayType(schema, [opts])`
@@ -473,3 +512,4 @@ The encoding equivalent of `RawDecoder`.
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
 [sort-order]: https://avro.apache.org/docs/current/spec.html#order
 [fingerprint]: https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
+[custom-long]: Advanced-usage#custom-long-types
