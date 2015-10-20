@@ -1,6 +1,6 @@
 + [Schema evolution](#schema-evolution)
 + [Type hooks](#type-hooks)
-+ [Custom long type](#custom-long-type)
++ [Custom long types](#custom-long-types)
 
 
 ## Schema evolution
@@ -93,7 +93,7 @@ var type = avsc.parse({
 ```
 
 
-## Custom long type
+## Custom long types
 
 JavaScript represents all numbers as doubles internally, which means than it is
 possible to lose precision when using very large numbers (greater than
@@ -157,7 +157,7 @@ var type = avsc.parse('./Schema.avsc', {registry: {'long': longType}});
 
 Because the built-in JSON parser is itself limited by JavaScript's internal
 number representation, using the `toString` and `fromString` methods is
-generally still unsafe (see [`type.fromJSON`](Api#typefromJSONobj) for a
+generally still unsafe (see [`type.fromJSON`](Api#typefromjsonobj) for a
 workaround).
 
 Finally, to make integration easier, `read` (resp. `write`) expects an unpacked

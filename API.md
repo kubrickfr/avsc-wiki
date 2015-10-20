@@ -45,33 +45,9 @@ All the classes below are available in the `avsc.types` namespace:
 
 ### Class `Type`
 
-"Abstract" base Avro type class. All implementations inherit from it.
-
-##### `type.random()`
-
-Returns a random instance of this type.
-
-##### `type.clone(obj, [opts])`
-
-+ `obj` {Object} The object to copy.
-+ `opts` {Object} Options:
-  + `fieldHook(obj, recordType)` {Function} Function called when each record
-    field is instantiated. The field will be available as `this`. The value
-    returned by this function will be used instead of `obj`.
-  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
-    representations into actual `Buffer` objects.
-  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
-    first type. This is to support encoding of field defaults as mandated by
-    the spec (and should rarely come in useful otherwise).
-
-Deep copy an object into a valid representation of `type`. An error will be
-thrown if this is not possible.
-
-##### `type.isValid(obj)`
-
-+ `obj` {Object} The object to validate.
-
-Check whether `obj` is a valid representation of `type`.
+"Abstract" base Avro type class. All implementations inherit from it. Unless
+specified otherwise, it is undefined behavior to override any of the methods
+below.
 
 ##### `type.decode(buf, [pos,] [resolver])`
 
@@ -98,7 +74,6 @@ short.
 Encode an object into an existing buffer. If encoding was successful, returns
 the new (non-negative) offset, otherwise returns `-N` where `N` is the
 (positive) number of bytes by which the buffer was short.
-
 
 ##### `type.fromBuffer(buf, [resolver,] [noCheck])`
 
@@ -145,6 +120,36 @@ Deserialize a JSON-encoded object of this type.
   instead (which can then be used to compare schemas for equality).
 
 Serialize an object into a JSON-encoded string.
+
+##### `type.random()`
+
+Returns a random instance of this type.
+
+*This method can be overridden to provide a custom generator.*
+
+##### `type.clone(obj, [opts])`
+
++ `obj` {Object} The object to copy.
++ `opts` {Object} Options:
+  + `fieldHook(obj, recordType)` {Function} Function called when each record
+    field is instantiated. The field will be available as `this`. The value
+    returned by this function will be used instead of `obj`.
+  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
+    representations into actual `Buffer` objects.
+  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
+    first type. This is to support encoding of field defaults as mandated by
+    the spec (and should rarely come in useful otherwise).
+
+Deep copy an object into a valid representation of `type`. An error will be
+thrown if this is not possible.
+
+##### `type.isValid(obj)`
+
++ `obj` {Object} The object to validate.
+
+Check whether `obj` is a valid representation of `type`.
+
+*This method can be overridden to provide custom type validation logic.*
 
 ##### `type.compare(obj1, obj2)`
 
