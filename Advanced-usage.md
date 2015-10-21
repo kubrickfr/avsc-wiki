@@ -59,8 +59,7 @@ that are needed.
 ## Type hooks
 
 Using the `typeHook` option, it is possible to introduce custom behavior on any
-type. This can for example be used to override a type's `isValid` or `random`
-method.
+type. This can for example be used to override a type's `random` method.
 
 Below we show an example implementing a custom random float generator.
 
@@ -97,7 +96,7 @@ var type = avsc.parse({
 
 JavaScript represents all numbers as doubles internally, which means than it is
 possible to lose precision when using very large numbers (absolute value
-greater than `9e+12` or so). For example:
+greater than `9e+15` or so). For example:
 
 ```javascript
 Number.parseInt('9007199254740995') === 9007199254740996 // true
@@ -115,7 +114,7 @@ different characteristics (e.g. some are faster but do not run in the browser).
 Rather than choose a particular one, `avsc` provides a generic
 [`AbstractLongType`](Api#abstractlongtypeopts) which can be adapted to each.
 Below are a few examples of using it with various implementations (refer to the
-API for details on each option):
+API documentation for details on each option):
 
 + [`node-int64`](https://www.npmjs.com/package/node-int64):
 
@@ -149,8 +148,8 @@ API for details on each option):
   ```
 
 Any such implementation can then be used in place of the default `LongType` to
-provide full 64 bit support when decoding and encoding binary encodings from
-any schema. To do so, add it to the type `registry` using the `long` key:
+provide full 64 bit support when decoding and encoding binary data from any
+schema. To do so, add it to the type `registry` using the `long` key:
 
 ```javascript
 // Our schema here is very simple, but this would work for arbitrarily complex

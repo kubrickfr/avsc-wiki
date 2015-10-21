@@ -125,15 +125,15 @@ Serialize an object into a JSON-encoded string.
 
 Returns a random instance of this type.
 
-*This method can be overridden to provide a custom generator.*
+*You can override this method to provide your own generator.*
 
 ##### `type.clone(obj, [opts])`
 
 + `obj` {Object} The object to copy.
 + `opts` {Object} Options:
-  + `fieldHook(obj, recordType)` {Function} Function called when each record
-    field is instantiated. The field will be available as `this`. The value
-    returned by this function will be used instead of `obj`.
+  + `fieldHook(obj, field, type)` {Function} Function called when each record
+    field is populated. The value returned by this function will be used
+    instead of `obj`.
   + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
     representations into actual `Buffer` objects.
   + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
@@ -148,6 +148,8 @@ thrown if this is not possible.
 + `obj` {Object} The object to validate.
 
 Check whether `obj` is a valid representation of `type`.
+
+*You may override this method, but only to make it stricter.*
 
 ##### `type.compare(obj1, obj2)`
 
@@ -176,9 +178,10 @@ instances.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names. By default
     only Avro primitives have their names defined.
-  + `typeHook(schema)` {Function} Function called after each new Avro type is
-    instantiated. The new type is available as `this` and the relevant schema
-    as first and only argument.
+  + `typeHook(schema, opts)` {Function} Function called before each new type is
+    instantiated. The relevant schema is available as first argument and the
+    parsing options as second. This function can optionally return a type which
+    will then be used in place of the result of parsing `schema`.
 
 Parses a schema into its corresponding type.
 
