@@ -119,6 +119,8 @@ API documentation for details on each option):
 + [`node-int64`](https://www.npmjs.com/package/node-int64):
 
   ```javascript
+  var Int64 = require('node-int64');
+
   var longType = new avsc.types.AbstractLongType({
     read: function (buf) { return new Int64(buf); },
     write: function (n) { return n.toBuffer(); },
@@ -128,9 +130,25 @@ API documentation for details on each option):
   });
   ```
 
++ [`int64-native`](https://www.npmjs.com/package/int64-native):
+
+  ```javascript
+  var Int64Native = require('int64-native');
+
+  var longType = new avsc.types.AbstractLongType({
+    read: function (buf) { return new Int64Native('0x' + buf.toString('hex')); },
+    write: function (n) { return new Buffer(n.toString().slice(2), 'hex'); },
+    isValid: function (n) { return n instanceof Int64Native; },
+    fromJSON: function (o) { return new Int64Native(o); },
+    compare: function (n1, n2) { return n1.compare(n2); }
+  });
+  ```
+
 + [`long`](https://www.npmjs.com/package/long):
 
   ```javascript
+  var Long = require('long');
+
   var longType = new avsc.types.AbstractLongType({
     read: function (buf) {
       return new Long(buf.readInt32LE(), buf.readInt32LE(4));
@@ -160,7 +178,7 @@ var type = avsc.parse('long', {registry: {'long': longType}});
 // rounded when represented as a double):
 var buf = new Buffer([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
 
-// Assuming we  using the `node-int64` implementation.
+// Assuming we are using the `node-int64` implementation.
 var obj = new Int64(buf);
 var encoded = type.toBuffer(obj); // == buf
 var decoded = type.fromBuffer(buf); // == obj (No precision loss.)
@@ -171,7 +189,7 @@ number representation, using the `toString` and `fromString` methods is
 generally still unsafe (see [`type.fromJSON`](Api#typefromjsonobj) for a
 workaround).
 
-Finally, to make integration easier, `read` and `write` deal with unpacked
-buffers by default. To leverage an external optimized packing and unpacking
-routine (for example when using a native C++ addon), we can disable this
-behavior by setting the `manualMode` constructor option to `true`.
+Finally, to make integration easier, `read` and `write` deal with already
+unpacked buffers by default. To leverage an external optimized packing and
+unpacking routine (for example when using a native C++ addon), we can disable
+this behavior by setting the `manualMode` constructor option to `true`.
