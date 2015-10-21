@@ -149,7 +149,8 @@ thrown if this is not possible.
 
 Check whether `obj` is a valid representation of `type`.
 
-*You may override this method, but only to make it stricter.*
+*You can override this method to support additional logic, but only to make it
+stricter.*
 
 ##### `type.compare(obj1, obj2)`
 
@@ -201,16 +202,16 @@ reclaim memory.
 
 #### Class `AbstractLongType([opts])`
 
-+ `opts` {Object} Options. As a convenience, any keys matching the names of the
-  methods below will be attached to `this` (similar to the [simplified stream
-  API](https://nodejs.org/api/stream.html#stream_simplified_constructor_api)).
-  This can be used to create a custom long type without inheritance (see
-  [Custom long types][custom-long] for examples). Additionally, the following
-  keys are supported:
++ `opts` {Object} Options.
 
   + `manualMode` {Boolean} Do not automatically unpack bytes before passing
     them to [`read`](#typereadbuf) and pack bytes returned by
-    [`write`](#typewriteobj). Defaults to `false`.
+    [`write`](#typewriteobj).
+
+  Additionally, as a convenience, any keys matching the names of the methods
+  below will be attached to `this` (similar to the [simplified stream
+  API](https://nodejs.org/api/stream.html#stream_simplified_constructor_api)).
+  This can be used to create a custom long type without inheritance.
 
 This class provides an interface to support arbitrary long representations.
 Doing so requires implementing the following methods (a couple examples are
