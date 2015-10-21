@@ -58,37 +58,41 @@ that are needed.
 
 ## Type hooks
 
-Using the `typeHook` option, it is possible to introduce custom behavior on any
-type. This can for example be used to override a type's `random` method.
+Using the `typeHook` option when parsing a schema, it is possible to introduce
+custom behavior on any type. This can for example be used to override a type's
+`random` method.
 
-Below we show an example implementing a custom random float generator.
+Below we show an example implementing a custom random float generator:
 
 ```javascript
 var avsc = require('avsc');
 
-/**
- * Hook which allows setting a range for float types.
- *
- * @param schema {Object} The type's corresponding schema.
- *
- */
-var typeHook = function (schema) {
-  var range = schema.range;
-  if (this.type === 'float') {
-    var span = range[1] - range[0];
-    this.random = function () { return range[0] + span * Math.random(); };
-  }
-};
-
-// We pass the above hook in the parsing options.
 var type = avsc.parse({
   type: 'record',
   name: 'Recommendation',
   fields: [
     {name: 'id', type: 'long'},
-    {name: 'score', type: {type: 'float', range: [-1, 1]}} // Note the range.
+    {name: 'score', type: {type: 'float', range: [-1, 1]}}
   ]
-}, {typeHook: typeHook});
+}, {typeHook: typeHook}); // Note the hook.
+
+/**
+ * Hook which allows setting a range for float types.
+ *
+ * @param schema {Object} A type's schema.
+ *
+ */
+function typeHook(schema) {
+  if (schema.type !== 'float') {
+    return;
+  }
+
+  var range = schema.range || [0, 1];
+  var span = range[1] - range[0];
+  var type = new avsc.types.FloatType();
+  type.random = function () { return range[0] + span * Math.random(); };
+  return type;
+}
 ```
 
 
