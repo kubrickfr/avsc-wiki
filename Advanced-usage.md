@@ -172,7 +172,7 @@ number representation, using the `toString` and `fromString` methods is
 generally still unsafe (see [`type.fromJSON`](Api#typefromjsonobj) for a
 workaround).
 
-Finally, to make integration easier, `read` (resp. `write`) expects an unpacked
-(resp. packed) buffer. To leverage an external optimized packing and unpacking
+Finally, to make integration easier, `read` and `write` deal with unpacked
+buffers by default. To leverage an external optimized packing and unpacking
 routine (for example when using a native C++ addon), we can disable this
 behavior by setting the `manualMode` constructor option to `true`.
