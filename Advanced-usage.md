@@ -111,14 +111,15 @@ fit nicely inside the supported precision). However it might happen that the
 full long range must be supported. For this reason, `avsc` lets us define
 custom long implementations. (To avoid silently corrupting data, the default
 `LongType` will throw an error when encountering a number outside the supported
-precision.)
+precision range.)
 
 There are multiple JavaScript libraries to represent 64 bit integers, with
 different characteristics (e.g. some are faster but do not run in the browser).
 Rather than choose a particular one, `avsc` provides a generic
 [`AbstractLongType`](Api#abstractlongtypeopts) which can be adapted to each.
-Below are a few examples of using it with various implementations (refer to the
-API documentation for details on each option):
+Below are a few implementation examples (refer to the API documentation for
+details on each option; a helper script is also available to validate your
+implementation inside `etc/scripts/`):
 
 + [`node-int64`](https://www.npmjs.com/package/node-int64):
 
@@ -171,7 +172,8 @@ API documentation for details on each option):
 
 Any such implementation can then be used in place of the default `LongType` to
 provide full 64 bit support when decoding and encoding binary data from any
-schema. To do so, add it to the type `registry` using the `long` key:
+schema. To do so, override the default type used for `long`s by adding your
+implementation to the `registry`:
 
 ```javascript
 // Our schema here is very simple, but this would work for arbitrarily complex
