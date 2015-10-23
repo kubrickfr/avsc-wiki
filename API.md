@@ -31,7 +31,7 @@ All the classes below are available in the `avsc.types` namespace:
   + `DoubleType`
   + `FloatType`
   + `IntType`
-  + `LongType`, [`AbstractLongType`](#class-abstractlongtypeopts)
+  + [`LongType`](#class-longtypeschema-opts)
   + `NullType`
   + `StringType`
 + Complex types:
@@ -200,59 +200,56 @@ only ever need to call this if you are encoding very large objects and need to
 reclaim memory.
 
 
-#### Class `AbstractLongType([opts])`
+#### Class `LongType(schema, [opts])`
 
-+ `opts` {Object} Options.
+##### `LongType.using(methods, [noUnpack])`
 
-  + `manualMode` {Boolean} Do not automatically unpack bytes before passing
-    them to [`read`](#typereadbuf) and pack bytes returned by
-    [`write`](#typewriteobj).
++ `methods` {Object} Method implementations dictionary keyed by method name,
+  see below for details on each of the functions to implement.
++ `noUnpack` {Boolean} Do not automatically unpack bytes before passing them to
+  the above `methods`' `fromBuffer` function and pack bytes returned by its
+  `toBuffer` function.
 
-  Additionally, as a convenience, any keys matching the names of the methods
-  below will be attached to `this` (similar to the [simplified stream
-  API](https://nodejs.org/api/stream.html#stream_simplified_constructor_api)).
-  This can be used to create a custom long type without inheritance.
+This function provides a way to support arbitrary long representations. Doing
+so requires implementing the following methods (a few examples are available
+[here][custom-long]):
 
-This class provides an interface to support arbitrary long representations.
-Doing so requires implementing the following methods (a couple examples are
-also available [here][custom-long]):
++ `fromBuffer(buf)`
 
-##### `type.read(buf)`
+  + `buf` {Buffer} Encoded long. If `noUnpack` is off (the default), `buf` will
+    be an 8-byte buffer containing the long's unpacked representation.
+    Otherwise, `buf` will contain a variable length buffer with the long's
+    packed representation.
 
-+ `buf` {Buffer} Encoded long. If `manualMode` is off (the default), `buf` will
-  be an 8-byte buffer containing the long's unpacked representation. Otherwise,
-  `buf` will contain a variable length buffer with the long's packed
-  representation.
+  This method should return the corresponding decoded long.
 
-This method should return the corresponding decoded long.
++ `toBuffer(obj)`
 
-##### `type.write(obj)`
+  + `obj` {...} Decoded long.
 
-+ `obj` {...} Decoded long.
+  If `noUnpack` is off (the default), this method should return an 8-byte
+  buffer with the long's unpacked representation. Otherwise, `toBuffer` should
+  return an already packed buffer (of variable length).
 
-If `manualMode` is off (the default), this method should return an 8-byte
-buffer with the long's unpacked representation. Otherwise, `write` should
-return an already packed buffer (of variable length).
++ `fromJSON(obj)`
 
-##### `type.fromJSON(obj)`
+  + `obj` {Number|...} Parsed object. To ensure that the `fromString` method
+    works correctly on data JSON-serialized according to the Avro spec, this
+    method should at least support numbers as input.
 
-+ `obj` {Number|...} Parsed object. To ensure that the `fromString` method
-  works correctly on data JSON-serialized according to the Avro spec, this
-  method should at least support numbers as input.
+  This method should return the corresponding decoded long.
 
-This method should return the corresponding decoded long.
+  It might also be useful to support other kinds of input (typically the output
+  of the long implementation's `toJSON` method) to enable serializing large
+  numbers without loss of precision (at the cost of violating the Avro spec).
 
-It might also be useful to support other kinds of input (typically the
-output of the long's `toJSON` method) to enable serializing large numbers
-without loss of precision (at the cost of violating the Avro spec).
++ `isValid(obj)`
 
-##### `type.isValid(obj)`
+  See [`Type.isValid`](#typeisvalidobj).
 
-See base `Type` method.
++ `compare(obj1, obj2)`
 
-##### `type.compare(obj1, obj2)`
-
-See base `Type` method.
+  See [`Type.isValid`](#typecompareobj1-obj2).
 
 
 #### Class `ArrayType(schema, [opts])`
