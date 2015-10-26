@@ -109,8 +109,8 @@ Number.parseInt('9007199254740995') === 9007199254740996 // true
 In most cases, these bounds are so large that this is not a problem (timestamps
 fit nicely inside the supported precision). However it might happen that the
 full range must be supported. (To avoid silently corrupting data, the default
-[`LongType`](Api#longtypeschema-opts) will throw an error when encountering a
-number outside the supported precision range.)
+[`LongType`](Api#class-longtypeschema-opts) will throw an error when
+encountering a number outside the supported precision range.)
 
 There are multiple JavaScript libraries to represent 64-bit integers, with
 different characteristics (e.g. some are faster but do not run in the browser).

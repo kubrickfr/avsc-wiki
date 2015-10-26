@@ -45,9 +45,7 @@ All the classes below are available in the `avsc.types` namespace:
 
 ### Class `Type`
 
-"Abstract" base Avro type class. All implementations inherit from it. Unless
-specified otherwise, it is undefined behavior to override any of the methods
-below.
+"Abstract" base Avro type class; all implementations inherit from it.
 
 ##### `type.decode(buf, [pos,] [resolver])`
 
@@ -149,9 +147,6 @@ thrown if this is not possible.
 
 Check whether `obj` is a valid representation of `type`.
 
-*You can override this method to support additional logic, but only to make it
-stricter.*
-
 ##### `type.compare(obj1, obj2)`
 
 + `obj1` {Object} Instance of `type`.
@@ -249,7 +244,7 @@ so requires implementing the following methods (a few examples are available
 
 + `compare(obj1, obj2)`
 
-  See [`Type.isValid`](#typecompareobj1-obj2).
+  See [`Type.compare`](#typecompareobj1-obj2).
 
 
 #### Class `ArrayType(schema, [opts])`
