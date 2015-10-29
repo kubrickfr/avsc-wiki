@@ -60,14 +60,11 @@ of `type` (`object` being the decoded object, and `offset` the new offset in
 the buffer). Returns `{object: undefined, offset: -1}` when the buffer is too
 short.
 
-##### `type.encode(obj, buf, [pos,] [noCheck])`
+##### `type.encode(obj, buf, [pos])`
 
 + `obj` {Object} The object to encode.
 + `buf` {Buffer} Buffer to write to.
 + `pos` {Number} Offset to start writing at.
-+ `noCheck` {Boolean} Do not check that the instance is valid before encoding
-  it. Serializing invalid objects is undefined behavior, so use this only if
-  you are sure the object satisfies the schema.
 
 Encode an object into an existing buffer. If encoding was successful, returns
 the new (non-negative) offset, otherwise returns `-N` where `N` is the
@@ -85,25 +82,11 @@ the new (non-negative) offset, otherwise returns `-N` where `N` is the
 
 Deserialize a buffer into its corresponding value.
 
-##### `type.toBuffer(obj, [noCheck])`
+##### `type.toBuffer(obj)`
 
 + `obj` {Object} The instance to encode. It must be of type `type`.
-+ `noCheck` {Boolean} Do not check that the instance is valid before encoding
-  it. Serializing invalid objects is undefined behavior, so use this only if
-  you are sure the object satisfies the schema.
 
 Returns a `Buffer` containing the Avro serialization of `obj`.
-
-##### `type.createResolver(writerType)`
-
-+ `writerType` {Type} Writer type.
-
-Create a resolver that can be be passed to the `type`'s
-[`decode`](#typedecodebuf-pos-resolver) and
-[`fromBuffer`](#typefrombufferbuf-resolver-nocheck) methods. This will enable
-decoding objects which had been serialized using `writerType`, according to the
-Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
-this method will throw an error.
 
 ##### `type.fromString(str)`
 
@@ -118,29 +101,6 @@ Deserialize a JSON-encoded object of this type.
   instead (which can then be used to compare schemas for equality).
 
 Serialize an object into a JSON-encoded string.
-
-##### `type.random()`
-
-Returns a random instance of this type.
-
-*You can override this method to provide your own generator.*
-
-##### `type.clone(obj, [opts])`
-
-+ `obj` {Object} The object to copy.
-+ `opts` {Object} Options:
-  + `fieldHook(obj, field, type)` {Function} Function called when each record
-    field is populated. The value returned by this function will be used
-    instead of `obj`. `field` is the current `Field` instance and `type` the
-    parent type.
-  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
-    representations into actual `Buffer` objects.
-  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
-    first type. This is to support encoding of field defaults as mandated by
-    the spec (and should rarely come in useful otherwise).
-
-Deep copy an object into a valid representation of `type`. An error will be
-thrown if this is not possible.
 
 ##### `type.isValid(obj, [opts])`
 
@@ -212,6 +172,32 @@ var msgs = getValidationErrors(personType, invalidPerson);
 // ]
 ```
 
+##### `type.clone(obj, [opts])`
+
++ `obj` {Object} The object to copy.
++ `opts` {Object} Options:
+  + `fieldHook(obj, field, type)` {Function} Function called when each record
+    field is populated. The value returned by this function will be used
+    instead of `obj`. `field` is the current `Field` instance and `type` the
+    parent type.
+  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
+    representations into actual `Buffer` objects.
+  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
+    first type. This is to support encoding of field defaults as mandated by
+    the spec (and should rarely come in useful otherwise).
+
+Deep copy an object into a valid representation of `type`. An error will be
+thrown if this is not possible.
+
+##### `type.compare(obj1, obj2)`
+
++ `obj1` {Object} Instance of `type`.
++ `obj2` {Object} Instance of `type`.
+
+Returns `0` if both objects are equal according to their [sort
+order][sort-order], `-1` if the first is smaller than the second , and `1`
+otherwise. Comparing invalid objects is undefined behavior.
+
 ##### `type.compareBuffers(buf1, buf2)`
 
 + `buf1` {Buffer} Buffer containing Avro encoding of an instance of `type`.
@@ -219,6 +205,28 @@ var msgs = getValidationErrors(personType, invalidPerson);
 
 Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
 instances.
+
+##### `type.createResolver(writerType)`
+
++ `writerType` {Type} Writer type.
+
+Create a resolver that can be be passed to the `type`'s
+[`decode`](#typedecodebuf-pos-resolver) and
+[`fromBuffer`](#typefrombufferbuf-resolver-nocheck) methods. This will enable
+decoding objects which had been serialized using `writerType`, according to the
+Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
+this method will throw an error.
+
+##### `type.random()`
+
+Returns a random instance of this type.
+
+*You can override this method to provide your own generator.*
+
+##### `type.getFingerprint(algorithm)`
+
++ `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
+  Defaults to `md5`. In the browser, only `md5` is supported.
 
 ##### `Type.fromSchema(obj, [opts])`
 
@@ -236,11 +244,6 @@ instances.
     will then be used in place of the result of parsing `schema`.
 
 Parses a schema into its corresponding type.
-
-##### `type.getFingerprint(algorithm)`
-
-+ `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
-  Defaults to `md5`. In the browser, only `md5` is supported.
 
 ##### `Type.__reset(size)`
 
@@ -296,7 +299,7 @@ so requires implementing the following methods (a few examples are available
 
 + `isValid(obj)`
 
-  See [`Type.isValid`](#typeisvalidobj).
+  See [`Type.isValid`](#typeisvalidobj-opts).
 
 + `compare(obj1, obj2)`
 
@@ -416,11 +419,11 @@ Compare the record to another.
 
 Get the record's `type`.
 
-##### `record.$isValid()`
+##### `record.$isValid([opts])`
 
 Check whether the record is valid.
 
-##### `record.$toBuffer([noCheck])`
+##### `record.$toBuffer()`
 
 Return binary encoding of record.
 
