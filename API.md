@@ -133,10 +133,13 @@ var personType = avsc.parse({
 var invalidPerson = {age: null, names: ['ann', 3, 'bob']};
 ```
 
-As a simple first use-case, we instrument `isValid` to throw a helpful error on
-the first mismatch encountered:
+As a first use-case, we use the `errorHook` to implement an `assertValid`
+function which throws a helpful error on the first mismatch encountered (if
+any):
 
 ```javascript
+var util = require('util');
+
 function assertValid(type, obj) {
   return type.isValid(obj, {errorHook: hook1});
 
@@ -152,24 +155,19 @@ try {
 }
 ```
 
-We can also slightly improve this by gathering all mismatches at once:
+We can also implement an `errorHook` to gather all invalid paths in one pass
+(if any):
 
 ```javascript
-function getValidationErrors(type, obj) {
-  var msgs = [];
+function getInvalidPaths(type, obj) {
+  var paths = [];
   type.isValid(obj, {errorHook: hook2});
-  return msgs;
+  return paths;
 
-  function hook2(obj, type, path) {
-    msgs.push(util.format('invalid %s@%s: %j', type, path.join(), obj));
-  };
+  function hook2(obj, type, path) { paths.push(path.join()); }
 }
 
-var msgs = getValidationErrors(personType, invalidPerson);
-// msgs == [
-//    'invalid "int"@age: null',
-//    'invalid "string"@names,1: 123'
-// ]
+var paths = getInvalidPaths(personType, invalidPerson); // == ['age', 'names,1']
 ```
 
 ##### `type.clone(obj, [opts])`
