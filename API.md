@@ -131,7 +131,8 @@ Returns a random instance of this type.
 + `opts` {Object} Options:
   + `fieldHook(obj, field, type)` {Function} Function called when each record
     field is populated. The value returned by this function will be used
-    instead of `obj`.
+    instead of `obj`. `field` is the current `Field` instance and `type` the
+    parent type.
   + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
     representations into actual `Buffer` objects.
   + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
@@ -141,20 +142,75 @@ Returns a random instance of this type.
 Deep copy an object into a valid representation of `type`. An error will be
 thrown if this is not possible.
 
-##### `type.isValid(obj)`
+##### `type.isValid(obj, [opts])`
 
 + `obj` {Object} The object to validate.
++ `opts` {Object} Options:
+  + `errorHook(obj, type, path)` {Function} Function called when an invalid
+    value is encountered. When an invalid value causes its parent values to
+    also be invalid, the latter do not trigger a callback. `path` will be an
+    array of strings identifying where the mismatch occurred. See below for a
+    few examples.
 
 Check whether `obj` is a valid representation of `type`.
 
-##### `type.compare(obj1, obj2)`
+For complex schemas, it can be difficult to figure out which part(s) of `obj`
+are invalid. The `errorHook` option provides access to more information about
+these mismatches. We illustrate a few use-cases below:
 
-+ `obj1` {Object} Instance of `type`.
-+ `obj2` {Object} Instance of `type`.
+```javascript
+// A sample schema.
+var personType = avsc.parse({
+  type: 'record',
+  name: 'Person',
+  fields: [
+    {name: 'age', type: 'int'},
+    {name: 'names', type: {type: 'array', items: 'string'}}
+  ]
+});
 
-Returns `0` if both objects are equal according to their [sort
-order][sort-order], `-1` if the first is smaller than the second , and `1`
-otherwise. Comparing invalid objects is undefined behavior.
+// A corresponding invalid record.
+var invalidPerson = {age: null, names: ['ann', 3, 'bob']};
+```
+
+As a simple first use-case, we instrument `isValid` to throw a helpful error on
+the first mismatch encountered:
+
+```javascript
+function assertValid(type, obj) {
+  return type.isValid(obj, {errorHook: hook1});
+
+  function hook1(obj, type, path) {
+    throw new Error(util.format('invalid %s@%s: %j', type, path.join(), obj));
+  }
+}
+
+try {
+  assertValid(personType, invalidPerson); // Will throw.
+} catch (err) {
+  // err.message === 'invalid "int"@age: null'
+}
+```
+
+We can also slightly improve this by gathering all mismatches at once:
+
+```javascript
+function getValidationErrors(type, obj) {
+  var msgs = [];
+  type.isValid(obj, {errorHook: hook2});
+  return msgs;
+
+  function hook2(obj, type, path) {
+    msgs.push(util.format('invalid %s@%s: %j', type, path.join(), obj));
+  };
+}
+
+var msgs = getValidationErrors(personType, invalidPerson);
+// msgs == [
+//    'invalid "int"@age: null',
+//    'invalid "string"@names,1: 123'
+// ]
+```
 
 ##### `type.compareBuffers(buf1, buf2)`
 
