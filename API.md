@@ -505,6 +505,10 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 
 + `data` {Object|Buffer} Decoded element or raw bytes.
 
+##### `BlockDecoder.getDefaultCodecs()`
+
+Get built-in decoding functions (currently `null` and `deflate`).
+
 
 #### Class `RawDecoder(type, [opts])`
 
@@ -535,7 +539,6 @@ with no headers or blocks.
     `uncompressedData` is a buffer of uncompressed data, and must call `cb(err,
     compressedData)` on completion. The default contains handlers for the
     `'null'` and `'deflate'` codecs.
-  + `noCheck` {Boolean} Bypass record validation.
   + `omitHeader` {Boolean} Don't emit the header. This can be useful when
     appending to an existing container file. Defaults to `false`.
   + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
@@ -547,6 +550,10 @@ A duplex stream to create Avro container object files.
 
 + `data` {Buffer} Serialized bytes.
 
+##### `BlockEncoder.getDefaultCodecs()`
+
+Get built-in encoding functions (currently `null` and `deflate`).
+
 
 #### Class `RawEncoder(type, [opts])`
 
@@ -556,7 +563,6 @@ A duplex stream to create Avro container object files.
     batches. Use this option to control how often batches are emitted. If it is
     too small to fit a single record, it will be increased automatically.
     Defaults to 64kB.
-  + `noCheck` {Boolean} Bypass record validation.
 
 The encoding equivalent of `RawDecoder`.
 
