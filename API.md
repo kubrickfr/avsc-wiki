@@ -12,9 +12,15 @@
   + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`).
-  + A schema object (e.g. `{type: 'array', items: 'int'}`).
-+ `opts` {Object} Parsing options forwarded to
-  [`Type.fromSchema`](#typefromschemaobj-opts).
+  + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
++ `opts` {Object} Parsing options. The following keys are currently supported:
+  + `namespace` {String} Optional parent namespace.
+  + `registry` {Object} Optional registry of predefined type names. This can
+    for example be used to override the types used for primitives.
+  + `typeHook(schema, opts)` {Function} Function called before each new type is
+    instantiated. The relevant schema is available as first argument and the
+    parsing options as second. This function can optionally return a type which
+    will then be used in place of the result of parsing `schema`.
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type).
@@ -51,70 +57,71 @@ All the classes below are available in the `avsc.types` namespace:
 
 + `buf` {Buffer} Buffer to read from.
 + `pos` {Number} Offset to start reading from.
-+ `resolver` {Resolver} Optional resolver to decode records serialized from
++ `resolver` {Resolver} Optional resolver to decode values serialized from
   another schema. See [`createResolver`](#typecreateresolverwritertype) for how
   to create one.
 
-Returns `{object: object, offset: offset}` if `buf` contains a valid encoding
-of `type` (`object` being the decoded object, and `offset` the new offset in
-the buffer). Returns `{object: undefined, offset: -1}` when the buffer is too
-short.
+Returns `{value: value, offset: offset}` if `buf` contains a valid encoding of
+`type` (`value` being the decoded value, and `offset` the new offset in the
+buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
 
-##### `type.encode(obj, buf, [pos])`
+##### `type.encode(val, buf, [pos])`
 
-+ `obj` {Object} The object to encode.
++ `val` {...} The value to encode. An error will be raised if this isn't a
+  valid `type` value.
 + `buf` {Buffer} Buffer to write to.
 + `pos` {Number} Offset to start writing at.
 
-Encode an object into an existing buffer. If encoding was successful, returns
-the new (non-negative) offset, otherwise returns `-N` where `N` is the
+Encode a value into an existing buffer. If enough space was available in `buf`,
+returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
 (positive) number of bytes by which the buffer was short.
 
 ##### `type.fromBuffer(buf, [resolver,] [noCheck])`
 
-+ `buf` {Buffer} Bytes containing a serialized object of the correct type.
-+ `resolver` {Resolver} To decode records serialized from another schema. See
++ `buf` {Buffer} Bytes containing a serialized value of `type`.
++ `resolver` {Resolver} To decode values serialized from another schema. See
   [`createResolver`](#typecreateresolverwritertype) for how to create an
   resolver.
 + `noCheck` {Boolean} Do not check that the entire buffer has been read. This
   can be useful when using an resolver which only decodes fields at the start of
-  the buffer, allowing decoding to bail early.
+  the buffer, allowing decoding to bail early and yield significant performance
+  speedups.
 
 Deserialize a buffer into its corresponding value.
 
-##### `type.toBuffer(obj)`
+##### `type.toBuffer(val)`
 
-+ `obj` {Object} The instance to encode. It must be of type `type`.
++ `val` {Object} The value to encode. It must be a valid `type` value.
 
-Returns a `Buffer` containing the Avro serialization of `obj`.
+Returns a `Buffer` containing the Avro serialization of `val`.
 
 ##### `type.fromString(str)`
 
 + `str` {String} String representing a JSON-serialized object.
 
-Deserialize a JSON-encoded object of this type.
+Deserialize a JSON-encoded object of `type`.
 
-##### `type.toString([obj])`
+##### `type.toString([val])`
 
-+ `obj` {Object} The object to serialize. If not specified, this method will
-  return the [canonical version][canonical-schema] of this type's schema
-  instead (which can then be used to compare schemas for equality).
++ `val` {...} The value to serialize. If not specified, this method will return
+  the [canonical version][canonical-schema] of `type`'s schema instead (which
+  can then be used to compare schemas for equality).
 
 Serialize an object into a JSON-encoded string.
 
-##### `type.isValid(obj, [opts])`
+##### `type.isValid(val, [opts])`
 
-+ `obj` {Object} The object to validate.
++ `val` {...} The value to validate.
 + `opts` {Object} Options:
-  + `errorHook(obj, type, path)` {Function} Function called when an invalid
+  + `errorHook(path, obj, type)` {Function} Function called when an invalid
     value is encountered. When an invalid value causes its parent values to
     also be invalid, the latter do not trigger a callback. `path` will be an
     array of strings identifying where the mismatch occurred. See below for a
     few examples.
 
-Check whether `obj` is a valid representation of `type`.
+Check whether `val` is a valid `type` value.
 
-For complex schemas, it can be difficult to figure out which part(s) of `obj`
+For complex schemas, it can be difficult to figure out which part(s) of `val`
 are invalid. The `errorHook` option provides access to more information about
 these mismatches. We illustrate a few use-cases below:
 
@@ -133,76 +140,77 @@ var personType = avsc.parse({
 var invalidPerson = {age: null, names: ['ann', 3, 'bob']};
 ```
 
-As a first use-case, we use the `errorHook` to implement an `assertValid`
-function which throws a helpful error on the first mismatch encountered (if
-any):
+As a first use-case, we use the `errorHook` to implement a function to gather
+all invalid paths a value (if any):
+
+```javascript
+function getInvalidPaths(type, val) {
+  var paths = [];
+  type.isValid(val, {errorHook: function (path) { paths.push(path.join()); }});
+  return paths;
+}
+
+var paths = getInvalidPaths(personType, invalidPerson); // == ['age', 'names,1']
+```
+
+We can also implement an `assertValid` function which throws a helpful error on
+the first mismatch encountered (if any):
 
 ```javascript
 var util = require('util');
 
-function assertValid(type, obj) {
-  return type.isValid(obj, {errorHook: hook1});
+function assertValid(type, val) {
+  return type.isValid(val, {errorHook: hook});
 
-  function hook1(obj, type, path) {
-    throw new Error(util.format('invalid %s@%s: %j', type, path.join(), obj));
+  function hook(path, obj) {
+    throw new Error(util.format('invalid %s: %j', path.join(), obj));
   }
 }
 
 try {
   assertValid(personType, invalidPerson); // Will throw.
 } catch (err) {
-  // err.message === 'invalid "int"@age: null'
+  // err.message === 'invalid age: null'
 }
 ```
 
-We can also implement an `errorHook` to gather all invalid paths in one pass
-(if any):
 
-```javascript
-function getInvalidPaths(type, obj) {
-  var paths = [];
-  type.isValid(obj, {errorHook: hook2});
-  return paths;
+##### `type.clone(val, [opts])`
 
-  function hook2(obj, type, path) { paths.push(path.join()); }
-}
-
-var paths = getInvalidPaths(personType, invalidPerson); // == ['age', 'names,1']
-```
-
-##### `type.clone(obj, [opts])`
-
-+ `obj` {Object} The object to copy.
++ `val` {...} The object to copy.
 + `opts` {Object} Options:
-  + `fieldHook(obj, field, type)` {Function} Function called when each record
+  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
+    representations into actual `Buffer` objects.
+  + `fieldHook(field, obj, type)` {Function} Function called when each record
     field is populated. The value returned by this function will be used
     instead of `obj`. `field` is the current `Field` instance and `type` the
     parent type.
-  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
-    representations into actual `Buffer` objects.
-  + `wrapUnions` {Boolean} Wrap values corresponding to unions to the union's
-    first type. This is to support encoding of field defaults as mandated by
-    the spec (and should rarely come in useful otherwise).
+  + `wrapUnions` {Number} Wrap union values:
+    + `0`, no wrapping is performed, values must already be wrapped.
+    + `1`, wrap values assuming they are of the union's first type. This is used
+      to decode field defaults as mandated by the spec.
+    + `2`, wrap values into the union's first matching type. This is provided as
+      a convenience but can lead to inconsistent results (e.g. when wrapping
+      numbers).
 
-Deep copy an object into a valid representation of `type`. An error will be
-thrown if this is not possible.
+Deep copy a value of `type`.
 
-##### `type.compare(obj1, obj2)`
+##### `type.compare(val1, val2)`
 
-+ `obj1` {Object} Instance of `type`.
-+ `obj2` {Object} Instance of `type`.
++ `val1` {...} Value of `type`.
++ `val2` {...} Value of `type`.
 
-Returns `0` if both objects are equal according to their [sort
+Returns `0` if both values are equal according to their [sort
 order][sort-order], `-1` if the first is smaller than the second , and `1`
-otherwise. Comparing invalid objects is undefined behavior.
+otherwise. Comparing invalid values is undefined behavior.
 
 ##### `type.compareBuffers(buf1, buf2)`
 
-+ `buf1` {Buffer} Buffer containing Avro encoding of an instance of `type`.
-+ `buf2` {Buffer} Buffer containing Avro encoding of an instance of `type`.
++ `buf1` {Buffer} `type` value bytes.
++ `buf2` {Buffer} `type` value bytes.
 
-Similar to [`compare`](#typecompareobj1-obj2), but doesn't require decoding
-instances.
+Similar to [`compare`](#typecompareval1-val2), but doesn't require decoding
+values.
 
 ##### `type.createResolver(writerType)`
 
@@ -211,44 +219,33 @@ instances.
 Create a resolver that can be be passed to the `type`'s
 [`decode`](#typedecodebuf-pos-resolver) and
 [`fromBuffer`](#typefrombufferbuf-resolver-nocheck) methods. This will enable
-decoding objects which had been serialized using `writerType`, according to the
+decoding values which had been serialized using `writerType`, according to the
 Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
 this method will throw an error.
 
 ##### `type.random()`
 
-Returns a random instance of this type.
+Returns a random value of `type`.
 
 *You can override this method to provide your own generator.*
+
+##### `type.getSchema([noDeref])`
+
++ `noDeref` {Boolean} Do not dereference any type names.
+
+Returns the type's canonical schema.
 
 ##### `type.getFingerprint(algorithm)`
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
   Defaults to `md5`. In the browser, only `md5` is supported.
 
-##### `Type.fromSchema(obj, [opts])`
-
-+ `schema` {Object|String} A JavaScript object representing an Avro schema
-  (e.g. `{type: 'array', items: 'int'}`). If a string is passed, it will be
-  interpreted as a type name, to be looked up in the registry (see `opts`
-  below).
-+ `opts` {Object} Parsing options. The following keys are currently supported:
-  + `namespace` {String} Optional parent namespace.
-  + `registry` {Object} Optional registry of predefined type names. By default
-    only Avro primitives have their names defined.
-  + `typeHook(schema, opts)` {Function} Function called before each new type is
-    instantiated. The relevant schema is available as first argument and the
-    parsing options as second. This function can optionally return a type which
-    will then be used in place of the result of parsing `schema`.
-
-Parses a schema into its corresponding type.
-
 ##### `Type.__reset(size)`
 
 + `size` {Number} New buffer size in bytes.
 
 This method resizes the internal buffer used to encode all types. You should
-only ever need to call this if you are encoding very large objects and need to
+only ever need to call this if you are encoding very large values and need to
 reclaim memory.
 
 
@@ -275,17 +272,17 @@ so requires implementing the following methods (a few examples are available
 
   This method should return the corresponding decoded long.
 
-+ `toBuffer(obj)`
++ `toBuffer(val)`
 
-  + `obj` {...} Decoded long.
+  + `val` {...} Decoded long.
 
   If `noUnpack` is off (the default), this method should return an 8-byte
   buffer with the long's unpacked representation. Otherwise, `toBuffer` should
   return an already packed buffer (of variable length).
 
-+ `fromJSON(obj)`
++ `fromJSON(val)`
 
-  + `obj` {Number|...} Parsed object. To ensure that the `fromString` method
+  + `val` {Number|...} Parsed value. To ensure that the `fromString` method
     works correctly on data JSON-serialized according to the Avro spec, this
     method should at least support numbers as input.
 
@@ -295,13 +292,13 @@ so requires implementing the following methods (a few examples are available
   of the long implementation's `toJSON` method) to enable serializing large
   numbers without loss of precision (at the cost of violating the Avro spec).
 
-+ `isValid(obj)`
++ `isValid(val, [opts])`
 
-  See [`Type.isValid`](#typeisvalidobj-opts).
+  See [`Type.isValid`](#typeisvalidval-opts).
 
-+ `compare(obj1, obj2)`
++ `compare(val1, val2)`
 
-  See [`Type.compare`](#typecompareobj1-obj2).
+  See [`Type.compare`](#typecompareval1-val2).
 
 
 #### Class `ArrayType(schema, [opts])`
@@ -405,11 +402,11 @@ Avro).
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type.
 
-##### `record.$clone()`
+##### `record.$clone([opts])`
 
 Deep copy the record.
 
-##### `record.$compare(obj)`
+##### `record.$compare(val)`
 
 Compare the record to another.
 
@@ -425,7 +422,7 @@ Check whether the record is valid.
 
 Return binary encoding of record.
 
-##### `record.$toString()`
+##### `record.$toString([noCheck])`
 
 Return JSON-stringified record.
 
@@ -507,7 +504,7 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 
 ##### `BlockDecoder.getDefaultCodecs()`
 
-Get built-in decoding functions (currently `null` and `deflate`).
+Get built-in decompression functions (currently `null` and `deflate`).
 
 
 #### Class `RawDecoder(type, [opts])`
@@ -552,7 +549,7 @@ A duplex stream to create Avro container object files.
 
 ##### `BlockEncoder.getDefaultCodecs()`
 
-Get built-in encoding functions (currently `null` and `deflate`).
+Get built-in compression functions (currently `null` and `deflate`).
 
 
 #### Class `RawEncoder(type, [opts])`
