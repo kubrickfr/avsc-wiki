@@ -229,11 +229,15 @@ Returns a random value of `type`.
 
 *You can override this method to provide your own generator.*
 
+##### `type.getName()`
+
+Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
+
 ##### `type.getSchema([noDeref])`
 
 + `noDeref` {Boolean} Do not dereference any type names.
 
-Returns the type's canonical schema.
+Returns `type`'s canonical schema (as a string).
 
 ##### `type.getFingerprint(algorithm)`
 
@@ -310,10 +314,6 @@ The type of the array's items.
 
 #### Class `EnumType(schema, [opts])`
 
-##### `type.getFullName()`
-
-The type's fully qualified name.
-
 ##### `type.getSymbols()`
 
 Returs a copy of the type's symbols (an array of strings representing the
@@ -327,10 +327,6 @@ aliases from this list.
 
 
 #### Class `FixedType(schema, [opts])`
-
-##### `type.getFullName()`
-
-The type's fully qualified name.
 
 ##### `type.getSize()`
 
@@ -351,10 +347,6 @@ The type of the map's values (keys are always strings).
 
 
 #### Class `RecordType(schema, [opts])`
-
-##### `type.getFullName()`
-
-The type's fully qualified name.
 
 ##### `type.getFields()`
 
