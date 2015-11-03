@@ -37,16 +37,16 @@ All the classes below are available in the `avsc.types` namespace:
   + `DoubleType`
   + `FloatType`
   + `IntType`
-  + [`LongType`](#class-longtypeschema-opts)
+  + [`LongType`](#class-longtypeattrs-opts)
   + `NullType`
   + `StringType`
 + Complex types:
-  + [`ArrayType`](#class-arraytypeschema-opts)
-  + [`EnumType`](#class-enumtypeschema-opts)
-  + [`FixedType`](#class-fixedtypeschema-opts)
-  + [`MapType`](#class-maptypeschema-opts)
-  + [`RecordType`](#class-recordtypeschema-opts)
-  + [`UnionType`](#class-uniontypeschema-opts)
+  + [`ArrayType`](#class-arraytypeattrs-opts)
+  + [`EnumType`](#class-enumtypeattrs-opts)
+  + [`FixedType`](#class-fixedtypeattrs-opts)
+  + [`MapType`](#class-maptypeattrs-opts)
+  + [`RecordType`](#class-recordtypeattrs-opts)
+  + [`UnionType`](#class-uniontypeattrs-opts)
 
 
 ### Class `Type`
@@ -253,7 +253,7 @@ only ever need to call this if you are encoding very large values and need to
 reclaim memory.
 
 
-#### Class `LongType(schema, [opts])`
+#### Class `LongType(attrs, [opts])`
 
 ##### `LongType.using(methods, [noUnpack])`
 
@@ -305,14 +305,14 @@ so requires implementing the following methods (a few examples are available
   See [`Type.compare`](#typecompareval1-val2).
 
 
-#### Class `ArrayType(schema, [opts])`
+#### Class `ArrayType(attrs, [opts])`
 
 ##### `type.getItemsType()`
 
 The type of the array's items.
 
 
-#### Class `EnumType(schema, [opts])`
+#### Class `EnumType(attrs, [opts])`
 
 ##### `type.getSymbols()`
 
@@ -326,7 +326,7 @@ Unlike the array returned by `getSymbols`, you can add, edit, and remove
 aliases from this list.
 
 
-#### Class `FixedType(schema, [opts])`
+#### Class `FixedType(attrs, [opts])`
 
 ##### `type.getSize()`
 
@@ -339,14 +339,14 @@ Unlike the array returned by `getSymbols`, you can add, edit, and remove
 aliases from this list.
 
 
-#### Class `MapType(schema, [opts])`
+#### Class `MapType(attrs, [opts])`
 
 ##### `type.getValuesType()`
 
 The type of the map's values (keys are always strings).
 
 
-#### Class `RecordType(schema, [opts])`
+#### Class `RecordType(attrs, [opts])`
 
 ##### `type.getFields()`
 
@@ -371,7 +371,7 @@ Unlike the array returned by `getFields`, you can add, edit, and remove aliases
 from this list.
 
 
-#### Class `UnionType(schema, [opts])`
+#### Class `UnionType(attrs, [opts])`
 
 ##### `type.getTypes()`
 
@@ -380,7 +380,7 @@ The possible types that this union can take.
 
 ## Records
 
-Each [`RecordType`](#class-recordtypeschema-opts) generates a corresponding
+Each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
 `Record` constructor when its schema is parsed. It is available using the
 `RecordType`'s `getRecordConstructor` methods. This helps make decoding and
 encoding records more efficient.
@@ -499,9 +499,11 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 Get built-in decompression functions (currently `null` and `deflate`).
 
 
-#### Class `RawDecoder(type, [opts])`
+#### Class `RawDecoder(schema, [opts])`
 
-+ `type` {Type} Writer type. Required since the input doesn't contain a header.
++ `schema` {Object|String|Type} Writer schema. Required since the input doesn't
+  contain a header. Argument parsing logic is the same as for
+  [`parse`](Api#parseschema-opts).
 + `opts` {Object} Decoding options. Available keys:
   + `decode` {Boolean} Whether to decode records before returning them.
     Defaults to `true`.
@@ -516,7 +518,8 @@ with no headers or blocks.
 
 #### Class `BlockEncoder(type, [opts])`
 
-+ `type` {Type} The type to use for encoding.
++ `schema` {Object|String|Type} Schema used for encoding. Argument parsing
+  logic is the same as for [`parse`](Api#parseschema-opts).
 + `opts` {Object} Encoding options. Available keys:
   + `blockSize` {Number} Maximum uncompressed size of each block data. A new
     block will be started when this number is exceeded. If it is too small to
@@ -546,7 +549,8 @@ Get built-in compression functions (currently `null` and `deflate`).
 
 #### Class `RawEncoder(type, [opts])`
 
-+ `type` {Type} The type to use for encoding.
++ `schema` {Object|String|Type} Schema used for encoding. Argument parsing
+  logic is the same as for [`parse`](Api#parseschema-opts).
 + `opts` {Object} Encoding options. Available keys:
   + `batchSize` {Number} To increase performance, records are serialized in
     batches. Use this option to control how often batches are emitted. If it is
