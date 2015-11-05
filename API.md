@@ -249,6 +249,9 @@ reclaim memory.
 
 #### Class `LongType(attrs, [opts])`
 
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
 ##### `LongType.using(methods, [noUnpack])`
 
 + `methods` {Object} Method implementations dictionary keyed by method name,
@@ -278,9 +281,9 @@ so requires implementing the following methods (a few examples are available
   buffer with the long's unpacked representation. Otherwise, `toBuffer` should
   return an already packed buffer (of variable length).
 
-+ `fromJSON(obj)`
++ `fromJSON(any)`
 
-  + `val` {Number|...} Parsed value. To ensure that the `fromString` method
+  + `any` {Number|...} Parsed value. To ensure that the `fromString` method
     works correctly on data JSON-serialized according to the Avro spec, this
     method should at least support numbers as input.
 
@@ -307,12 +310,18 @@ so requires implementing the following methods (a few examples are available
 
 #### Class `ArrayType(attrs, [opts])`
 
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
 ##### `type.getItemsType()`
 
 The type of the array's items.
 
 
 #### Class `EnumType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
 
 ##### `type.getSymbols()`
 
@@ -327,6 +336,9 @@ aliases from this list.
 
 
 #### Class `FixedType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
 
 ##### `type.getSize()`
 
@@ -347,6 +359,9 @@ The type of the map's values (keys are always strings).
 
 
 #### Class `RecordType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
 
 ##### `type.getFields()`
 
@@ -372,6 +387,9 @@ from this list.
 
 #### Class `UnionType(attrs, [opts])`
 
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
 ##### `type.getTypes()`
 
 The possible types that this union can take.
@@ -379,27 +397,46 @@ The possible types that this union can take.
 
 #### Class `LogicalType(attrs, [opts,] [Types])`
 
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
++ `Types` {Array} Optional of type classes. If specified, only these will be
+  accepted as underlying type.
+
 "Abstract class" used to implement custom native types.
 
 ##### `type.getUnderlyingType()`
 
-Get the underlying Avro type.
+Get the underlying Avro type. This can be useful when a logical type can
+support different underlying types.
 
 Implementors should override the following methods (they are prefixed with an
 underscore because they are internal to the class that defines them and should
-only be called by the internal `Type` class methods):
+only be called by the internal `LogicalType` class methods):
 
 ##### `type._fromValue(val)`
 
-+ `val` {...}
++ `val` {...} A value deserialized by the underlying type.
+
+This function should return the final, wrapped, value.
 
 ##### `type._toValue(any)`
 
-+ `any` {...}
++ `any` {...} A wrapped value.
+
+This function should return a value which can be serialized by the underlying
+type.
 
 ##### `type._resolve(type)`
 
-+ `type` {Type}
++ `type` {Type} The writer's type.
+
+This function should return:
+
++ `undefined` if the writer's values cannot be converted.
++ Otherwise, a function which converts a value deserialized by the writer's
+  type into a wrapped value for the current type.
+
+See [here][logical-types] for a couple sample implementations.
 
 
 ## Records
