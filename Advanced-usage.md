@@ -63,7 +63,7 @@ that are needed.
 var types = avsc.types;
 
 /**
- * Sample date logical type implementation.
+ * Sample logical type implementation to support native `Date`s.
  *
  */
 function DateType(attrs, opts) {
@@ -72,12 +72,51 @@ function DateType(attrs, opts) {
 util.inherits(DateType, types.LogicalType);
 
 DateType.prototype._fromValue = function (n) { return new Date(n); };
-
 DateType.prototype._toValue = function (date) { return +date; };
 ```
 
-As a more fully featured example, below is a sample implementation of the
-decimal logical type described in the spec:
+It can for example be used as follows:
+
+```javascript
+var dateType = avsc.parse(
+  {type: 'long', logicalType: 'date'},
+  {logicalTypes: {date: DateType}}
+);
+
+var date1 = new Date(Date.now()); // E.g. Thu Nov 05 2015 11:38:05 GMT-0800 (PST)
+var buf = dateType.toBuffer(date1); // Serialize date to bytes.
+var date2 = dateType.fromBuffer(buf); // === date1
+```
+
+Logical types can also be used with schema evolution. This is done by
+implementing an additional `_resolve` method. It should return a function which
+converts values of the writer's type into the logical type's values. For
+example, we can allow our `DateType` to read dates which were serialized as
+strings:
+
+```javascript
+DateType.prototype._resolve = function (type) {
+  if (type instanceof types.StringType) {
+    // Allow reading dates serialized as strings.
+    return function (str) { return new Date(Date.parse(str)); };
+  }
+  if (type instanceof types.LongType || type instanceof DateType) {
+    // Also support reading `long`s and other `date`s.
+    return this._fromValue;
+  }
+};
+
+// Sample usage:
+var stringType = avsc.parse('string');
+var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
+var buf = stringType.toBuffer(str);
+
+var resolver = dateType.createResolver(stringType);
+var date = dateType.fromBuffer(buf, resolver); // Same date as string above.
+```
+
+Finally, as a more fully featured example, we provide below a sample
+implementation of the decimal logical type described in the spec:
 
 ```javascript
 var types = avsc.types;
