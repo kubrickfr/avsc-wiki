@@ -385,7 +385,9 @@ The possible types that this union can take.
 
 Get the underlying Avro type.
 
-Implementors should override the following methods:
+Implementors should override the following methods (they are prefixed with an
+underscore because they are internal to the class that defines them and should
+only be called by the internal `Type` class methods):
 
 ##### `type._fromValue(val)`
 

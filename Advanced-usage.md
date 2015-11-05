@@ -66,7 +66,7 @@ quick motivating example, let's imagine we have the following schema:
 ```javascript
 var schema = {
   name: 'Transaction',
-  type: 'Record',
+  type: 'record',
   fields: [
     {name: 'amount', type: 'int'},
     {name: 'time', type: 'long', logicalType: 'date'}
@@ -83,7 +83,8 @@ using Avro's *logical types*, with the following two steps:
   to [`parse`][parse-api]'s `logicalTypes`.
 
 Below is a sample implementation for a suitable `DateType` which will
-transparently deserialize/serialize native `Date` objects:
+transparently deserialize/serialize native `Date` objects (see `LogicalType`'s
+[API documentation][logical-type-api] for details on each method):
 
 ```javascript
 function DateType(attrs, opts) {
