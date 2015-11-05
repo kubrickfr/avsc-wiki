@@ -17,6 +17,10 @@
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names. This can
     for example be used to override the types used for primitives.
+  + `logicalTypes` {Object} Optional dictionary of
+    [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
+    support serialization and deserialization of arbitrary native objects. See
+    [here][logical-types] for more information.
   + `typeHook(schema, opts)` {Function} Function called before each new type is
     instantiated. The relevant schema is available as first argument and the
     parsing options as second. This function can optionally return a type which
@@ -47,6 +51,7 @@ All the classes below are available in the `avsc.types` namespace:
   + [`MapType`](#class-maptypeattrs-opts)
   + [`RecordType`](#class-recordtypeattrs-opts)
   + [`UnionType`](#class-uniontypeattrs-opts)
++ [`LogicalType`](#class-logicaltypeattrs-opts-types)
 
 
 ### Class `Type`
@@ -227,8 +232,6 @@ this method will throw an error.
 
 Returns a random value of `type`.
 
-*You can override this method to provide your own generator.*
-
 ##### `type.getName()`
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
@@ -239,7 +242,7 @@ Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
 Returns `type`'s canonical schema (as a string).
 
-##### `type.getFingerprint(algorithm)`
+##### `type.getFingerprint([algorithm])`
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
   Defaults to `md5`. In the browser, only `md5` is supported.
@@ -284,7 +287,7 @@ so requires implementing the following methods (a few examples are available
   buffer with the long's unpacked representation. Otherwise, `toBuffer` should
   return an already packed buffer (of variable length).
 
-+ `fromJSON(val)`
++ `fromJSON(obj)`
 
   + `val` {Number|...} Parsed value. To ensure that the `fromString` method
     works correctly on data JSON-serialized according to the Avro spec, this
@@ -295,6 +298,12 @@ so requires implementing the following methods (a few examples are available
   It might also be useful to support other kinds of input (typically the output
   of the long implementation's `toJSON` method) to enable serializing large
   numbers without loss of precision (at the cost of violating the Avro spec).
+
++ `toJSON(val)`
+
+  + `val` {...} Decoded long.
+
+  This method should return the long's JSON representation.
 
 + `isValid(val, [opts])`
 
@@ -357,7 +366,6 @@ an object with the following methods:
 + `getDefault()`
 + `getName()`
 + `getOrder()`
-+ `setOrder(order)`
 + `getType()`
 
 ##### `type.getRecordConstructor()`
@@ -376,6 +384,27 @@ from this list.
 ##### `type.getTypes()`
 
 The possible types that this union can take.
+
+
+#### Class `LogicalType(attrs, [opts,] [Types])`
+
+"Abstract class" used to implement custom native types.
+
+##### `type._fromValue(val)`
+
++ `val` {...}
+
+##### `type._toValue(any)`
+
++ `any` {...}
+
+##### `type._resolve(type)`
+
++ `type` {Type}
+
+##### `type.getUnderlyingType()`
+
+Get the underlying Avro type.
 
 
 ## Records
@@ -414,7 +443,7 @@ Check whether the record is valid.
 
 Return binary encoding of record.
 
-##### `record.$toString([noCheck])`
+##### `record.$toString()`
 
 Return JSON-stringified record.
 
@@ -438,12 +467,12 @@ container files:
 
 Returns a readable stream of decoded objects from an Avro container file.
 
-#### `createFileEncoder(path, type, [opts])`
+#### `createFileEncoder(path, schem, [opts])`
 
 + `path` {String} Destination path.
-+ `type` {Type} Type used to serialize.
++ `schem` {Object|String|Type} Type used to serialize.
 + `opts` {Object} Encoding options, passed to
-  [`BlockEncoder`](Api#class-blockencodertype-opts).
+  [`BlockEncoder`](Api#class-blockencoderschem-opts).
 
 Returns a writable stream of objects. These will end up serialized into an Avro
 container file.
@@ -464,9 +493,9 @@ For more specific use-cases, the following stream classes are available in the
 `avsc.streams` namespace:
 
 + [`BlockDecoder`](#blockdecoderopts)
-+ [`RawDecoder`](#rawdecodertype-opts)
-+ [`BlockEncoder`](#blockencodertype-opts)
-+ [`RawEncoder`](#rawencodertype-opts)
++ [`RawDecoder`](#rawdecoderschem-opts)
++ [`BlockEncoder`](#blockencoderschem-opts)
++ [`RawEncoder`](#rawencoderschem-opts)
 
 
 #### Class `BlockDecoder([opts])`
@@ -516,7 +545,7 @@ with no headers or blocks.
 + `data` {Object|Buffer} Decoded element or raw bytes.
 
 
-#### Class `BlockEncoder(type, [opts])`
+#### Class `BlockEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
   logic is the same as for [`parse`](Api#parseschema-opts).
@@ -547,7 +576,7 @@ A duplex stream to create Avro container object files.
 Get built-in compression functions (currently `null` and `deflate`).
 
 
-#### Class `RawEncoder(type, [opts])`
+#### Class `RawEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
   logic is the same as for [`parse`](Api#parseschema-opts).
@@ -569,3 +598,4 @@ The encoding equivalent of `RawDecoder`.
 [sort-order]: https://avro.apache.org/docs/current/spec.html#order
 [fingerprint]: https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
 [custom-long]: Advanced-usage#custom-long-types
+[logical-types]: Advanced-usage#logical-types
