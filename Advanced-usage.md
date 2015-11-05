@@ -264,6 +264,7 @@ validate our implementation inside `etc/scripts/`):
     fromBuffer: function (buf) { return new Long(buf); },
     toBuffer: function (n) { return n.toBuffer(); },
     fromJSON: function (obj) { return new Long(obj); },
+    toJSON: function (n) { return +n; },
     isValid: function (n) { return n instanceof Long; },
     compare: function (n1, n2) { return n1.compare(n2); }
   });
@@ -278,6 +279,7 @@ validate our implementation inside `etc/scripts/`):
     fromBuffer: function (buf) { return new Long('0x' + buf.toString('hex')); },
     toBuffer: function (n) { return new Buffer(n.toString().slice(2), 'hex'); },
     fromJSON: function (obj) { return new Long(obj); },
+    toJSON: function (n) { return +n; },
     isValid: function (n) { return n instanceof Long; },
     compare: function (n1, n2) { return n1.compare(n2); }
   });
@@ -299,6 +301,7 @@ validate our implementation inside `etc/scripts/`):
       return buf;
     },
     fromJSON: Long.fromValue,
+    toJSON: function (n) { return +n; },
     isValid: Long.isLong,
     compare: Long.compare
   });

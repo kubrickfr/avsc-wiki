@@ -179,24 +179,16 @@ try {
 }
 ```
 
-
 ##### `type.clone(val, [opts])`
 
 + `val` {...} The object to copy.
 + `opts` {Object} Options:
-  + `coerceBuffers` {Boolean} Allow coercion of strings and JSON buffer
-    representations into actual `Buffer` objects.
+  + `coerceBuffers` {Boolean} Allow coercion of JSON buffer representations
+    into actual `Buffer` objects.
   + `fieldHook(field, obj, type)` {Function} Function called when each record
     field is populated. The value returned by this function will be used
     instead of `obj`. `field` is the current `Field` instance and `type` the
     parent type.
-  + `wrapUnions` {Number} Wrap union values:
-    + `0`, no wrapping is performed, values must already be wrapped.
-    + `1`, wrap values assuming they are of the union's first type. This is used
-      to decode field defaults as mandated by the spec.
-    + `2`, wrap values into the union's first matching type. This is provided as
-      a convenience but can lead to inconsistent results (e.g. when wrapping
-      numbers).
 
 Deep copy a value of `type`.
 
@@ -390,6 +382,12 @@ The possible types that this union can take.
 
 "Abstract class" used to implement custom native types.
 
+##### `type.getUnderlyingType()`
+
+Get the underlying Avro type.
+
+Implementors should override the following methods:
+
 ##### `type._fromValue(val)`
 
 + `val` {...}
@@ -401,10 +399,6 @@ The possible types that this union can take.
 ##### `type._resolve(type)`
 
 + `type` {Type}
-
-##### `type.getUnderlyingType()`
-
-Get the underlying Avro type.
 
 
 ## Records
