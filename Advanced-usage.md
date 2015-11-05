@@ -60,8 +60,8 @@ that are needed.
 ## Logical types
 
 The built-in types provided by Avro are sufficient for many use-cases, but it
-can often be much more convenient to work with native types. As a quick
-motivating example, let's imagine we have the following schema:
+can often be much more convenient to work with native JavaScript objects. As a
+quick motivating example, let's imagine we have the following schema:
 
 ```javascript
 var schema = {
@@ -78,7 +78,7 @@ The `time` field encodes a timestamp as a `long`, but it would be better if we
 could deserialize it directly into a native `Date` object. This is possible
 using Avro's *logical types*, with the following two steps:
 
-+ Adding a `logicalType` attribute to the type's definition (`'date'` above).
++ Adding a `logicalType` attribute to the type's definition (e.g. `'date'` above).
 + Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
   to [`parse`][parse-api]'s `logicalTypes`.
 
@@ -87,7 +87,7 @@ transparently deserialize/serialize native `Date` objects:
 
 ```javascript
 function DateType(attrs, opts) {
-  types.LogicalType.call(this, attrs, opts, [LongType]);
+  LogicalType.call(this, attrs, opts, [LongType]);
   // (The last argument above means that this logical type will only work
   // when the underlying Avro type is a long.)
 }
@@ -110,7 +110,7 @@ var transaction = {
 // Our new type is able to directly serialize it, including the date.
 var buf = type.toBuffer(transaction);
 
-// And we can get the date back just as easily!
+// And we can get the date back just as easily.
 var date = type.fromBuffer(buf).time; // `Date` object.
 ```
 
@@ -122,11 +122,11 @@ strings:
 
 ```javascript
 DateType.prototype._resolve = function (type) {
-  if (type instanceof types.StringType) {
+  if (type instanceof StringType) {
     // Allow reading dates serialized as strings.
     return function (str) { return new Date(Date.parse(str)); };
   }
-  if (type instanceof types.LongType || type instanceof DateType) {
+  if (type instanceof LongType || type instanceof DateType) {
     // Also support reading `long`s and other `date`s.
     return this._fromValue;
   }
@@ -149,7 +149,7 @@ implementation of the decimal logical type described in the spec:
  *
  */
 function DecimalType(attrs, opts) {
-  types.LogicalType.call(this, attrs, opts, [types.BytesType, types.FixedType]);
+  LogicalType.call(this, attrs, opts, [BytesType, FixedType]);
 
   // Validate attributes.
   var precision = attrs.precision;
@@ -161,7 +161,7 @@ function DecimalType(attrs, opts) {
     throw new Error('invalid scale');
   }
   var type = this.getUnderlyingType();
-  if (type instanceof types.FixedType) {
+  if (type instanceof FixedType) {
     var size = type.getSize();
     var maxPrecision = Math.log(Math.pow(2, 8 * size - 1) - 1) / Math.log(10);
     if (precision > (maxPrecision | 0)) {
@@ -179,7 +179,7 @@ function DecimalType(attrs, opts) {
 
   this.Decimal = Decimal;
 }
-util.inherits(DecimalType, types.LogicalType);
+util.inherits(DecimalType, LogicalType);
 
 DecimalType.prototype._fromValue = function (buf) {
   return new this.Decimal(buf.readIntBE(0, buf.length));
@@ -192,7 +192,7 @@ DecimalType.prototype._toValue = function (dec) {
 
   var type = this.getUnderlyingType();
   var buf;
-  if (type instanceof types.FixedType) {
+  if (type instanceof FixedType) {
     buf = new Buffer(type.getSize());
   } else {
     var size = Math.log(dec > 0 ? dec : - 2 * dec) / (Math.log(2) * 8) | 0;
