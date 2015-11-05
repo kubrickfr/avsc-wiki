@@ -75,24 +75,23 @@ var schema = {
 ```
 
 The `time` field encodes a timestamp as a `long`, but it would be better if we
-could have `avsc` deserialize it directly into a native `Date` object. This is
-possible using Avro's *logical types*, with the following two steps:
+could deserialize it directly into a native `Date` object. This is possible
+using Avro's *logical types*, with the following two steps:
 
-+ Adding a `logicalType` attribute to the type's definition (`'date'` in the
-  above schema).
++ Adding a `logicalType` attribute to the type's definition (`'date'` above).
 + Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
-  to [`parse`][parse-api]'s `logicalTypes` option.
+  to [`parse`][parse-api]'s `logicalTypes`.
 
 Below is a sample implementation for a suitable `DateType` which will
-transparently (de)serialize `long` to/from native `Date` objects:
+transparently deserialize/serialize native `Date` objects:
 
 ```javascript
 function DateType(attrs, opts) {
-  types.LogicalType.call(this, attrs, opts, [types.LongType]);
+  types.LogicalType.call(this, attrs, opts, [LongType]);
   // (The last argument above means that this logical type will only work
   // when the underlying Avro type is a long.)
 }
-util.inherits(DateType, types.LogicalType);
+util.inherits(DateType, LogicalType); // Built-in `'util'` module.
 DateType.prototype._fromValue = function (n) { return new Date(n); };
 DateType.prototype._toValue = function (date) { return +date; };
 ```
@@ -111,8 +110,8 @@ var transaction = {
 // Our new type is able to directly serialize it, including the date.
 var buf = type.toBuffer(transaction);
 
-// And we can get the date back just as easily:
-var date = type.fromBuffer(buf).time;
+// And we can get the date back just as easily!
+var date = type.fromBuffer(buf).time; // `Date` object.
 ```
 
 Logical types can also be used with schema evolution. This is done by
@@ -137,7 +136,6 @@ DateType.prototype._resolve = function (type) {
 var stringType = avsc.parse('string');
 var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
 var buf = stringType.toBuffer(str);
-
 var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Same date as string above.
 ```
@@ -146,8 +144,6 @@ Finally, as a more fully featured example, we provide below a sample
 implementation of the decimal logical type described in the spec:
 
 ```javascript
-var types = avsc.types;
-
 /**
  * Sample decimal logical type implementation.
  *
