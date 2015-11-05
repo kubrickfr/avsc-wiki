@@ -14,13 +14,12 @@
     `'./Schema.avsc'`).
   + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
 + `opts` {Object} Parsing options. The following keys are currently supported:
+  + `logicalTypes` {Object} Optional dictionary of
+    [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
+    support serialization and deserialization of arbitrary native objects.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names. This can
     for example be used to override the types used for primitives.
-  + `logicalTypes` {Object} Optional dictionary of
-    [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
-    support serialization and deserialization of arbitrary native objects. See
-    [here][logical-types] for more information.
   + `typeHook(schema, opts)` {Function} Function called before each new type is
     instantiated. The relevant schema is available as first argument and the
     parsing options as second. This function can optionally return a type which

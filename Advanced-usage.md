@@ -59,33 +59,60 @@ that are needed.
 
 ## Logical types
 
-```javascript
-var types = avsc.types;
+The built-in types provided by Avro are sufficient for many use-cases, but it
+can often be much more convenient to work with native types. As a quick
+motivating example, let's imagine we have the following schema:
 
-/**
- * Sample logical type implementation to support native `Date`s.
- *
- */
+```javascript
+var schema = {
+  name: 'Transaction',
+  type: 'Record',
+  fields: [
+    {name: 'amount', type: 'int'},
+    {name: 'time', type: 'long', logicalType: 'date'}
+  ]
+};
+```
+
+The `time` field encodes a timestamp as a `long`, but it would be better if we
+could have `avsc` deserialize it directly into a native `Date` object. This is
+possible using Avro's *logical types*, with the following two steps:
+
++ Adding a `logicalType` attribute to the type's definition (`'date'` in the
+  above schema).
++ Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
+  to [`parse`][parse-api]'s `logicalTypes` option.
+
+Below is a sample implementation for a suitable `DateType` which will
+transparently (de)serialize `long` to/from native `Date` objects:
+
+```javascript
 function DateType(attrs, opts) {
   types.LogicalType.call(this, attrs, opts, [types.LongType]);
+  // (The last argument above means that this logical type will only work
+  // when the underlying Avro type is a long.)
 }
 util.inherits(DateType, types.LogicalType);
-
 DateType.prototype._fromValue = function (n) { return new Date(n); };
 DateType.prototype._toValue = function (date) { return +date; };
 ```
 
-It can for example be used as follows:
+Usage is straightforward:
 
 ```javascript
-var dateType = avsc.parse(
-  {type: 'long', logicalType: 'date'},
-  {logicalTypes: {date: DateType}}
-);
+var type = avsc.parse(schema, {logicalTypes: {date: DateType}});
 
-var date1 = new Date(Date.now()); // E.g. Thu Nov 05 2015 11:38:05 GMT-0800 (PST)
-var buf = dateType.toBuffer(date1); // Serialize date to bytes.
-var date2 = dateType.fromBuffer(buf); // === date1
+// We create a new transaction.
+var transaction = {
+  amount: 32,
+  time: new Date('Thu Nov 05 2015 11:38:05 GMT-0800 (PST)')
+};
+
+// Our new type is able to directly serialize it, including the date.
+var buf = type.toBuffer(transaction);
+
+// And we can get the date back just as easily:
+var date = type.fromBuffer(buf).time;
 ```
 
 Logical types can also be used with schema evolution. This is done by
@@ -337,3 +364,6 @@ already unpacked buffers by default. To leverage an external optimized packing
 and unpacking routine (for example when using a native C++ addon), we can
 disable this behavior by setting `LongType.using`'s `noUnpack` argument to
 `true`.
+
+[parse-api]: https://github.com/mtth/avsc/wiki/API#parseschema-opts
+[logical-type-api]: https://github.com/mtth/avsc/wiki/API#class-logicaltypeattrs-opts-types
