@@ -1,4 +1,5 @@
 + [Schema evolution](#schema-evolution)
++ [Logical types](#logical-types)
 + [Type hooks](#type-hooks)
 + [Custom long types](#custom-long-types)
 
@@ -54,6 +55,80 @@ var obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: nu
 
 Reader's schemas are also very useful for performance, only decoding fields
 that are needed.
+
+
+## Logical types
+
+As a more fully featured example, below is a sample implementation of the
+decimal logical type described in the spec:
+
+```javascript
+var types = avsc.types;
+
+function DecimalType(attrs, opts) {
+  LogicalType.call(this, attrs, opts, [types.BytesType, types.FixedType]);
+
+  // Validate attributes.
+  var precision = attrs.precision;
+  if (precision !== (precision | 0) || precision <= 0) {
+    throw new Error('invalid precision');
+  }
+  var scale = attrs.scale;
+  if (scale !== (scale | 0) || scale < 0 || scale > precision) {
+    throw new Error('invalid scale');
+  }
+  var type = this.getUnderlyingType();
+  if (type instanceof types.FixedType) {
+    var size = type.getSize();
+    var maxPrecision = Math.log(Math.pow(2, 8 * size - 1) - 1) / Math.log(10);
+    if (precision > (maxPrecision | 0)) {
+      throw new Error('fixed size too small to hold required precision');
+    }
+  }
+
+  // A basic decimal class for this precision and scale.
+  function Decimal(unscaled) { this.unscaled = unscaled; }
+  Decimal.prototype.precision = precision;
+  Decimal.prototype.scale = scale;
+  Decimal.prototype.toNumber = function () {
+    return this.unscaled * Math.pow(10, -scale);
+  };
+
+  this.Decimal = Decimal;
+}
+util.inherits(DecimalType, types.LogicalType);
+
+DecimalType.prototype._fromValue = function (buf) {
+  return new this.Decimal(buf.readIntBE(0, buf.length));
+};
+
+DecimalType.prototype._toValue = function (dec) {
+  if (!(dec instanceof this.Decimal)) {
+    throw new Error('invalid decimal');
+  }
+
+  var type = this.getUnderlyingType();
+  var buf;
+  if (type instanceof types.FixedType) {
+    buf = new Buffer(type.getSize());
+  } else {
+    var size = Math.log(dec > 0 ? dec : - 2 * dec) / (Math.log(2) * 8) | 0;
+    buf = new Buffer(size + 1);
+  }
+  buf.writeIntBE(dec, 0, buf.length);
+  return buf;
+};
+
+DecimalType.prototype._resolve = function (type) {
+  if (
+    type instanceof DecimalType &&
+    type.Decimal.prototype.precision === this.Decimal.prototype.precision &&
+    type.Decimal.prototype.scale === this.Decimal.prototype.scale
+  ) {
+    return function (dec) { return dec; }; // Identity.
+  }
+};
+```
 
 
 ## Type hooks
