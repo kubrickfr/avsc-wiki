@@ -340,15 +340,13 @@ aliases from this list.
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getSize()`
-
-The size in bytes of instances of this type.
-
 ##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
-Unlike the array returned by `getSymbols`, you can add, edit, and remove
-aliases from this list.
+
+##### `type.getSize()`
+
+The size in bytes of instances of this type.
 
 
 #### Class `MapType(attrs, [opts])`
@@ -366,6 +364,12 @@ The type of the map's values (keys are always strings).
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
+##### `type.getAliases()`
+
+Optional type aliases. These are used when adapting a schema from another type.
+Unlike the array returned by `getFields`, you can add, edit, and remove aliases
+from this list.
+
 ##### `type.getFields()`
 
 Returns a copy of the array of fields contained in this record. Each field is
@@ -380,12 +384,6 @@ an object with the following methods:
 ##### `type.getRecordConstructor()`
 
 The [`Record`](Api#class-record) constructor for instances of this type.
-
-##### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
-Unlike the array returned by `getFields`, you can add, edit, and remove aliases
-from this list.
 
 
 #### Class `UnionType(attrs, [opts])`
@@ -460,9 +458,13 @@ instantiate new records of a given type.
 
 ##### `record.$clone([opts])`
 
++ `opts` {Object} See [`type.clone`](#typecloneval-opts).
+
 Deep copy the record.
 
 ##### `record.$compare(val)`
+
++ `val` {Record} See [`type.compare`](#typecompareval1-val2).
 
 Compare the record to another.
 
@@ -471,6 +473,8 @@ Compare the record to another.
 Get the record's `type`.
 
 ##### `record.$isValid([opts])`
+
++ `opts` {Object} See [`type.isValid`](#typeisvalidval-opts).
 
 Check whether the record is valid.
 
