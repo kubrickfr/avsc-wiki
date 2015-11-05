@@ -59,14 +59,35 @@ that are needed.
 
 ## Logical types
 
+```javascript
+var types = avsc.types;
+
+/**
+ * Sample date logical type implementation.
+ *
+ */
+function DateType(attrs, opts) {
+  types.LogicalType.call(this, attrs, opts, [types.LongType]);
+}
+util.inherits(DateType, types.LogicalType);
+
+DateType.prototype._fromValue = function (n) { return new Date(n); };
+
+DateType.prototype._toValue = function (date) { return +date; };
+```
+
 As a more fully featured example, below is a sample implementation of the
 decimal logical type described in the spec:
 
 ```javascript
 var types = avsc.types;
 
+/**
+ * Sample decimal logical type implementation.
+ *
+ */
 function DecimalType(attrs, opts) {
-  LogicalType.call(this, attrs, opts, [types.BytesType, types.FixedType]);
+  types.LogicalType.call(this, attrs, opts, [types.BytesType, types.FixedType]);
 
   // Validate attributes.
   var precision = attrs.precision;
@@ -115,7 +136,7 @@ DecimalType.prototype._toValue = function (dec) {
     var size = Math.log(dec > 0 ? dec : - 2 * dec) / (Math.log(2) * 8) | 0;
     buf = new Buffer(size + 1);
   }
-  buf.writeIntBE(dec, 0, buf.length);
+  buf.writeIntBE(dec.unscaled, 0, buf.length);
   return buf;
 };
 
