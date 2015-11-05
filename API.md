@@ -353,6 +353,9 @@ aliases from this list.
 
 #### Class `MapType(attrs, [opts])`
 
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
 ##### `type.getValuesType()`
 
 The type of the map's values (keys are always strings).

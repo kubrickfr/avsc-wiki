@@ -64,7 +64,7 @@ can often be much more convenient to work with native JavaScript objects. As a
 quick motivating example, let's imagine we have the following schema:
 
 ```javascript
-var schema = {
+var transactionSchema = {
   name: 'Transaction',
   type: 'record',
   fields: [
@@ -83,8 +83,7 @@ using Avro's *logical types*, with the following two steps:
   to [`parse`][parse-api]'s `logicalTypes`.
 
 Below is a sample implementation for a suitable `DateType` which will
-transparently deserialize/serialize native `Date` objects (see `LogicalType`'s
-[API documentation][logical-type-api] for details on each method):
+transparently deserialize/serialize native `Date` objects:
 
 ```javascript
 function DateType(attrs, opts) {
@@ -100,7 +99,7 @@ DateType.prototype._toValue = function (date) { return +date; };
 Usage is straightforward:
 
 ```javascript
-var type = avsc.parse(schema, {logicalTypes: {date: DateType}});
+var type = avsc.parse(transactionSchema, {logicalTypes: {date: DateType}});
 
 // We create a new transaction.
 var transaction = {
@@ -108,7 +107,7 @@ var transaction = {
   time: new Date('Thu Nov 05 2015 11:38:05 GMT-0800 (PST)')
 };
 
-// Our new type is able to directly serialize it, including the date.
+// Our type is able to directly serialize it, including the date.
 var buf = type.toBuffer(transaction);
 
 // And we can get the date back just as easily.
@@ -142,7 +141,8 @@ var date = dateType.fromBuffer(buf, resolver); // Same date as string above.
 ```
 
 Finally, as a more fully featured example, we provide below a sample
-implementation of the decimal logical type described in the spec:
+implementation of the [decimal logical type][decimal-type] described in the
+spec:
 
 ```javascript
 /**
@@ -364,3 +364,4 @@ disable this behavior by setting `LongType.using`'s `noUnpack` argument to
 
 [parse-api]: https://github.com/mtth/avsc/wiki/API#parseschema-opts
 [logical-type-api]: https://github.com/mtth/avsc/wiki/API#class-logicaltypeattrs-opts-types
+[decimal-type]: https://avro.apache.org/docs/current/spec.html#Decimal
