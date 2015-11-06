@@ -261,6 +261,58 @@ decoding values which had been serialized using `writerType`, according to the
 Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
 this method will throw an error.
 
+For example, assuming we have the following two versions of a type:
+
+```javascript
+// A schema's first version.
+var v1 = avsc.parse({
+  name: 'Person',
+  type: 'record',
+  fields: [
+    {name: 'name', type: 'string'},
+    {name: 'age', type: 'int'}
+  ]
+});
+
+// The updated version.
+var v2 = avsc.parse({
+  type: 'record',
+  name: 'Person',
+  fields: [
+    {
+      name: 'name', type: [
+        'string',
+        {
+          name: 'Name',
+          type: 'record',
+          fields: [
+            {name: 'first', type: 'string'},
+            {name: 'last', type: 'string'}
+          ]
+        }
+      ]
+    },
+    {name: 'phone', type: ['null', 'string'], default: null}
+  ]
+});
+```
+
+The two types are compatible since the `name` field is present in both (the
+`string` can be promoted to the new `union`) and the new `phone` field has a
+default value.
+
+```javascript
+//  We can therefore create a resolver.
+var resolver = v2.createResolver(v1);
+
+// And pass it whenever we want to decode from the old type to the new.
+var buf = v1.toBuffer({name: 'Ann', age: 25});
+var obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
+```
+
+See the [advanced usage page](Advanced-usage) for more details on how schema
+evolution can be used to significantly speed up decoding.
+
 ##### `type.random()`
 
 Returns a random value of `type`.
@@ -321,8 +373,8 @@ so requires implementing the following methods (a few examples are available
   + `val` {...} Decoded long.
 
   If `noUnpack` is off (the default), this method should return an 8-byte
-  buffer with the long's unpacked representation. Otherwise, `toBuffer` should
-  return an already packed buffer (of variable length).
+  buffer with the `long`'s unpacked representation. Otherwise, `toBuffer`
+  should return an already packed buffer (of variable length).
 
 + `fromJSON(any)`
 
@@ -340,7 +392,7 @@ so requires implementing the following methods (a few examples are available
 
   + `val` {...} Decoded long.
 
-  This method should return the long's JSON representation.
+  This method should return the `long`'s JSON representation.
 
 + `isValid(val, [opts])`
 
@@ -366,16 +418,16 @@ The type of the array's items.
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getSymbols()`
-
-Returs a copy of the type's symbols (an array of strings representing the
-enum's valid values).
-
 ##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 Unlike the array returned by `getSymbols`, you can add, edit, and remove
 aliases from this list.
+
+##### `type.getSymbols()`
+
+Returns a copy of the type's symbols (an array of strings representing the
+`enum`'s valid values).
 
 
 #### Class `FixedType(attrs, [opts])`
@@ -426,7 +478,7 @@ an object with the following methods:
 
 ##### `type.getRecordConstructor()`
 
-The [`Record`](Api#class-record) constructor for instances of this type.
+The [`Record`](#class-record) constructor for instances of this type.
 
 
 #### Class `UnionType(attrs, [opts])`
@@ -464,6 +516,8 @@ To implement a custom logical type, the steps are:
   internal to the class that defines them and should only be called by the
   internal `LogicalType` methods).
 
+See [here][logical-types] for a couple sample implementations.
+
 ##### `type._fromValue(val)`
 
 + `val` {...} A value deserialized by the underlying type.
@@ -487,8 +541,6 @@ This function should return:
 + Otherwise, a function which converts a value deserialized by the writer's
   type into a wrapped value for the current type.
 
-See [here][logical-types] for a couple sample implementations.
-
 
 ## Records
 
@@ -498,13 +550,14 @@ Each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
 encoding records more efficient.
 
 All prototype methods below are prefixed with `$` to avoid clashing with an
-existing record field (`$` is a valid idenfifier in JavaScript, but not in
+existing record field (`$` is a valid identifier in JavaScript, but not in
 Avro).
 
 #### Class `Record(...)`
 
 Calling the constructor directly can sometimes be a convenient shortcut to
-instantiate new records of a given type.
+instantiate new records of a given type. In particular, it will correctly
+initialize all the missing record's fields with their default values.
 
 ##### `record.$clone([opts])`
 
