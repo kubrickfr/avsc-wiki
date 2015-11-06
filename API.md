@@ -188,6 +188,9 @@ try {
     field is populated. The value returned by this function will be used
     instead of `obj`. `field` is the current `Field` instance and `type` the
     parent type.
+  + `wrapUnions` {Boolean} Avro's JSON representation expects all union values
+    to be wrapped inside objects. Setting this parameter to `true` will try to
+    wrap unwrapped union values into their first matching type.
 
 Deep copy a value of `type`.
 
