@@ -5,7 +5,7 @@
 
 ## Schema evolution
 
-Schema evolution enables a type to deserialize data written by another
+Schema evolution enables a type to deserialize binary data written by another
 (compatible, as defined by Avro's [schema resolution rules][schema-resolution])
 type. This is done via [`createResolver`][create-resolver-api] (see the API for
 usage and an example). Resolvers are particularly useful when we are only
@@ -51,8 +51,8 @@ decoded record if the ID matches, and `undefined` otherwise.
 
 ```javascript
 function getMatchingRecord(buf) {
-  var lightRecord = lightType.fromBuffer(buf);
-  if (lightRecord.userId === 48) { // Arbitrary check.
+  var lightRecord = lightType.fromBuffer(buf, resolver, true);
+  if (lightRecord.userId % 100 === 48) { // Arbitrary check.
     return fullType.fromBuffer(buf);
   }
 }
