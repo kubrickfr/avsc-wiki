@@ -108,8 +108,7 @@ Deserialize a JSON-encoded object of `type`.
 ##### `type.toString([val])`
 
 + `val` {...} The value to serialize. If not specified, this method will return
-  the [canonical version][canonical-schema] of `type`'s schema instead (which
-  can then be used to compare schemas for equality).
+  a human-friendly description of `type`.
 
 Serialize an object into a JSON-encoded string.
 
@@ -234,7 +233,8 @@ Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
 + `noDeref` {Boolean} Do not dereference any type names.
 
-Returns `type`'s canonical schema (as a string).
+Returns `type`'s [canonical schema][canonical-schema] (as a string). This can
+be used to compare schemas for equality.
 
 ##### `type.getFingerprint([algorithm])`
 
