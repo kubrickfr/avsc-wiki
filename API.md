@@ -95,7 +95,7 @@ Deserialize a buffer into its corresponding value.
 
 ##### `type.toBuffer(val)`
 
-+ `val` {Object} The value to encode. It must be a valid `type` value.
++ `val` {...} The value to encode. It must be a valid `type` value.
 
 Returns a `Buffer` containing the Avro serialization of `val`.
 
