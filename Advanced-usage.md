@@ -8,13 +8,11 @@
 Schema evolution enables a type to deserialize data written by another
 (compatible, as defined by Avro's [schema resolution rules][schema-resolution])
 type. This is done via [`createResolver`][create-resolver-api] (see the API for
-usage and an example).
+usage and an example). Resolvers are particularly useful when we are only
+interested in certain fields inside a record. By letting us decode only these,
+they can provide significant decoding throughput boosts.
 
-Resolvers are particularly useful when we are only interested in certain fields
-inside a record. By letting us decode only these, they can provide significant
-decoding throughput boosts.
-
-As a motivating example, let us consider the following schema:
+As a motivating example, consider the following schema:
 
 ```javascript
 var fullType = avsc.parse({
@@ -28,7 +26,7 @@ var fullType = avsc.parse({
 });
 ```
 
-Let us assume that we would like to compute a few statistic on users' actions
+Let's assume that we would like to compute a few statistic on users' actions
 but only for a few user IDs. One approach would be to decode the full record
 each time, but this is wasteful if very few users match our filter. We can do
 better by using the following reader's schema, and creating the corresponding
@@ -60,8 +58,11 @@ function getMatchingRecord(buf) {
 }
 ```
 
-In the above example, if the filter matches roughly 1% of the time, we are able
-to get a **400%** throughput increase (using randomly generated records).
+In the above example, using randomly generated records, if the filter matches
+roughly 1% of the time, we are able to get a **400%** throughput increase
+compared to decoding the full record each time! The heavier the schema (and the
+closer to the beginning of the record the used fields are), the higher this
+increase will be.
 
 ## Logical types
 
