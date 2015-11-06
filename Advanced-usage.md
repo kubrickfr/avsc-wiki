@@ -85,12 +85,15 @@ Below is a sample implementation for a suitable `DateType` which will
 transparently deserialize/serialize native `Date` objects:
 
 ```javascript
+var util = require('util');
+
 function DateType(attrs, opts) {
   LogicalType.call(this, attrs, opts, [LongType]);
   // (The last argument above means that this logical type will only be active
   // when the underlying Avro type is a long.)
 }
-util.inherits(DateType, LogicalType); // Built-in `'util'` module.
+util.inherits(DateType, LogicalType);
+
 DateType.prototype._fromValue = function (n) { return new Date(n); };
 DateType.prototype._toValue = function (date) { return +date; };
 ```
