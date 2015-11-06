@@ -5,9 +5,63 @@
 
 ## Schema evolution
 
-Reader's schemas are also very useful for performance, only decoding fields
-that are needed.
+Schema evolution enables a type to deserialize data written by another
+(compatible, as defined by Avro's [schema resolution rules][schema-resolution])
+type. This is done via [`createResolver`][create-resolver-api] (see the API for
+usage and an example).
 
+Resolvers are particularly useful when we are only interested in certain fields
+inside a record. By letting us decode only these, they can provide significant
+decoding throughput boosts.
+
+As a motivating example, let us consider the following schema:
+
+```javascript
+var fullType = avsc.parse({
+  name: 'Event',
+  type: 'record',
+  fields: [
+    {name: 'time', type: 'long'},
+    {name: 'userId', type: 'int'},
+    {name: 'actions', type: {type: 'array', items: 'string'}},
+  ]
+});
+```
+
+Let us assume that we would like to compute a few statistic on users' actions
+but only for a few user IDs. One approach would be to decode the full record
+each time, but this is wasteful if very few users match our filter. We can do
+better by using the following reader's schema, and creating the corresponding
+resolver:
+
+```javascript
+var lightType = avsc.parse({
+  name: 'LightEvent',
+  aliases: ['Event'],
+  type: 'record',
+  fields: [
+    {name: 'userId', type: 'int'},
+  ]
+});
+
+var resolver = lightType.createResolver(fullType);
+```
+
+We decode only the `userId` field, and then, if the ID matches, process the
+full record. The function below implements this logic, returning a fully
+decoded record if the ID matches, and `undefined` otherwise.
+
+```javascript
+function getMatchingRecord(buf) {
+  var lightRecord = lightType.fromBuffer(buf);
+  if (lightRecord.userId === 48) { // Arbitrary check.
+    return fullType.fromBuffer(buf);
+  }
+}
+```
+
+In the above example, if the filter matches roughly 1% of the time, we are able
+to get a **400%** throughput increase (using randomly generated records).
 
 ## Logical types
 
@@ -279,6 +333,8 @@ and unpacking routine (for example when using a native C++ addon), we can
 disable this behavior by setting `LongType.using`'s `noUnpack` argument to
 `true`.
 
-[parse-api]: https://github.com/mtth/avsc/wiki/API#parseschema-opts
-[logical-type-api]: https://github.com/mtth/avsc/wiki/API#class-logicaltypeattrs-opts-types
+[parse-api]: API#parseschema-opts
+[create-resolver-api]: API#typecreateresolverwritertype
+[logical-type-api]: API#class-logicaltypeattrs-opts-types
 [decimal-type]: https://avro.apache.org/docs/current/spec.html#Decimal
+[schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution

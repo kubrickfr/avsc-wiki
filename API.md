@@ -261,7 +261,7 @@ decoding values which had been serialized using `writerType`, according to the
 Avro [resolution rules][schema-resolution]. If the schemas are incompatible,
 this method will throw an error.
 
-For example, assuming we have the following two versions of a type:
+For example, assume we have the following two versions of a type:
 
 ```javascript
 // A schema's first version.
