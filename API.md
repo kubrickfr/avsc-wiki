@@ -410,9 +410,16 @@ The possible types that this union can take.
 Get the underlying Avro type. This can be useful when a logical type can
 support different underlying types.
 
-Implementors should override the following methods (they are prefixed with an
-underscore because they are internal to the class that defines them and should
-only be called by the internal `LogicalType` class methods):
+To implement a custom logical type, the steps are:
+
++ Call `LogicalType`'s constructor inside your own subclass' to make sure the
+  underlying type is property set up. Throwing an error anywhere inside your
+  constructor will prevent the logical type from being used (the underlying
+  type will be used instead).
++ Extend `LogicalType` in your own subclass (typically using `util.inherits`).
++ Override the methods below (prefixed with an underscore because they are
+  internal to the class that defines them and should only be called by the
+  internal `LogicalType` methods).
 
 ##### `type._fromValue(val)`
 
