@@ -516,7 +516,7 @@ container files:
 
 Returns a readable stream of decoded objects from an Avro container file.
 
-#### `createFileEncoder(path, schem, [opts])`
+#### `createFileEncoder(path, schema, [opts])`
 
 + `path` {String} Destination path.
 + `schem` {Object|String|Type} Type used to serialize.
@@ -570,7 +570,7 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 
 ##### Event `'data'`
 
-+ `data` {Object|Buffer} Decoded element or raw bytes.
++ `data` {...} Decoded element or raw bytes.
 
 ##### `BlockDecoder.getDefaultCodecs()`
 
@@ -591,7 +591,7 @@ with no headers or blocks.
 
 ##### Event `'data'`
 
-+ `data` {Object|Buffer} Decoded element or raw bytes.
++ `data` {...} Decoded element or raw bytes.
 
 
 #### Class `BlockEncoder(schema, [opts])`
