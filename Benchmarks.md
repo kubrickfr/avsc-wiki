@@ -10,7 +10,7 @@ available in `etc/benchmarks/`.
 
 As of `3.0.0` (`3f7a977`), for `Coupon.avsc`.
 
-![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/3.0/etc/benchmarks/charts/coupons-throughput-2172789.png)
+![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/coupons-throughput-2172789.png)
 
 ### Decoding
 
@@ -45,7 +45,7 @@ As of `3.0.0` (`7bc3503`).
 
 Throughput rates for different schemas (records per second, higher is better):
 
-![Decoding](https://raw.githubusercontent.com/mtth/avsc/3.0/etc/benchmarks/charts/avro-decode-throughput-7bc3503.png)
+![Decoding](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/avro-decode-throughput-7bc3503.png)
 
 ```
 library          java-avro      node-avsc      python-avro    ruby-avro
@@ -72,7 +72,7 @@ User.avsc           638570  100    570437   89        2488  0      5868  1
 
 Throughput rates for different schemas (records per second, higher is better):
 
-![Encoding](https://raw.githubusercontent.com/mtth/avsc/3.0/etc/benchmarks/charts/avro-encode-throughput-7bc3503.png)
+![Encoding](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/avro-encode-throughput-7bc3503.png)
 
 ```
 library          java-avro      node-avsc      python-avro    ruby-avro

@@ -7,12 +7,12 @@
 
 Schema evolution lets a type deserialize binary data written by another
 (compatible, as defined by Avro's [schema resolution rules][schema-resolution])
-type. This is done via [`createResolver`][create-resolver-api] and is
+type. This is done via [`createResolver`][create-resolver-api], and is
 particularly useful when we are only interested in certain fields inside a
-record. By letting us decode only these, they can provide significant decoding
-throughput boosts.
+record. By letting us decode only these, we can significant increase our
+decoding throughput.
 
-As a motivating example, consider the following schema:
+As a motivating example, consider the following event:
 
 ```javascript
 var heavyType = avsc.parse({
@@ -50,7 +50,7 @@ full record. The function below implements this logic, returning a fully
 decoded record if the ID matches, and `undefined` otherwise.
 
 ```javascript
-function getMatchingRecord(buf) {
+function fastDecode(buf) {
   var lightRecord = lightType.fromBuffer(buf, resolver, true);
   if (lightRecord.userId % 100 === 48) { // Arbitrary check.
     return heavyType.fromBuffer(buf);
