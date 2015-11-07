@@ -5,17 +5,17 @@
 
 ## Schema evolution
 
-Schema evolution enables a type to deserialize binary data written by another
+Schema evolution lets a type deserialize binary data written by another
 (compatible, as defined by Avro's [schema resolution rules][schema-resolution])
-type. This is done via [`createResolver`][create-resolver-api] (see the API for
-usage and an example). Resolvers are particularly useful when we are only
-interested in certain fields inside a record. By letting us decode only these,
-they can provide significant decoding throughput boosts.
+type. This is done via [`createResolver`][create-resolver-api] and is
+particularly useful when we are only interested in certain fields inside a
+record. By letting us decode only these, they can provide significant decoding
+throughput boosts.
 
 As a motivating example, consider the following schema:
 
 ```javascript
-var fullType = avsc.parse({
+var heavyType = avsc.parse({
   name: 'Event',
   type: 'record',
   fields: [
@@ -26,10 +26,10 @@ var fullType = avsc.parse({
 });
 ```
 
-Let's assume that we would like to compute a few statistic on users' actions
-but only for a few user IDs. One approach would be to decode the full record
-each time, but this is wasteful if very few users match our filter. We can do
-better by using the following reader's schema, and creating the corresponding
+Let's assume that we would like to compute statistics on users' actions but
+only for a few user IDs. One approach would be to decode the full record each
+time, but this is wasteful if very few users match our filter. We can do better
+by using the following reader's schema, and creating the corresponding
 resolver:
 
 ```javascript
@@ -42,7 +42,7 @@ var lightType = avsc.parse({
   ]
 });
 
-var resolver = lightType.createResolver(fullType);
+var resolver = lightType.createResolver(heavyType);
 ```
 
 We decode only the `userId` field, and then, if the ID matches, process the
@@ -53,7 +53,7 @@ decoded record if the ID matches, and `undefined` otherwise.
 function getMatchingRecord(buf) {
   var lightRecord = lightType.fromBuffer(buf, resolver, true);
   if (lightRecord.userId % 100 === 48) { // Arbitrary check.
-    return fullType.fromBuffer(buf);
+    return heavyType.fromBuffer(buf);
   }
 }
 ```
