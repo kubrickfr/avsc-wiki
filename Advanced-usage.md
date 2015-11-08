@@ -96,13 +96,11 @@ transparently deserialize/serialize native `Date` objects:
 var util = require('util');
 
 function DateType(attrs, opts) {
-  LogicalType.call(this, attrs, opts, [LongType]);
-  // (The last argument above means that this logical type will only be active
-  // when the underlying Avro type is a long.)
+  LogicalType.call(this, attrs, opts, [LongType]); // Require underlying `long`.
 }
 util.inherits(DateType, LogicalType);
 
-DateType.prototype._fromValue = function (n) { return new Date(n); };
+DateType.prototype._fromValue = function (val) { return new Date(val); };
 DateType.prototype._toValue = function (date) { return +date; };
 ```
 
@@ -132,27 +130,28 @@ strings:
 
 ```javascript
 DateType.prototype._resolve = function (type) {
-  if (type instanceof StringType) {
-    // Allow reading dates serialized as strings.
-    return function (str) { return new Date(Date.parse(str)); };
-  }
-  if (type instanceof LongType || type instanceof DateType) {
-    // Also support reading `long`s and other `date`s.
+  if (
+    type instanceof StringType || // Support parsing strings.
+    type instanceof LongType ||
+    type instanceof DateType
+  ) {
     return this._fromValue;
   }
 };
+```
 
-// Sample usage:
+And use it as follows:
+
+```javascript
 var stringType = avsc.parse('string');
 var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
 var buf = stringType.toBuffer(str);
 var resolver = dateType.createResolver(stringType);
-var date = dateType.fromBuffer(buf, resolver); // Same date as string above.
+var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
-Finally, as a more fully featured example, we provide below a sample
-implementation of the [decimal logical type][decimal-type] described in the
-spec:
+Finally, as a more fully featured example, we provide a sample implementation
+of the [decimal logical type][decimal-type] described in the spec:
 
 ```javascript
 /**

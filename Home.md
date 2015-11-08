@@ -15,9 +15,8 @@ Each Avro type maps to a corresponding JavaScript [`Type`](API#class-type):
 + `record`s map to `RecordType`s.
 + etc.
 
-An instance of a `Type` knows how to
-[`encode`](Api#typeencodeobj-buf-pos-nocheck) and
-[`decode`](Api#typedecodebuf-pos-resolver) its corresponding objects. For
+An instance of a `Type` knows how to [`decode`](Api#typedecodebuf-pos-resolver)
+and [`encode`](Api#typeencodeval-buf-pos) and its corresponding objects. For
 example the `StringType` knows how to handle JavaScript strings:
 
 ```javascript
@@ -26,8 +25,8 @@ var buf = stringType.toBuffer('Hi'); // Buffer containing 'Hi''s Avro encoding.
 var str = stringType.fromBuffer(buf); // === 'Hi'
 ```
 
-The [`toBuffer`](API#typetobufferobj-nocheck) and
-[`fromBuffer`](API#typefrombufferbuf-resolver-nocheck) methods above are
+The [`toBuffer`](API#typetobufferval) and
+[`fromBuffer`](API#typefrombufferval-resolver-nocheck) methods above are
 convenience functions which encode and decode a single object into/from a
 standalone buffer.
 

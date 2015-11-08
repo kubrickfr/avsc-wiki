@@ -421,8 +421,6 @@ The type of the array's items.
 ##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
-Unlike the array returned by `getSymbols`, you can add, edit, and remove
-aliases from this list.
 
 ##### `type.getSymbols()`
 
@@ -462,8 +460,6 @@ The type of the map's values (keys are always strings).
 ##### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
-Unlike the array returned by `getFields`, you can add, edit, and remove aliases
-from this list.
 
 ##### `type.getFields()`
 
