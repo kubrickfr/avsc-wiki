@@ -1,8 +1,6 @@
 Displayed rates were computed over 150,000 records, taking the median of 15
-runs. Percentages are relative to the fastest throughput for the schema. `-1`
-values indicate that the library doesn't support the schema.
-
-All benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
+runs. Percentages are relative to the fastest throughput for the schema. All
+benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
 available in `etc/benchmarks/`.
 
 
@@ -99,6 +97,9 @@ User.avsc           153453   50    305900  100        2886  1      3104   1
 ## Various schemas and implementations
 
 As of `2.2.0` (0b47aef).
+
+`-1` values indicate that the library doesn't support the schema.
+
 
 ### Decoding
 
