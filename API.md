@@ -331,7 +331,7 @@ be used to compare schemas for equality.
 ##### `type.getFingerprint([algorithm])`
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
-  Defaults to `md5`. In the browser, only `md5` is supported.
+  Defaults to `md5`. *Not supported in the browser.*
 
 ##### `Type.__reset(size)`
 
