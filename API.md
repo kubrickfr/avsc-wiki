@@ -646,7 +646,7 @@ For more specific use-cases, the following stream classes are available in the
     `'null'` and `'deflate'` codecs.
   + `decode` {Boolean} Whether to decode records before returning them.
     Defaults to `true`.
-  + `typeOpts` {Object} Options passed to instantiate the writer's `Type`.
+  + `parseOpts` {Object} Options passed when parsing the writer's schema.
 
 A duplex stream which decodes bytes coming from on Avro object container file.
 
