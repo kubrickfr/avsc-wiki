@@ -34,6 +34,19 @@ node-protobuf       16519    4
 node-pson           35492    8
 ```
 
+### Size
+
+Average size in bytes of serialized records.
+
+```
+library         size
+node-avsc       71
+node-json       359
+node-msgpack    231
+node-pson       124
+node-protobuf   85
+```
+
 
 ## Avro implementations
 
