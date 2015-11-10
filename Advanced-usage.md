@@ -5,12 +5,11 @@
 
 ## Schema evolution
 
-Schema evolution lets a type deserialize binary data written by another
-(compatible, as defined by Avro's [schema resolution rules][schema-resolution])
-type. This is done via [`createResolver`][create-resolver-api], and is
-particularly useful when we are only interested in certain fields inside a
-record. By letting us decode only these, we can significant increase our
-decoding throughput.
+Schema evolution allows a type to deserialize binary data written by another
+[compatible][schema-resolution] type. This is done via
+[`createResolver`][create-resolver-api], and is particularly useful when we are
+only interested in a subset of the fields inside a record. By selectively
+decoding fields, we can significantly increase throughput.
 
 As a motivating example, consider the following event:
 
