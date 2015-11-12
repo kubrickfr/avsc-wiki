@@ -70,12 +70,12 @@ can often be much more convenient to work with native JavaScript objects. As a
 quick motivating example, let's imagine we have the following schema:
 
 ```javascript
-var transactionSchema = {
+var schema = {
   name: 'Transaction',
   type: 'record',
   fields: [
     {name: 'amount', type: 'int'},
-    {name: 'time', type: 'long', logicalType: 'date'}
+    {name: 'time', type: 'long', logicalType: 'timestamp-millis'}
   ]
 };
 ```
@@ -84,7 +84,8 @@ The `time` field encodes a timestamp as a `long`, but it would be better if we
 could deserialize it directly into a native `Date` object. This is possible
 using Avro's *logical types*, with the following two steps:
 
-+ Adding a `logicalType` attribute to the type's definition (e.g. `'date'` above).
++ Adding a `logicalType` attribute to the type's definition (e.g.
+  `'timestamp-millis'` above).
 + Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
   to [`parse`][parse-api]'s `logicalTypes`.
 
@@ -106,7 +107,7 @@ DateType.prototype._toValue = function (date) { return +date; };
 Usage is straightforward:
 
 ```javascript
-var type = avsc.parse(transactionSchema, {logicalTypes: {date: DateType}});
+var type = avsc.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
 
 // We create a new transaction.
 var transaction = {
