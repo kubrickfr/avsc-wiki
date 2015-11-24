@@ -75,7 +75,7 @@ var schema = {
   type: 'record',
   fields: [
     {name: 'amount', type: 'int'},
-    {name: 'time', type: 'long', logicalType: 'timestamp-millis'}
+    {name: 'time', type: {type: 'long', logicalType: 'timestamp-millis'}}
   ]
 };
 ```
