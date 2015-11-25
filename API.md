@@ -19,7 +19,8 @@
     support serialization and deserialization of arbitrary native objects.
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Optional registry of predefined type names. This can
-    for example be used to override the types used for primitives.
+    for example be used to override the types used for primitives or to split
+    a schema declaration over multiple files.
   + `typeHook(attrs, opts)` {Function} Function called before each new type is
     instantiated. The relevant decoded schema is available as first argument
     and the parsing options as second. This function can optionally return a
@@ -42,7 +43,7 @@ function typeHook(schema) {
   if (schema.type === 'enum') {
     // For simplicity, we don't do any bound checking here but we could by
     // implementing a "bounded long" logical type and returning that instead.
-    return longType();
+    return longType;
   }
   // Falling through will cause the default type to be used.
 }
