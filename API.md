@@ -14,13 +14,17 @@
     `'./Schema.avsc'`).
   + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
 + `opts` {Object} Parsing options. The following keys are currently supported:
+  + `namespace` {String} Optional parent namespace.
+  + `registry` {Object} Registry of predefined type names. This can for example
+    be used to override the types used for primitives or to split a schema
+    declaration over multiple files.
   + `logicalTypes` {Object} Optional dictionary of
     [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
     support serialization and deserialization of arbitrary native objects.
-  + `namespace` {String} Optional parent namespace.
-  + `registry` {Object} Optional registry of predefined type names. This can
-    for example be used to override the types used for primitives or to split
-    a schema declaration over multiple files.
+  + `assertLogicalTypes` {Boolean} The Avro specification mandates that we fall
+    through to the underlying type if a logical type is invalid. When set, this
+    option will override this behavior and throw an error when a logical type
+    can't be applied.
   + `typeHook(attrs, opts)` {Function} Function called before each new type is
     instantiated. The relevant decoded schema is available as first argument
     and the parsing options as second. This function can optionally return a
@@ -614,7 +618,7 @@ Returns a readable stream of decoded objects from an Avro container file.
 + `path` {String} Destination path.
 + `schem` {Object|String|Type} Type used to serialize.
 + `opts` {Object} Encoding options, passed to
-  [`BlockEncoder`](Api#class-blockencoderschem-opts).
+  [`BlockEncoder`](Api#class-blockencoderschema-opts).
 
 Returns a writable stream of objects. These will end up serialized into an Avro
 container file.
@@ -635,9 +639,9 @@ For more specific use-cases, the following stream classes are available in the
 `avsc.streams` namespace:
 
 + [`BlockDecoder`](#blockdecoderopts)
-+ [`RawDecoder`](#rawdecoderschem-opts)
-+ [`BlockEncoder`](#blockencoderschem-opts)
-+ [`RawEncoder`](#rawencoderschem-opts)
++ [`RawDecoder`](#rawdecoderschema-opts)
++ [`BlockEncoder`](#blockencoderschema-opts)
++ [`RawEncoder`](#rawencoderschema-opts)
 
 
 #### Class `BlockDecoder([opts])`
