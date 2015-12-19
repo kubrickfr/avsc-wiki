@@ -2,13 +2,14 @@
 + [Avro types](#avro-types)
 + [Records](#records)
 + [Files and streams](#files-and-streams)
++ [Protocols and remote calls](#protocols-and-remote-calls)
 
 
 ## Parsing schemas
 
 ### `parse(schema, [opts])`
 
-+ `schema` {Object|String} An Avro schema, represented by one of:
++ `schema` {Object|String} An Avro schema or protocol, represented by one of:
   + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`).
@@ -32,7 +33,7 @@
     See below for more details.
 
 Parse a schema and return an instance of the corresponding
-[`Type`](#class-type).
+[`Type`](#class-type) or [`Protocol`](#class-protocol).
 
 Using the `typeHook` option, it is possible to customize the parsing process by
 intercepting the creation of any type. As a sample use-case, we show below how
@@ -739,9 +740,135 @@ The encoding equivalent of `RawDecoder`.
 + `data` {Buffer} Serialized bytes.
 
 
+# Protocols and remote calls
+
+
+#### Class `Protocol(attrs, [opts])`
+
++ `attrs` {Object} Decoded protocol attributes.
++ `opts` {Object} Options, identical to `parse`'s.
+
+An RPC protocol.
+
+##### `protocol.createClient(transport, [opts])`
+
++ `transport` {Duplex|Object|Function}
++ `opts` {Object}
+  + `IdType` {LogicalType} Metadata logical type.
+  + `bufferSize` {Number} Internal message serialization buffer size (in
+    bytes). Defaults to 2048.
+  + `frameSize` {Number} Size used when [framing messages][framing-messages].
+    Defaults to 2048.
+  + `protocolHook(attrs)` {Function} Called each time a remote server's
+    protocol is parsed.
+
+Generate a [`Client`](#class-client) for this protocol. This client can then be
+used to communicate with a remote server of compatible protocol.
+
+##### `protocol.createServer()`
+
+Generate a [`Server`](#class-server) for this protocol. This server can be used
+to respond to remote clients of compatible protocols.
+
+##### `protocol.getMessage(name)`
+
++ `name` {String} The message's name.
+
+A [`Message`](#class-message) instance if it exists, `undefined` otherwise.
+
+##### `protocol.getType(name)`
+
++ `name` {String} The message's name.
+
+A [`Message`](#class-message) instance if it exists, `undefined` otherwise.
+
+##### `protocol.getName()`
+
+The protocol's fully qualified name.
+
+##### `protocol.getHash()`
+
+MD5 of the protocol's schema.
+
+##### `protocol.toString()`
+
+Returns a parsable string representation of the protocol. This is relatively
+expensive, so should be cached if used repeatedly.
+
+
+#### Class `Client`
+
+##### Event `'handshake'`
+
++ `request`
++ `response`
+
+Emitted when the server responds to a handshake.
+
+##### Event `'eot'`
+
+End of transmission event, emitted after the client is destroyed and there are
+no more pending requests.
+
+##### `client.emitMessage(name, req, cb)`
+
++ `name` {String} Message name.
++ `req` {Object} Request value, must correspond to the message.
++ `cb(err, res)` {Function} Callback called when the remote call returns.
+
+Send a message.
+
+##### `client.destroy()`
+
+Disable the client. Pending requests will still be honored.
+
+
+#### Class `Server`
+
+##### `server.createChannel(transport, [opts])`
+
++ `transport` {Duplex|Object|Function}
++ `opts` {Object}
+  + `IdType` {LogicalType} Metadata logical type.
+  + `bufferSize` {Number} Internal message serialization buffer size (in
+    bytes). Defaults to 2048.
+  + `frameSize` {Number} Size used when [framing messages][framing-messages].
+    Defaults to 2048.
+  + `protocolHook(attrs)` {Function} Called each time a remote server's
+    protocol is parsed.
+
+Returns a `Channel`.
+
+##### `server.onMessage(name, listener)`
+
++ `name` {String} Message name.
++ `listener(req, cb)` {Function} Handler, called each time a message with
+  matching name is received.
+
+
+#### Class `Channel`
+
+##### Event `'handshake'`
+
++ `request`
++ `response`
+
+Emitted when the server responds to a handshake.
+
+##### Event `'eot'`
+
+End of transmission event, emitted after the client is destroyed and there are
+no more pending requests.
+
+##### `channel.destroy()`
+
+Disable this channel.
+
+
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
 [sort-order]: https://avro.apache.org/docs/current/spec.html#order
 [fingerprint]: https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
 [custom-long]: Advanced-usage#custom-long-types
 [logical-types]: Advanced-usage#logical-types
+[frames]: https://avro.apache.org/docs/current/spec.html#Message+Framing
