@@ -9,7 +9,8 @@
 
 ### `parse(schema, [opts])`
 
-+ `schema` {Object|String} An Avro schema or protocol, represented by one of:
++ `schema` {Object|String} An Avro protocol or type schema, represented by one
+  of:
   + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`).
@@ -742,12 +743,10 @@ The encoding equivalent of `RawDecoder`.
 
 # RPC
 
-#### Class `Protocol(attrs, [opts])`
+#### Class `Protocol`
 
-+ `attrs` {Object} Decoded protocol attributes.
-+ `opts` {Object} Options, identical to `parse`'s.
-
-An RPC protocol.
+An RPC protocol. Instances of this class should be obtained via
+[`parse`](#parseschema-opts).
 
 ##### `protocol.createClient(transport, [opts])`
 
@@ -790,8 +789,8 @@ expensive, so should be cached if used repeatedly.
 
 ##### Event `'handshake'`
 
-+ `request`
-+ `response`
++ `request` Handshake request.
++ `response` Handshake response.
 
 Emitted when the server's handshake response is received.
 
@@ -827,7 +826,7 @@ Disable the client. Pending requests will still be honored.
 
 Add a handler for a given message. If a server receives a message for which no
 handler is attached, the client who emitted the message will receive an
-`"unsupported message"` error.
+unsupported message error.
 
 ##### `server.createChannel(transport, [opts])`
 
@@ -841,8 +840,8 @@ Returns a `Channel`, representing a connection to a single `Client` instance.
 
 ##### Event `'handshake'`
 
-+ `request`
-+ `response`
++ `request` Handshake request.
++ `response` Handshake response.
 
 Emitted right before the server sends a handshake response.
 
