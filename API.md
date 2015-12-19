@@ -758,8 +758,8 @@ An RPC protocol.
     Defaults to 2048.
   + `frameSize` {Number} Size used when [framing messages][framing-messages].
     Defaults to 2048.
-  + `protocolHook(attrs)` {Function} Called each time a remote server's
-    protocol is parsed.
+  + `protocolHook(attrs)` {Function} Called each time a remote protocol is
+    parsed.
 
 Generate a [`Client`](#class-client) for this protocol. This client can then be
 used to communicate with a remote server of compatible protocol.
@@ -793,7 +793,7 @@ expensive, so should be cached if used repeatedly.
 + `request`
 + `response`
 
-Emitted when the server responds to a handshake.
+Emitted when the server's handshake response is received.
 
 ##### Event `'eot'`
 
@@ -815,25 +815,26 @@ Disable the client. Pending requests will still be honored.
 
 #### Class `Server`
 
+##### `server.onMessage(name, [opts,] listener)`
+
++ `name` {String} Message name.
++ `opts` {Object} Options:
+  + `override` {Boolean} At most a single handler can be attached per message.
+    Attaching a new handler with this option set will override any previous
+    handler (and throw an error without).
++ `listener(req, cb)` {Function} Handler, called each time a message with
+  matching name is received.
+
+Add a handler for a given message. If a server receives a message for which no
+handler is attached, the client who emitted the message will receive an
+`"unsupported message"` error.
+
 ##### `server.createChannel(transport, [opts])`
 
 + `transport` {Duplex|Object|Function}
-+ `opts` {Object}
-  + `IdType` {LogicalType} Metadata logical type.
-  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
-    Defaults to 2048.
-  + `frameSize` {Number} Size used when [framing messages][framing-messages].
-    Defaults to 2048.
-  + `protocolHook(attrs)` {Function} Called each time a remote server's
-    protocol is parsed.
++ `opts` {Object} Similar to `createClient`.
 
-Returns a `Channel`.
-
-##### `server.onMessage(name, listener)`
-
-+ `name` {String} Message name.
-+ `listener(req, cb)` {Function} Handler, called each time a message with
-  matching name is received.
+Returns a `Channel`, representing a connection to a single `Client` instance.
 
 
 #### Class `Channel`
@@ -843,11 +844,11 @@ Returns a `Channel`.
 + `request`
 + `response`
 
-Emitted when the server responds to a handshake.
+Emitted right before the server sends a handshake response.
 
 ##### Event `'eot'`
 
-End of transmission event, emitted after the client is destroyed and there are
+End of transmission event, emitted after the channel is destroyed and there are
 no more pending requests.
 
 ##### `channel.destroy()`
