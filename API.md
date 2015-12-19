@@ -750,7 +750,8 @@ An RPC protocol. Instances of this class should be obtained via
 
 ##### `protocol.createClient(transport, [opts])`
 
-+ `transport` {Duplex|Object|Function}
++ `transport` {Duplex|Object|Function} The transport used to communicate with
+  the remote server. Multiple argument types are supported, see below.
 + `opts` {Object}
   + `IdType` {LogicalType} Metadata logical type.
   + `bufferSize` {Number} Internal serialization buffer size (in bytes).
@@ -763,6 +764,20 @@ An RPC protocol. Instances of this class should be obtained via
 Generate a [`Client`](#class-client) for this protocol. This client can then be
 used to communicate with a remote server of compatible protocol.
 
+There are two major types of transports:
+
++ Stateful
+
+  A pair of binary streams `{readable, writable}`.
+
+  As a convenience passing a single duplex stream is also supported and
+  equivalent to passing `{readable: duplex, writable: duplex}`.
+
++ Stateless
+
+  Stream factory `fn(cb)` which should return a writable stream and call its
+  callback argument with a readable stream (when available).
+
 ##### `protocol.createServer()`
 
 Generate a [`Server`](#class-server) for this protocol. This server can be used
@@ -770,7 +785,7 @@ to respond to remote clients of compatible protocols.
 
 ##### `protocol.getType(name)`
 
-+ `name` {String} The type's fully qualified name.
++ `name` {String} A type's fully qualified name.
 
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
@@ -786,6 +801,9 @@ expensive, so should be cached if used repeatedly.
 
 
 #### Class `Client`
+
+Instance of this class are [`EventEmitter`s][event-emitter], with the following
+events:
 
 ##### Event `'handshake'`
 
@@ -830,13 +848,18 @@ unsupported message error.
 
 ##### `server.createChannel(transport, [opts])`
 
-+ `transport` {Duplex|Object|Function}
-+ `opts` {Object} Similar to `createClient`.
++ `transport` {Duplex|Object|Function} Similar to [`createClient`](#)'s
+  corresponding argument, except that readable and writable roles are reversed
+  in for stateless transports.
++ `opts` {Object} Identical to `createClient`'s options.
 
 Returns a `Channel`, representing a connection to a single `Client` instance.
 
 
 #### Class `Channel`
+
+Channels are the server-side equivalent of clients and are also
+[`EventEmitter`s][event-emitter], with the following events:
 
 ##### Event `'handshake'`
 
@@ -848,11 +871,13 @@ Emitted right before the server sends a handshake response.
 ##### Event `'eot'`
 
 End of transmission event, emitted after the channel is destroyed and there are
-no more pending requests.
+no more responses to send.
 
 ##### `channel.destroy()`
 
-Disable this channel.
+Disable this channel. In general you shouldn't need to call this: stateless
+channels will be destroyed automatically when a response is sent, and stateful
+channels are best destroyed from the client's side.
 
 
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
@@ -862,3 +887,4 @@ Disable this channel.
 [custom-long]: Advanced-usage#custom-long-types
 [logical-types]: Advanced-usage#logical-types
 [framing-messages]: https://avro.apache.org/docs/current/spec.html#Message+Framing
+[event-emitter]: https://nodejs.org/api/events.html#events_class_events_eventemitter
