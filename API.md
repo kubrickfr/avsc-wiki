@@ -2,7 +2,7 @@
 + [Avro types](#avro-types)
 + [Records](#records)
 + [Files and streams](#files-and-streams)
-+ [Protocols and remote calls](#protocols-and-remote-calls)
++ [RPC](#rpc)
 
 
 ## Parsing schemas
@@ -740,8 +740,7 @@ The encoding equivalent of `RawDecoder`.
 + `data` {Buffer} Serialized bytes.
 
 
-# Protocols and remote calls
-
+# RPC
 
 #### Class `Protocol(attrs, [opts])`
 
@@ -755,8 +754,8 @@ An RPC protocol.
 + `transport` {Duplex|Object|Function}
 + `opts` {Object}
   + `IdType` {LogicalType} Metadata logical type.
-  + `bufferSize` {Number} Internal message serialization buffer size (in
-    bytes). Defaults to 2048.
+  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
+    Defaults to 2048.
   + `frameSize` {Number} Size used when [framing messages][framing-messages].
     Defaults to 2048.
   + `protocolHook(attrs)` {Function} Called each time a remote server's
@@ -770,25 +769,16 @@ used to communicate with a remote server of compatible protocol.
 Generate a [`Server`](#class-server) for this protocol. This server can be used
 to respond to remote clients of compatible protocols.
 
-##### `protocol.getMessage(name)`
-
-+ `name` {String} The message's name.
-
-A [`Message`](#class-message) instance if it exists, `undefined` otherwise.
-
 ##### `protocol.getType(name)`
 
-+ `name` {String} The message's name.
++ `name` {String} The type's fully qualified name.
 
-A [`Message`](#class-message) instance if it exists, `undefined` otherwise.
+Convenience function to retrieve a type defined inside this protocol. Returns
+`undefined` if no type exists for the given name.
 
 ##### `protocol.getName()`
 
-The protocol's fully qualified name.
-
-##### `protocol.getHash()`
-
-MD5 of the protocol's schema.
+Returns the protocol's fully qualified name.
 
 ##### `protocol.toString()`
 
@@ -830,8 +820,8 @@ Disable the client. Pending requests will still be honored.
 + `transport` {Duplex|Object|Function}
 + `opts` {Object}
   + `IdType` {LogicalType} Metadata logical type.
-  + `bufferSize` {Number} Internal message serialization buffer size (in
-    bytes). Defaults to 2048.
+  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
+    Defaults to 2048.
   + `frameSize` {Number} Size used when [framing messages][framing-messages].
     Defaults to 2048.
   + `protocolHook(attrs)` {Function} Called each time a remote server's
@@ -871,4 +861,4 @@ Disable this channel.
 [fingerprint]: https://avro.apache.org/docs/current/spec.html#Schema+Fingerprints
 [custom-long]: Advanced-usage#custom-long-types
 [logical-types]: Advanced-usage#logical-types
-[frames]: https://avro.apache.org/docs/current/spec.html#Message+Framing
+[framing-messages]: https://avro.apache.org/docs/current/spec.html#Message+Framing
