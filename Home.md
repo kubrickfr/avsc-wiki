@@ -172,7 +172,6 @@ E.g. TCP sockets, stdin/stdout.
 var net = require('net');
 
 var protocol = avsc.parse('./math.avpr');
-
 var socket = net.createConnection({port: 8000});
 var client = protocol.createClient(socket, function () { socket.destroy(); });
 
@@ -191,7 +190,6 @@ client.emitMessage('add', {numbers: [1, 3, 5], delay: 2}, function (err, res) {
 var net = require('net');
 
 var protocol = avsc.parse('./math.avpr');
-
 var server = protocol.createServer()
   .onMessage('add', function (req, cb) {
     var sum = 0;
@@ -216,15 +214,10 @@ net.createServer()
 var http = require('http');
 
 var protocol = avsc.parse('./math.avpr');
-
 var client = protocol.createClient(function (cb) {
   return http.request({
     port: 3000,
-    path: '/avro',
-    headers: {
-      // 'content-length': 1000,
-      'content-type': 'avro/binary'
-    },
+    headers: {'content-type': 'avro/binary'},
     method: 'POST'
   }).on('response', function (res) { cb(res); });
 });
@@ -247,7 +240,6 @@ var express = require('express');
 
 var app = express();
 var protocol = avsc.parse('dat/human.avpr');
-
 var server = protocol.createServer()
   .onMessage('add', function (req, cb) {
     var sum = 0;
@@ -262,7 +254,6 @@ var server = protocol.createServer()
 app.post('/', function (req, res) {
   server.createChannel(function (cb) { cb(res); return req; });
 });
-
 app.listen(3000);
 ```
 
