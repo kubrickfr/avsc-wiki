@@ -3,6 +3,7 @@ This page is meant to provide a brief overview of `avsc`'s API:
 + [What is a `Type`?](#what-is-a-type)
 + [How do I get a `Type`?](#how-do-i-get-a-type)
 + [What about Avro files?](#what-about-avro-files)
++ [And RPC?](#and-rpc)
 + [Next steps](#next-steps)
 
 
@@ -159,6 +160,112 @@ Writing to an Avro container file is possible using
 var encoder = avsc.createFileEncoder('./processed.avro', type);
 ```
 
+## And RPC?
+
+### Over streams
+
+E.g. TCP sockets, stdin/stdout.
+
+#### Client
+
+```javascript
+var net = require('net');
+
+var protocol = avsc.parse('./math.avpr');
+
+var socket = net.createConnection({port: 8000});
+var client = protocol.createClient(socket, function () { socket.destroy(); });
+
+client.emitMessage('add', {numbers: [1, 3, 5], delay: 2}, function (err, res) {
+  if (err) {
+    throw err;
+  }
+  console.log(res);
+  client.destroy();
+});
+```
+
+#### Server
+
+```javascript
+var net = require('net');
+
+var protocol = avsc.parse('./math.avpr');
+
+var server = protocol.createServer()
+  .onMessage('add', function (req, cb) {
+    var sum = 0;
+    var nums = req.numbers;
+    var i, l;
+    for (i = 0, l = nums.length; i < l; i++) {
+      sum += nums[i];
+    }
+    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  });
+
+net.createServer()
+  .on('connection', function (con) { server.createChannel(con); })
+  .listen(8000);
+```
+
+### Over HTTP
+
+#### Client
+
+```javascript
+var http = require('http');
+
+var protocol = avsc.parse('./math.avpr');
+
+var client = protocol.createClient(function (cb) {
+  return http.request({
+    port: 3000,
+    path: '/avro',
+    headers: {
+      // 'content-length': 1000,
+      'content-type': 'avro/binary'
+    },
+    method: 'POST'
+  }).on('response', function (res) { cb(res); });
+});
+
+client.emitMessage('add', {numbers: [1, 3, 5], delay: 2}, function (err, res) {
+  if (err) {
+    throw err;
+  }
+  console.log(res);
+  client.destroy();
+});
+```
+
+#### Server
+
+Using [express][] for example:
+
+```javascript
+var express = require('express');
+
+var app = express();
+var protocol = avsc.parse('dat/human.avpr');
+
+var server = protocol.createServer()
+  .onMessage('add', function (req, cb) {
+    var sum = 0;
+    var nums = req.numbers;
+    var i, l;
+    for (i = 0, l = nums.length; i < l; i++) {
+      sum += nums[i];
+    }
+    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  });
+
+app.post('/', function (req, res) {
+  server.createChannel(function (cb) { cb(res); return req; });
+});
+
+app.listen(3000);
+```
+
 
 ## Next steps
 
@@ -170,3 +277,4 @@ through a few examples to show how the API can be used.
 
 [object-container]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
 [rstream]: https://nodejs.org/api/stream.html#stream_class_stream_readable
+[express]: https://github.com/strongloop/express
