@@ -748,7 +748,26 @@ The encoding equivalent of `RawDecoder`.
 An RPC protocol. Instances of this class should be obtained via
 [`parse`](#parseschema-opts).
 
-##### `protocol.createClient(transport, [opts])`
+##### `protocol.emit(name, req, emitter, [cb])`
+
++ `emitter` {MessageEmitter} See below.
++ `name` {String} Message name.
++ `req` {Object} Request value, must correspond to the message.
++ `cb(err, res)` {Function} Callback called when the remote call returns.
+
+Send a message.
+
+##### `protocol.on(name, handler)`
+
++ `name` {String} Message name.
++ `handler(req, listener, cb)` {Function} Handler, called each time a message
+  with matching name is received.
+
+Add a handler for a given message. If a server receives a message for which no
+handler is attached, the client who emitted the message will receive an
+unsupported message error.
+
+##### `protocol.createEmitter(transport, [opts,], [cb])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote server. Multiple argument types are supported, see below.
@@ -760,9 +779,11 @@ An RPC protocol. Instances of this class should be obtained via
     Defaults to 2048.
   + `protocolHook(attrs)` {Function} Called each time a remote protocol is
     parsed.
++ `cb(pending)` {Function} End of transmission callback.
 
-Generate a [`Client`](#class-client) for this protocol. This client can then be
-used to communicate with a remote server of compatible protocol.
+Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
+emitter can then be used to communicate with a remote server of compatible
+protocol.
 
 There are two major types of transports:
 
@@ -778,10 +799,19 @@ There are two major types of transports:
   Stream factory `fn(cb)` which should return a writable stream and call its
   callback argument with a readable stream (when available).
 
-##### `protocol.createServer()`
+##### `protocol.createListener(transport, [opts,] [cb])`
 
-Generate a [`Server`](#class-server) for this protocol. This server can be used
-to respond to remote clients of compatible protocols.
++ `transport` {Duplex|Object|Function} Similar to [`createEmitter`](#)'s
+  corresponding argument, except that readable and writable roles are reversed
+  in for stateless transports.
++ `opts` {Object} Identical to `createEmitter`'s options.
+
+Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
+listener can be used to respond to messages emitted from compatible protocols.
+
+##### `protocol.subprotocol()`
+
+Returns a copy of the original protocol, which inherits all its handlers.
 
 ##### `protocol.getType(name)`
 
@@ -794,90 +824,63 @@ Convenience function to retrieve a type defined inside this protocol. Returns
 
 Returns the protocol's fully qualified name.
 
-##### `protocol.toString()`
 
-Returns a parsable string representation of the protocol. This is relatively
-expensive, so should be cached if used repeatedly.
-
-
-#### Class `Client`
+#### Class `MessageEmitter`
 
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
 events:
 
 ##### Event `'handshake'`
 
-+ `request` Handshake request.
-+ `response` Handshake response.
++ `request` {Object} Handshake request.
++ `response` {Object} Handshake response.
 
 Emitted when the server's handshake response is received.
 
 ##### Event `'eot'`
 
++ `pending` {Number} Number of interrupted requests. This will always be zero,
+  unless the emitter was destroyed with `noWait` set.
+
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
 
-##### `client.emitMessage(name, req, cb)`
+##### `emitter.destroy([noWait])`
 
-+ `name` {String} Message name.
-+ `req` {Object} Request value, must correspond to the message.
-+ `cb(err, res)` {Function} Callback called when the remote call returns.
++ `noWait` {Boolean} Cancel any pending requests. By default pending requests
+  will still be honored.
 
-Send a message.
-
-##### `client.destroy()`
-
-Disable the client. Pending requests will still be honored.
+Disable the emitter.
 
 
-#### Class `Server`
+#### Class `MessageListener`
 
-##### `server.onMessage(name, [opts,] listener)`
-
-+ `name` {String} Message name.
-+ `opts` {Object} Options:
-  + `override` {Boolean} At most a single handler can be attached per message.
-    Attaching a new handler with this option set will override any previous
-    handler (and throw an error without).
-+ `listener(req, cb)` {Function} Handler, called each time a message with
-  matching name is received.
-
-Add a handler for a given message. If a server receives a message for which no
-handler is attached, the client who emitted the message will receive an
-unsupported message error.
-
-##### `server.createChannel(transport, [opts])`
-
-+ `transport` {Duplex|Object|Function} Similar to [`createClient`](#)'s
-  corresponding argument, except that readable and writable roles are reversed
-  in for stateless transports.
-+ `opts` {Object} Identical to `createClient`'s options.
-
-Returns a `Channel`, representing a connection to a single `Client` instance.
-
-
-#### Class `Channel`
-
-Channels are the server-side equivalent of clients and are also
+Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
 [`EventEmitter`s][event-emitter], with the following events:
 
 ##### Event `'handshake'`
 
-+ `request` Handshake request.
-+ `response` Handshake response.
++ `request` {Object} Handshake request.
++ `response` {Object} Handshake response.
 
 Emitted right before the server sends a handshake response.
 
 ##### Event `'eot'`
 
-End of transmission event, emitted after the channel is destroyed and there are
++ `pending` {Number} Number of cancelled pending responses. This will always be
+  zero, unless the listener was destroyed with `noWait` set.
+
+End of transmission event, emitted after the listener is destroyed and there are
 no more responses to send.
 
-##### `channel.destroy()`
+##### `listener.destroy([noWait])`
 
-Disable this channel. In general you shouldn't need to call this: stateless
-channels will be destroyed automatically when a response is sent, and stateful
-channels are best destroyed from the client's side.
++ `noWait` {Boolean} Don't wait for all pending responses to have been sent.
+
+Disable this listener and release underlying streams. In general you shouldn't
+need to call this: stateless listeners will be destroyed automatically when a
+response is sent, and stateful listeners are best destroyed from the client's
+side.
 
 
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
