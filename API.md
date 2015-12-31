@@ -2,7 +2,7 @@
 + [Avro types](#avro-types)
 + [Records](#records)
 + [Files and streams](#files-and-streams)
-+ [RPC](#rpc)
++ [IPC & RPC](#rpc)
 
 
 ## Parsing schemas
@@ -748,37 +748,35 @@ The encoding equivalent of `RawDecoder`.
 An RPC protocol. Instances of this class should be obtained via
 [`parse`](#parseschema-opts).
 
-##### `protocol.emit(name, req, emitter, [cb])`
+##### `protocol.emit(name, req, emitter, cb)`
 
-+ `emitter` {MessageEmitter} See below.
 + `name` {String} Message name.
 + `req` {Object} Request value, must correspond to the message.
++ `emitter` {MessageEmitter} See below.
 + `cb(err, res)` {Function} Callback called when the remote call returns.
 
 Send a message.
 
 ##### `protocol.on(name, handler)`
 
-+ `name` {String} Message name.
++ `name` {String} Message name. An error will be thrown if this name isn't
+  defined in the protocol.
 + `handler(req, listener, cb)` {Function} Handler, called each time a message
   with matching name is received.
 
-Add a handler for a given message. If a server receives a message for which no
-handler is attached, the client who emitted the message will receive an
-unsupported message error.
+Add a handler for a given message. If a message for which no handler is
+attached is received, its emitter will receive an unsupported message error.
 
-##### `protocol.createEmitter(transport, [opts,], [cb])`
+##### `protocol.createEmitter(transport, [opts,] [cb])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
-  the remote server. Multiple argument types are supported, see below.
-+ `opts` {Object}
+  the remote listener. Multiple argument types are supported, see below.
++ `opts` {Object} Options.
   + `IdType` {LogicalType} Metadata logical type.
   + `bufferSize` {Number} Internal serialization buffer size (in bytes).
     Defaults to 2048.
   + `frameSize` {Number} Size used when [framing messages][framing-messages].
     Defaults to 2048.
-  + `protocolHook(attrs)` {Function} Called each time a remote protocol is
-    parsed.
 + `cb(pending)` {Function} End of transmission callback.
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
@@ -803,8 +801,14 @@ There are two major types of transports:
 
 + `transport` {Duplex|Object|Function} Similar to [`createEmitter`](#)'s
   corresponding argument, except that readable and writable roles are reversed
-  in for stateless transports.
+  for stateless transports.
 + `opts` {Object} Identical to `createEmitter`'s options.
+  + `IdType` {LogicalType} Metadata logical type.
+  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
+    Defaults to 2048.
+  + `frameSize` {Number} Size used when [framing messages][framing-messages].
+    Defaults to 2048.
++ `cb(pending)` {Function} End of transmission callback.
 
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
@@ -812,6 +816,17 @@ listener can be used to respond to messages emitted from compatible protocols.
 ##### `protocol.subprotocol()`
 
 Returns a copy of the original protocol, which inherits all its handlers.
+
+##### `protocol.getMessages()`
+
+Retrieve all the messages defined in the protocol. Each message is an object
+with the following (read-only) properties:
+
++ `name` {String}
++ `requestType` {Type}
++ `responseType` {Type}
++ `errorType` {Type}
++ `oneWay` {Boolean}
 
 ##### `protocol.getType(name)`
 
