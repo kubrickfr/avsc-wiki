@@ -179,7 +179,7 @@ Using the following protocol as example (saved as `./math.avpr`):
     },
     "multiply": {
       "doc": "Another call, this time multiplying doubles.",
-      "request: [
+      "request": [
         {"name": "numbers", "type: "double"},
       ],
       "response": "double"
@@ -198,6 +198,7 @@ E.g. TCP sockets, stdin/stdout.
 var avsc = require('avsc'),
     net = require('net');
 
+// Sample implementation of our calls.
 var protocol = avsc.parse('./math.avpr')
   .on('add', function (req, ee, cb) {
     var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
@@ -208,6 +209,7 @@ var protocol = avsc.parse('./math.avpr')
     cb(null, prod);
   });
 
+// Listen for connections.
 net.createServer()
   .on('connection', function (con) { protocol.createListener(con); })
   .listen(8000);
@@ -219,15 +221,16 @@ net.createServer()
 var avsc = require('avsc'),
     net = require('net');
 
+// Connect to the server.
 var protocol = avsc.parse('./math.avpr');
 var socket = net.createConnection({port: 8000});
 var ee = protocol.createEmitter(socket);
 
+// A few sample calls.
 protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
   console.log(res); // 9!
   socket.destroy(); // Allow the process to exit.
 });
-
 protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
   console.log(res); // 8!
 });
@@ -278,7 +281,6 @@ var ee = protocol.createEmitter(function (cb) {
 protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
   console.log(res); // 9 again!
 });
-
 protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
   console.log(res); // 8 also!
 });
