@@ -743,9 +743,8 @@ The encoding equivalent of `RawDecoder`.
 
 # IPC & RPC
 
-Avro also defines a way of executing remote procedure calls using the types
-described above. We expose this via an API modeled after node.js' core
-[`EventEmitter`][event-emitter].
+Avro also defines a way of executing remote procedure calls. We expose this via
+an API modeled after node.js' core [`EventEmitter`][event-emitter].
 
 #### Class `Protocol`
 
@@ -755,7 +754,7 @@ instances of this class are very similar to `EventEmitter`s, exposing both
 [`emit`](#protocolemitname-req-emitter-cb) and [`on`](#protocolonname-handler)
 methods.
 
-Being able to send remote messages (and do so efficiently) introduces a few
+Being able to send remote messages (and to do so efficiently) introduces a few
 differences however:
 
 + The types used in each event (for both the emitted message and its response)
@@ -772,10 +771,11 @@ differences however:
 + `req` {Object} Request value, must correspond to the message's declared
   request type.
 + `emitter` {MessageEmitter} Emitter used to send the message. See
-  [createEmitter](#protocolcreateemittertransport-opts-cb) for how to obtain
+  [`createEmitter`](#protocolcreateemittertransport-opts-cb) for how to obtain
   one.
 + `cb(err, res)` {Function} Function called with the remote call's response
-  (and eventual error) when available.
+  (and eventual error) when available. This can be omitted when the message is
+  one way.
 
 Send a message. This is always done asynchronously.
 
@@ -787,7 +787,8 @@ Send a message. This is always done asynchronously.
 + `handler(req, listener, cb)` {Function} Handler, called each time a message
   with matching name is received. The `listener` argument will be the
   corresponding `MessageListener` instance. The final callback argument
-  `cb(err, res)` should be called to send the response back to the emitter.
+  `cb(err, res)` should be called to send the response back to the emitter
+  (except when the message is one way, in which case `cb` will be `undefined`).
 
 Add a handler for a given message.
 
@@ -852,16 +853,16 @@ with the following (read-only) properties:
 + `errorType` {Type}
 + `oneWay` {Boolean}
 
+##### `protocol.getName()`
+
+Returns the protocol's fully qualified name.
+
 ##### `protocol.getType(name)`
 
 + `name` {String} A type's fully qualified name.
 
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
-
-##### `protocol.getName()`
-
-Returns the protocol's fully qualified name.
 
 
 #### Class `MessageEmitter`

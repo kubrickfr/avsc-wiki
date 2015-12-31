@@ -162,51 +162,84 @@ var encoder = avsc.createFileEncoder('./processed.avro', type);
 
 ## And RPC?
 
+Using the following protocol as example (save as `./math.avpr`):
+
+```json
+{
+  "protocol": "Math",
+  "messages": {
+    "add": {
+      "request": [
+        {"name": "numbers", "type": {"type": "array", "items": "int"}},
+        {"name": "delay", "type": "float", "default": 0}
+      ],
+      "response": "int"
+    }
+  }
+}
+```
+
 ### Over streams
 
 E.g. TCP sockets, stdin/stdout.
 
-#### Client
-
-```javascript
-var net = require('net');
-
-var protocol = avsc.parse('./math.avpr');
-var socket = net.createConnection({port: 8000});
-var client = protocol.createClient(socket, function () { socket.destroy(); });
-
-client.emitMessage('add', {numbers: [1, 3, 5], delay: 2}, function (err, res) {
-  if (err) {
-    throw err;
-  }
-  console.log(res);
-  client.destroy();
-});
-```
-
 #### Server
 
 ```javascript
-var net = require('net');
+var avsc = require('avsc'),
+    net = require('net');
 
-var protocol = avsc.parse('./math.avpr');
-var server = protocol.createServer()
-  .onMessage('add', function (req, cb) {
-    var sum = 0;
-    var nums = req.numbers;
-    var i, l;
-    for (i = 0, l = nums.length; i < l; i++) {
-      sum += nums[i];
-    }
+var protocol = avsc.parse('./math.avpr')
+  .on('add', function (req, ee, cb) {
+    var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
     setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
   });
 
 net.createServer()
-  .on('connection', function (con) { server.createChannel(con); })
+  .on('connection', function (con) { protocol.createListener(con); })
   .listen(8000);
 ```
 
+#### Client
+
+```javascript
+var avsc = require('avsc'),
+    net = require('net');
+
+var protocol = avsc.parse('./math.avpr');
+var socket = net.createConnection({port: 8000});
+var ee = protocol.createEmitter(socket);
+
+protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
+  if (err) {
+    throw err;
+  }
+  console.log(res); // == 9!
+  socket.destroy(); // Allow the process to exit.
+});
+```
+
 ### Over HTTP
+
+#### Server
+
+Using [express][] for example:
+
+```javascript
+var app = require('express')();
+
+var protocol = avsc.parse('./math.avpr')
+  .on('add', function (req, ee, cb) {
+    var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
+    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  });
+
+app.post('/', function (req, res) {
+  protocol.createListener(function (cb) { cb(res); return req; });
+});
+
+app.listen(3000);
+```
 
 #### Client
 
@@ -214,7 +247,8 @@ net.createServer()
 var http = require('http');
 
 var protocol = avsc.parse('./math.avpr');
-var client = protocol.createClient(function (cb) {
+
+var ee = protocol.createEmitter(function (cb) {
   return http.request({
     port: 3000,
     headers: {'content-type': 'avro/binary'},
@@ -222,39 +256,12 @@ var client = protocol.createClient(function (cb) {
   }).on('response', function (res) { cb(res); });
 });
 
-client.emitMessage('add', {numbers: [1, 3, 5], delay: 2}, function (err, res) {
+protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
   if (err) {
     throw err;
   }
   console.log(res);
-  client.destroy();
 });
-```
-
-#### Server
-
-Using [express][] for example:
-
-```javascript
-var express = require('express');
-
-var app = express();
-var protocol = avsc.parse('dat/human.avpr');
-var server = protocol.createServer()
-  .onMessage('add', function (req, cb) {
-    var sum = 0;
-    var nums = req.numbers;
-    var i, l;
-    for (i = 0, l = nums.length; i < l; i++) {
-      sum += nums[i];
-    }
-    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
-  });
-
-app.post('/', function (req, res) {
-  server.createChannel(function (cb) { cb(res); return req; });
-});
-app.listen(3000);
 ```
 
 
