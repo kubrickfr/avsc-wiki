@@ -766,22 +766,30 @@ differences however:
 
 ##### `protocol.emit(name, req, emitter, cb)`
 
-+ `name` {String} Message name.
-+ `req` {Object} Request value, must correspond to the message.
-+ `emitter` {MessageEmitter} See below.
-+ `cb(err, res)` {Function} Callback called when the remote call returns.
++ `name` {String} Name of the message to emit. If this message is sent to a
+  `Protocol` instance with no handler defined for this name, an "unsupported
+  message" error will be returned.
++ `req` {Object} Request value, must correspond to the message's declared
+  request type.
++ `emitter` {MessageEmitter} Emitter used to send the message. See
+  [createEmitter](#protocolcreateemittertransport-opts-cb) for how to obtain
+  one.
++ `cb(err, res)` {Function} Function called with the remote call's response
+  (and eventual error) when available.
 
-Send a message.
+Send a message. This is always done asynchronously.
 
 ##### `protocol.on(name, handler)`
 
-+ `name` {String} Message name. An error will be thrown if this name isn't
-  defined in the protocol.
++ `name` {String} Message name to add the handler for. An error will be thrown
+  if this name isn't defined in the protocol. At most one handler can exist for
+  a given name (any previously defined handler will be overwritten).
 + `handler(req, listener, cb)` {Function} Handler, called each time a message
-  with matching name is received.
+  with matching name is received. The `listener` argument will be the
+  corresponding `MessageListener` instance. The final callback argument
+  `cb(err, res)` should be called to send the response back to the emitter.
 
-Add a handler for a given message. If a message for which no handler is
-attached is received, its emitter will receive an unsupported message error.
+Add a handler for a given message.
 
 ##### `protocol.createEmitter(transport, [opts,] [cb])`
 
