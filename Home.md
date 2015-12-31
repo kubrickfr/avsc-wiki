@@ -162,18 +162,27 @@ var encoder = avsc.createFileEncoder('./processed.avro', type);
 
 ## And RPC?
 
-Using the following protocol as example (save as `./math.avpr`):
+Using the following protocol as example (saved as `./math.avpr`):
 
 ```json
 {
   "protocol": "Math",
+  "doc": "A sample protocol for performing simple math.",
   "messages": {
     "add": {
+      "doc": "A call which adds integers, optionally after some delay.",
       "request": [
         {"name": "numbers", "type": {"type": "array", "items": "int"}},
         {"name": "delay", "type": "float", "default": 0}
       ],
       "response": "int"
+    },
+    "multiply": {
+      "doc": "Another call, this time multiplying doubles.",
+      "request: [
+        {"name": "numbers", "type: "double"},
+      ],
+      "response": "double"
     }
   }
 }
@@ -193,6 +202,10 @@ var protocol = avsc.parse('./math.avpr')
   .on('add', function (req, ee, cb) {
     var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
     setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  })
+  .on('multiply', function (req, ee, cb) {
+    var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
+    cb(null, prod);
   });
 
 net.createServer()
@@ -211,11 +224,12 @@ var socket = net.createConnection({port: 8000});
 var ee = protocol.createEmitter(socket);
 
 protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
-  if (err) {
-    throw err;
-  }
-  console.log(res); // == 9!
+  console.log(res); // 9!
   socket.destroy(); // Allow the process to exit.
+});
+
+protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
+  console.log(res); // 8!
 });
 ```
 
@@ -226,12 +240,17 @@ protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
 Using [express][] for example:
 
 ```javascript
-var app = require('express')();
+var avsc = require('avsc'),
+    app = require('express')();
 
 var protocol = avsc.parse('./math.avpr')
   .on('add', function (req, ee, cb) {
     var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
     setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  })
+  .on('multiply', function (req, ee, cb) {
+    var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
+    cb(null, prod);
   });
 
 app.post('/', function (req, res) {
@@ -244,10 +263,10 @@ app.listen(3000);
 #### Client
 
 ```javascript
-var http = require('http');
+var avsc = require('avsc'),
+    http = require('http');
 
 var protocol = avsc.parse('./math.avpr');
-
 var ee = protocol.createEmitter(function (cb) {
   return http.request({
     port: 3000,
@@ -257,10 +276,11 @@ var ee = protocol.createEmitter(function (cb) {
 });
 
 protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
-  if (err) {
-    throw err;
-  }
-  console.log(res);
+  console.log(res); // 9 again!
+});
+
+protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
+  console.log(res); // 8 also!
 });
 ```
 
