@@ -2,7 +2,7 @@
 + [Avro types](#avro-types)
 + [Records](#records)
 + [Files and streams](#files-and-streams)
-+ [IPC & RPC](#rpc)
++ [IPC & RPC](#ipc--rpc)
 
 
 ## Parsing schemas
@@ -741,12 +741,28 @@ The encoding equivalent of `RawDecoder`.
 + `data` {Buffer} Serialized bytes.
 
 
-# RPC
+# IPC & RPC
+
+Avro also defines a way of executing remote procedure calls using the types
+described above. We expose this via an API modeled after node.js' core
+[`EventEmitter`][event-emitter].
 
 #### Class `Protocol`
 
-An RPC protocol. Instances of this class should be obtained via
-[`parse`](#parseschema-opts).
+An Avro protocol provides a way of sending remote messages (for example to
+another machine, or another process on the same machine). For this reason,
+instances of this class are very similar to `EventEmitter`s, exposing both
+[`emit`](#protocolemitname-req-emitter-cb) and [`on`](#protocolonname-handler)
+methods.
+
+Being able to send remote messages (and do so efficiently) introduces a few
+differences however:
+
++ The types used in each event (for both the emitted message and its response)
+  must be defined upfront in a [protocol declaration][protocol-declaration].
+  `Protocol` instances are actually obtained by
+  [`parse`](#parseschema-opts)-ing such a declaration.
+
 
 ##### `protocol.emit(name, req, emitter, cb)`
 
@@ -906,3 +922,4 @@ side.
 [logical-types]: Advanced-usage#logical-types
 [framing-messages]: https://avro.apache.org/docs/current/spec.html#Message+Framing
 [event-emitter]: https://nodejs.org/api/events.html#events_class_events_eventemitter
+[protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
