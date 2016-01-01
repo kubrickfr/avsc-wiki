@@ -162,7 +162,12 @@ var encoder = avsc.createFileEncoder('./processed.avro', type);
 
 ## And RPC?
 
-Using the following protocol as example (saved as `./math.avpr`):
+Finally, `avsc` provides an efficient and "type-safe" API for communicating
+with remote node processes via [`Protocol`s](API#class-protocol).
+
+To enable this, wwe need only declare the types involved inside an Avro
+protocol schema. For example, consider the following simple protocol which
+supports two calls (saved as `./math.avpr`):
 
 ```json
 {
@@ -180,7 +185,7 @@ Using the following protocol as example (saved as `./math.avpr`):
     "multiply": {
       "doc": "Another call, this time multiplying doubles.",
       "request": [
-        {"name": "numbers", "type: "double"},
+        {"name": "numbers", "type": "double"},
       ],
       "response": "double"
     }
@@ -188,9 +193,12 @@ Using the following protocol as example (saved as `./math.avpr`):
 }
 ```
 
-### Over streams
+We can then use this protocol to communicate between any two node processes
+connected by binary streams. See below for a few different common use-cases.
 
-E.g. TCP sockets, stdin/stdout.
+### Persistent streams
+
+E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
 
 #### Server
 
@@ -236,7 +244,9 @@ protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
 });
 ```
 
-### Over HTTP
+### Transient streams
+
+For example HTTP requests/responses.
 
 #### Server
 
