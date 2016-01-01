@@ -177,7 +177,7 @@ protocol which supports two calls (saved as `./math.avpr`):
     "multiply": {
       "doc": "A call for multiplying doubles.",
       "request": [
-        {"name": "numbers", "type": "double"},
+        {"name": "numbers", "type": {"type": "array", "items": "double"}}
       ],
       "response": "double"
     },
