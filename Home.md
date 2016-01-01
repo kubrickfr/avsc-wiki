@@ -163,17 +163,24 @@ var encoder = avsc.createFileEncoder('./processed.avro', type);
 ## And RPC?
 
 Finally, `avsc` provides an efficient and "type-safe" API for communicating
-with remote node processes via [`Protocol`s](API#class-protocol).
+with remote node processes via [`Protocol`s](Api#class-protocol).
 
-To enable this, wwe need only declare the types involved inside an Avro
-protocol schema. For example, consider the following simple protocol which
-supports two calls (saved as `./math.avpr`):
+To enable this, we first declare the types involved inside an [Avro
+protocol][protocol-declaration]. For example, consider the following simple
+protocol which supports two calls (saved as `./math.avpr`):
 
 ```json
 {
   "protocol": "Math",
-  "doc": "A sample protocol for performing simple math.",
+  "doc": "A sample interface for performing math.",
   "messages": {
+    "multiply": {
+      "doc": "A call for multiplying doubles.",
+      "request": [
+        {"name": "numbers", "type": "double"},
+      ],
+      "response": "double"
+    },
     "add": {
       "doc": "A call which adds integers, optionally after some delay.",
       "request": [
@@ -181,105 +188,75 @@ supports two calls (saved as `./math.avpr`):
         {"name": "delay", "type": "float", "default": 0}
       ],
       "response": "int"
-    },
-    "multiply": {
-      "doc": "Another call, this time multiplying doubles.",
-      "request": [
-        {"name": "numbers", "type": "double"},
-      ],
-      "response": "double"
     }
   }
 }
 ```
 
-We can then use this protocol to communicate between any two node processes
-connected by binary streams. See below for a few different common use-cases.
+Servers and clients then share the same protocol and respectively:
+
++ Implement interface calls (servers):
+
+  ```javascript
+  var protocol = avsc.parse('./math.avpr')
+    .on('add', function (req, ee, cb) {
+      var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
+      setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+    })
+    .on('multiply', function (req, ee, cb) {
+      var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
+      cb(null, prod);
+    });
+  ```
+
++ Call the interface (clients):
+
+  ```javascript
+  var protocol = avsc.parse('./math.avpr');
+  var ee; // Emitter, see below for various instantiation examples.
+
+  protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
+    console.log(res); // 9!
+  });
+  protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
+    console.log(res); // 8!
+  });
+  ```
+
+`avsc` supports communication  between any two node processes connected by
+binary streams. See below for a few different common use-cases.
 
 ### Persistent streams
 
 E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
 
-#### Server
-
-```javascript
-var avsc = require('avsc'),
-    net = require('net');
-
-// Sample implementation of our calls.
-var protocol = avsc.parse('./math.avpr')
-  .on('add', function (req, ee, cb) {
-    var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
-    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
-  })
-  .on('multiply', function (req, ee, cb) {
-    var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
-    cb(null, prod);
-  });
-
-// Listen for connections.
-net.createServer()
-  .on('connection', function (con) { protocol.createListener(con); })
-  .listen(8000);
-```
-
 #### Client
 
 ```javascript
-var avsc = require('avsc'),
-    net = require('net');
+var net = require('net');
 
-// Connect to the server.
-var protocol = avsc.parse('./math.avpr');
-var socket = net.createConnection({port: 8000});
-var ee = protocol.createEmitter(socket);
+var ee = protocol.createEmitter(net.createConnection({port: 8000}));
+```
 
-// A few sample calls.
-protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
-  console.log(res); // 9!
-  socket.destroy(); // Allow the process to exit.
-});
-protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
-  console.log(res); // 8!
-});
+#### Server
+
+```javascript
+var net = require('net');
+
+net.createServer()
+  .on('connection', function (con) { protocol.createListener(con); })
+  .listen(8000);
 ```
 
 ### Transient streams
 
 For example HTTP requests/responses.
 
-#### Server
-
-Using [express][] for example:
-
-```javascript
-var avsc = require('avsc'),
-    app = require('express')();
-
-var protocol = avsc.parse('./math.avpr')
-  .on('add', function (req, ee, cb) {
-    var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
-    setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
-  })
-  .on('multiply', function (req, ee, cb) {
-    var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
-    cb(null, prod);
-  });
-
-app.post('/', function (req, res) {
-  protocol.createListener(function (cb) { cb(res); return req; });
-});
-
-app.listen(3000);
-```
-
 #### Client
 
 ```javascript
-var avsc = require('avsc'),
-    http = require('http');
+var http = require('http');
 
-var protocol = avsc.parse('./math.avpr');
 var ee = protocol.createEmitter(function (cb) {
   return http.request({
     port: 3000,
@@ -287,13 +264,20 @@ var ee = protocol.createEmitter(function (cb) {
     method: 'POST'
   }).on('response', function (res) { cb(res); });
 });
+```
 
-protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
-  console.log(res); // 9 again!
+#### Server
+
+Using [express][] for example:
+
+```javascript
+var app = require('express')();
+
+app.post('/', function (req, res) {
+  protocol.createListener(function (cb) { cb(res); return req; });
 });
-protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
-  console.log(res); // 8 also!
-});
+
+app.listen(3000);
 ```
 
 
@@ -308,3 +292,4 @@ through a few examples to show how the API can be used.
 [object-container]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
 [rstream]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 [express]: https://github.com/strongloop/express
+[protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
