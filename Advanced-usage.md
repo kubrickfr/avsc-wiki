@@ -247,8 +247,7 @@ different characteristics (e.g. some are faster but do not run in the browser).
 Rather than tie us to any particular one, `avsc` lets us choose the most
 adequate with [`LongType.using`](Api#longtypeusingmethods-nounpack). Below
 are a few sample implementations for popular libraries (refer to the API
-documentation for details on each option; a helper script is also available to
-validate our implementation inside `etc/scripts/`):
+documentation for details on each option):
 
 + [`node-int64`](https://www.npmjs.com/package/node-int64):
 

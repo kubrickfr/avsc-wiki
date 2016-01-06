@@ -213,7 +213,7 @@ Servers and clients then share the same protocol and respectively:
 
   ```javascript
   var protocol = avsc.parse('./math.avpr');
-  var ee; // Emitter, see below for various instantiation examples.
+  var ee; // Message emitter, see below for various instantiation examples.
 
   protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
     console.log(res); // 9!
