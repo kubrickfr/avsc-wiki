@@ -18,9 +18,8 @@ Libraries compared:
 + [`node-msgpack`](https://www.npmjs.com/package/msgpack-lite), official
   MessagePack implementation.
 
-We show below representative throughput rates (higher is better): for
-processing a [realistic record schema][coupon-schema], modeled after a popular
-open-source API.
+We show below throughput rates (higher is better) for processing a [realistic
+record schema][coupon-schema], modeled after a popular open-source API.
 
 ## Node.js
 
@@ -100,3 +99,5 @@ String.avsc        1477833  100    975808   66       66754  5    271025  18
 Union.avsc         1262626  100   1075132   85       44135  3    130373  10
 User.avsc           153453   50    305900  100        2886  1      3104   1
 ```
+
+[coupon-schema]: https://raw.githubusercontent.com/mtth/avsc/master/etc/schemas/Coupon.avsc
