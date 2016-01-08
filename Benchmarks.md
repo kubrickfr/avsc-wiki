@@ -22,6 +22,18 @@ We show below representative throughput rates (higher is better) for processing
 a [realistic record schema][coupon-schema], modeled after a popular open-source
 API.
 
+For this schema, the average encoding sizes are (note that Avro yields the
+smallest encoding):
+
+Library | Size (bytes) | % of max
+------- | ------------ | --------
+`avsc` | 71 | 20%
+`json` | 359 | 100%
+`protobuf` | 85 | 24%
+`pson` | 124 | 35%
+`msgpack` | 231 | 64%
+
+
 ## Node.js
 
 As of `3.0.0` (`3f7a977`).
