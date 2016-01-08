@@ -18,8 +18,9 @@ Libraries compared:
 + [`node-msgpack`](https://www.npmjs.com/package/msgpack-lite), official
   MessagePack implementation.
 
-We show below throughput rates (higher is better) for processing a [realistic
-record schema][coupon-schema], modeled after a popular open-source API.
+We show below representative throughput rates (higher is better) for processing
+a [realistic record schema][coupon-schema], modeled after a popular open-source
+API.
 
 ## Node.js
 
@@ -30,7 +31,8 @@ As of `3.0.0` (`3f7a977`).
 
 ## Browsers
 
-As of `3.2.1` (`c67aef9`).
+As of `3.2.1` (`c67aef9`). The original benchmarks are available by clicking on
+the charts below.
 
 ### Decoding
 
@@ -39,8 +41,6 @@ As of `3.2.1` (`c67aef9`).
 ### Encoding
 
 [![Encode browser chart](img/coupon-encode-3.2.1.png)](http://jsperf.com/avsc-encode-coupon/2)
-
-The original benchmarks are available by clicking on the charts above.
 
 
 # Avro implementations
