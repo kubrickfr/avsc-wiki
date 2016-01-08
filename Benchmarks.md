@@ -32,19 +32,16 @@ The original benchmarks are available by clicking on the charts above.
 
 # Avro implementations
 
-Displayed rates were computed over 150,000 records, taking the median of 15
-runs. Percentages are relative to the fastest throughput for the schema. All
+The tables below should throughput rates (records per second, higher is
+better). They were computed over 150,000 records, taking the median of 15 runs.
+Percentages are relative to the fastest throughput for the schema. All
 benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
 available in `etc/benchmarks/`. `-1` values indicate that the library doesn't
 support the schema.
 
 As of `3.0.0` (`7bc3503`).
 
-## Decoding
-
-Throughput rates for different schemas (records per second, higher is better):
-
-![Decoding](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/avro-decode-throughput-7bc3503.png)
+### Decoding
 
 ```
 library          java-avro      node-avsc      python-avro    ruby-avro
@@ -67,11 +64,7 @@ Union.avsc         3768844   58   6476772  100       37964  1    135492  2
 User.avsc           638570  100    570437   89        2488  0      5868  1
 ```
 
-## Encoding
-
-Throughput rates for different schemas (records per second, higher is better):
-
-![Encoding](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/avro-encode-throughput-7bc3503.png)
+### Encoding
 
 ```
 library          java-avro      node-avsc      python-avro    ruby-avro
