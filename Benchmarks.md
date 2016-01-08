@@ -1,10 +1,8 @@
 Various benchmarks are available:
 
 + [JavaScript serialization libraries](#javascript-serialization-libraries)
-
   + [Node.js](#nodejs)
   + [Browsers](#browsers)
-
 + [Avro implementations](#avro-implementations)
 
 
@@ -14,14 +12,19 @@ Various benchmarks are available:
 
 As of `3.0.0` (`3f7a977`), for `Coupon.avsc`.
 
-![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/charts/coupons-throughput-2172789.png)
+![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/javascript/results/png/coupons-throughput-2172789.png)
 
 
 ## Browsers
 
 As of `3.2.1` (`c67aef9`), also for `Coupon.avsc`.
 
+### Decoding
+
 [![Decode browser chart](img/coupon-decode-3.2.1.png)](http://jsperf.com/avsc-decode-coupon/2)
+
+### Encoding
+
 [![Encode browser chart](img/coupon-encode-3.2.1.png)](http://jsperf.com/avsc-encode-coupon/2)
 
 The original benchmarks are available by clicking on the charts above.
