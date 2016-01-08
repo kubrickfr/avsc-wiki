@@ -8,16 +8,30 @@ Various benchmarks are available:
 
 # JavaScript serialization libraries
 
+Libraries compared:
+
++ `node-avsc`, this package.
++ `node-json`, built-in JSON serializer.
++ [`node-protobuf`](https://www.npmjs.com/package/protobufjs), most popular
+  Protocol Buffers implementation.
++ [`node-pson`](https://www.npmjs.com/package/pson), alternative to JSON.
++ [`node-msgpack`](https://www.npmjs.com/package/msgpack-lite), official
+  MessagePack implementation.
+
+We show below representative throughput rates (higher is better): for
+processing a [realistic record schema][coupon-schema], modeled after a popular
+open-source API.
+
 ## Node.js
 
-As of `3.0.0` (`3f7a977`), for `Coupon.avsc`.
+As of `3.0.0` (`3f7a977`).
 
 ![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/javascript/results/png/coupons-throughput-2172789.png)
 
 
 ## Browsers
 
-As of `3.2.1` (`c67aef9`), also for `Coupon.avsc`.
+As of `3.2.1` (`c67aef9`).
 
 ### Decoding
 
