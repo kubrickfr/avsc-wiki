@@ -1,8 +1,9 @@
 Various benchmarks are available:
 
 + [JavaScript serialization libraries](#javascript-serialization-libraries)
-  + [Node.js](#nodejs)
-  + [Browsers](#browsers)
+  + [Node.js throughputs](#nodejs-throughputs)
+  + [Browser throughputs](#browser-throughputs)
+  + [Encoding sizes](#encoding-sizes)
 + [Avro implementations](#avro-implementations)
 
 
@@ -22,37 +23,42 @@ We show below representative throughput rates (higher is better) for processing
 a [realistic record schema][coupon-schema], modeled after a popular open-source
 API.
 
-For this schema, the average encoding sizes are (note that Avro yields the
-smallest encoding):
 
-Library | Size (bytes) | % of max
-------- | ------------ | --------
-`avsc` | 71 | 20%
-`json` | 359 | 100%
-`protobuf` | 85 | 24%
-`pson` | 124 | 35%
-`msgpack` | 231 | 64%
-
-
-## Node.js
+## Node.js throughputs
 
 As of `3.0.0` (`3f7a977`).
 
 ![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/javascript/results/png/coupons-throughput-2172789.png)
 
 
-## Browsers
+## Browser throughputs
 
 As of `3.2.1` (`c67aef9`). The original benchmarks are available by clicking on
 the charts below.
+
 
 ### Decoding
 
 [![Decode browser chart](img/coupon-decode-3.2.1.png)](http://jsperf.com/avsc-decode-coupon/2)
 
+
 ### Encoding
 
 [![Encode browser chart](img/coupon-encode-3.2.1.png)](http://jsperf.com/avsc-encode-coupon/2)
+
+
+## Encoding sizes
+
+For completeness, the average encoding sizes for this schema are displayed in
+the table below.
+
+Encoding | Size (bytes) | % of max
+-------- | ------------ | --------
+Avro | 71 | 20%
+JSON | 359 | 100%
+Protobuf | 85 | 24%
+PSON | 124 | 35%
+MessagePack | 231 | 64%
 
 
 # Avro implementations
