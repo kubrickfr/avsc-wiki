@@ -14,7 +14,7 @@ Depending on which module you `require`, you will get a different distribution:
 + `'avsc/etc/browser/avsc-types'`: the lightest distribution (~20kB) which
   only includes serialization support.
 
-In all the above cases, the core `avsc` libraries only represent a small
-fraction of the total size (~15kB with everything included). If you were
-already using some of `avsc`'s dependencies (e.g. `'events'`), your bundle will
-increase by less than the sizes indicated.
+In all the above cases, the core `avsc` libraries only represent a fraction of
+the total size (~15kB with everything included). If you were already using some
+of `avsc`'s dependencies (e.g. `'events'`), your bundle will increase by less
+than the sizes indicated.
