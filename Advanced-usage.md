@@ -15,7 +15,7 @@ decoding fields, we can significantly increase throughput.
 As a motivating example, consider the following event:
 
 ```javascript
-var heavyType = avsc.parse({
+var heavyType = avro.parse({
   name: 'Event',
   type: 'record',
   fields: [
@@ -33,7 +33,7 @@ by using the following reader's schema, and creating the corresponding
 resolver:
 
 ```javascript
-var lightType = avsc.parse({
+var lightType = avro.parse({
   name: 'LightEvent',
   aliases: ['Event'],
   type: 'record',
@@ -109,7 +109,7 @@ DateType.prototype._toValue = function (date) { return +date; };
 Usage is straightforward:
 
 ```javascript
-var type = avsc.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
+var type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
 
 // We create a new transaction.
 var transaction = {
@@ -145,7 +145,7 @@ DateType.prototype._resolve = function (type) {
 And use it as follows:
 
 ```javascript
-var stringType = avsc.parse('string');
+var stringType = avro.parse('string');
 var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
 var buf = stringType.toBuffer(str);
 var resolver = dateType.createResolver(stringType);
@@ -256,7 +256,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('node-int64');
 
-  var longType = avsc.types.LongType.using({
+  var longType = avro.types.LongType.using({
     fromBuffer: function (buf) { return new Long(buf); },
     toBuffer: function (n) { return n.toBuffer(); },
     fromJSON: function (obj) { return new Long(obj); },
@@ -271,7 +271,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('int64-native');
 
-  var longType = avsc.types.LongType.using({
+  var longType = avro.types.LongType.using({
     fromBuffer: function (buf) { return new Long('0x' + buf.toString('hex')); },
     toBuffer: function (n) { return new Buffer(n.toString().slice(2), 'hex'); },
     fromJSON: function (obj) { return new Long(obj); },
@@ -286,7 +286,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('long');
 
-  var longType = avsc.types.LongType.using({
+  var longType = avro.types.LongType.using({
     fromBuffer: function (buf) {
       return new Long(buf.readInt32LE(), buf.readInt32LE(4));
     },
@@ -311,7 +311,7 @@ the `registry` when parsing a schema:
 ```javascript
 // Our schema here is very simple, but this would work for arbitrarily complex
 // ones (applying to all longs inside of it).
-var type = avsc.parse('long', {registry: {'long': longType}});
+var type = avro.parse('long', {registry: {'long': longType}});
 
 // Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
 // rounded when represented as a double):
@@ -373,7 +373,7 @@ Servers and clients then share the same protocol and respectively:
 + Implement interface calls (servers):
 
   ```javascript
-  var protocol = avsc.parse('./math.avpr')
+  var protocol = avro.parse('./math.avpr')
     .on('add', function (req, ee, cb) {
       var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
       setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
@@ -387,7 +387,7 @@ Servers and clients then share the same protocol and respectively:
 + Call the interface (clients):
 
   ```javascript
-  var protocol = avsc.parse('./math.avpr');
+  var protocol = avro.parse('./math.avpr');
   var ee; // Message emitter, see below for various instantiation examples.
 
   protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
