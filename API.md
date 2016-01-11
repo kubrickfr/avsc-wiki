@@ -75,6 +75,19 @@ var buf = type.toBuffer(PETS.CAT);
 Finally, type hooks work well with logical types (for example to dynamically
 add `logicalType` attributes to a schema).
 
+### `assemble(path, [opts,] cb)`
+
++ `path` {String} Path to Avro IDL file.
++ `opts` {Object} Options:
+  + `loader(path, cb)` {Function} Function called to load each file. The
+    default will look up the files in the local file-system and load them via
+    `fs.readFile`.
++ `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
+  property will contain the path to the file which caused it.
+
+Assemble an IDL file into its attributes. These can then be passed to `parse`
+to create the corresponding protocol.
+
 
 ## Avro types
 
