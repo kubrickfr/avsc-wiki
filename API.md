@@ -247,6 +247,10 @@ try {
     field is populated. The value returned by this function will be used
     instead of `any`. `field` is the current `Field` instance and `type` the
     parent type.
+  + `qualifyNames` {Boolean} The branch's key in the union object should be the
+    qualified name of its type, however some serializers incorrectly omit the
+    namespace (which can cause collisions). Passing in this option will attempt
+    to lookup unqualified names as well and return correctly qualified names.
   + `wrapUnions` {Boolean} Avro's JSON representation expects all union values
     to be wrapped inside objects. Setting this parameter to `true` will try to
     wrap unwrapped union values into their first matching type.
