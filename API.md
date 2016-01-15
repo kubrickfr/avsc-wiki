@@ -79,9 +79,10 @@ add `logicalType` attributes to a schema).
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
-  + `reader(path, cb)` {Function} Function called to load each file. The
-    default will look up the files in the local file-system and load them via
-    `fs.readFile`.
+  + `importHook(path, kind, cb)` {Function} Function called to load each file.
+    The default will look up the files in the local file-system and load them
+    via `fs.readFile`. `kind` is one of `"idl"`, `"protocol"`, or `"schema"`
+    depending on the kind of import requested.
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
