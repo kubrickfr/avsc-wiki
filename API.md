@@ -513,6 +513,14 @@ The [`Record`](#class-record) constructor for instances of this type.
 
 The possible types that this union can take.
 
+Additionally, non-`null` values (i.e. single-key objects) decoded by this type
+expose the following method:
+
+##### `obj.getBranchType()`
+
+Returns the currently active branch's type. This can for example be used to
+retrieve the object's single key.
+
 
 #### Class `LogicalType(attrs, [opts,] [Types])`
 
@@ -572,43 +580,39 @@ Each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
 `RecordType`'s `getRecordConstructor` methods. This helps make decoding and
 encoding records more efficient.
 
-All prototype methods below are prefixed with `$` to avoid clashing with an
-existing record field (`$` is a valid identifier in JavaScript, but not in
-Avro).
-
 #### Class `Record(...)`
 
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type. In particular, it will correctly
 initialize all the missing record's fields with their default values.
 
-##### `record.$clone([opts])`
+##### `record.clone([opts])`
 
 + `opts` {Object} See [`type.clone`](#typecloneval-opts).
 
 Deep copy the record.
 
-##### `record.$compare(val)`
+##### `record.compare(val)`
 
 + `val` {Record} See [`type.compare`](#typecompareval1-val2).
 
 Compare the record to another.
 
-##### `record.$getType()`
+##### `record.getType()`
 
 Get the record's `type`.
 
-##### `record.$isValid([opts])`
+##### `record.isValid([opts])`
 
 + `opts` {Object} See [`type.isValid`](#typeisvalidval-opts).
 
 Check whether the record is valid.
 
-##### `record.$toBuffer()`
+##### `record.toBuffer()`
 
 Return binary encoding of record.
 
-##### `record.$toString()`
+##### `record.toString()`
 
 Return JSON-stringified record.
 
