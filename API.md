@@ -11,10 +11,10 @@
 
 + `schema` {Object|String} An Avro protocol or type schema, represented by one
   of:
+  + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
   + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
   + A path to a file containing a JSON-stringified schema (e.g.
-    `'./Schema.avsc'`).
-  + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
+    `'./Schema.avsc'`). *This last option is not supported in the browser.*
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `namespace` {String} Optional parent namespace.
   + `registry` {Object} Registry of predefined type names. This can for example
@@ -82,7 +82,8 @@ add `logicalType` attributes to a schema).
   + `importHook(path, kind, cb)` {Function} Function called to load each file.
     The default will look up the files in the local file-system and load them
     via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
-    depending on the kind of import requested.
+    depending on the kind of import requested. *In the browser, no default
+    is provided.*
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
