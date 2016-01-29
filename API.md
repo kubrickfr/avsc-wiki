@@ -515,13 +515,31 @@ The [`Record`](#class-record) constructor for instances of this type.
 
 The possible types that this union can take.
 
-Additionally, non-`null` values (i.e. single-key objects) decoded by this type
-expose the following method:
+Additionally, the constructor of non-`null` values (i.e. single-key objects)
+decoded by this type exposes the following method:
 
-##### `obj.getBranchType()`
+##### `constructor.getBranchType()`
 
 Returns the currently active branch's type. This can for example be used to
 retrieve the object's single key.
+
+```javascript
+var type = avro.parse(['int', 'string']);
+var buf; // A buffer containing an encoded `type` union.
+var val = type.fromBuffer(buf); // The decoded union.
+var branchType = val.constructor.getBranchType(); // `IntType` or `StringType`
+
+// This lets us get the union's wrapped value without using `Object.keys()`
+var branchVal = val[branchType.getName(true)];
+
+// We can also directly switch on the branch's type.
+switch (branchType.getName(true)) {
+  case 'string':
+    // Do something.
+  case 'int':
+    // Do something else.
+}
+```
 
 
 #### Class `LogicalType(attrs, [opts,] [Types])`
