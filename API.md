@@ -527,9 +527,9 @@ retrieve the object's single key.
 var type = avro.parse(['int', 'string']);
 var buf; // A buffer containing an encoded `type` union.
 var val = type.fromBuffer(buf); // The decoded union.
-var branchType = val.constructor.getBranchType(); // `IntType` or `StringType`
+var branchType = val.constructor.getBranchType(); // `IntType` or `StringType`.
 
-// This lets us get the union's wrapped value without using `Object.keys()`
+// This lets us get the union's wrapped value without using `Object.keys()`.
 var branchVal = val[branchType.getName(true)];
 
 // We can also directly switch on the branch's type.
