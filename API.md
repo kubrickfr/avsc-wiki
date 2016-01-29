@@ -1,8 +1,7 @@
-+ [Parsing schemas](#parsing-schemas)
++ Schemas and IDL files
   + [`assemble`](#assemblepath-opts-cb)
   + [`parse`](#parseschema-opts)
-
-+ [Avro types](#avro-types)
++ Avro types
   + [`Type`](#class-type)
   + Built-in types:
     + [`types.ArrayType`](#class-arraytypeattrs-opts)
@@ -20,8 +19,7 @@
     + [`types.RecordType`](#class-recordtypeattrs-opts)
     + `types.StringType`
     + [`types.UnionType`](#class-uniontypeattrs-opts)
-
-+ [Files and streams](#files-and-streams)
++ Files and streams
   + [`createFileDecoder`](#createfiledecoderpath-opts)
   + [`createFileEncoder`](#createfileencoderpath-schema-opts)
   + [`extractFileHeader`](#extractfileheaderpath-opts)
@@ -30,8 +28,7 @@
     + [`streams.BlockEncoder`](#class-blockencoderschema-opts)
     + [`streams.RawDecoder`](#class-rawdecoderschema-opts)
     + [`streams.RawEncoder`](#class-rawencoderschema-opts)
-
-+ [IPC & RPC](#ipc--rpc)
++ IPC & RPC
   + [`Protocol`](#class-protocol)
   + Event emitters:
     + [`messages.MessageEmitter`](#class-messageemitter)
@@ -51,7 +48,7 @@
     is provided.*
   + `oneWayVoid` {Boolean} By default, using `void` as message response type is
     equivalent to passing `null`. When this option is set, messages with `void`
-    response type will be defined as one-way.
+    response type will also be defined as one-way.
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
