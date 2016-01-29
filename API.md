@@ -1,11 +1,62 @@
 + [Parsing schemas](#parsing-schemas)
+  + [`assemble`](#assemblepath-opts-cb)
+  + [`parse`](#parseschema-opts)
+
 + [Avro types](#avro-types)
-+ [Records](#records)
+  + [`Type`](#class-type)
+  + Built-in types:
+    + [`types.ArrayType`](#class-arraytypeattrs-opts)
+    + `types.BooleanType`
+    + `types.BytesType`
+    + `types.DoubleType`
+    + [`types.EnumType`](#class-enumtypeattrs-opts)
+    + [`types.FixedType`](#class-fixedtypeattrs-opts)
+    + `types.FloatType`
+    + `types.IntType`
+    + [`types.LogicalType`](#class-logicaltypeattrs-opts-types)
+    + [`types.LongType`](#class-longtypeattrs-opts)
+    + [`types.MapType`](#class-maptypeattrs-opts)
+    + `types.NullType`
+    + [`types.RecordType`](#class-recordtypeattrs-opts)
+    + `types.StringType`
+    + [`types.UnionType`](#class-uniontypeattrs-opts)
+
 + [Files and streams](#files-and-streams)
+  + [`createFileDecoder`](#createfiledecoderpath-opts)
+  + [`createFileEncoder`](#createfileencoderpath-schema-opts)
+  + [`extractFileHeader`](#extractfileheaderpath-opts)
+  + Streams:
+    + [`streams.BlockDecoder`](#class-blockdecoderopts)
+    + [`streams.BlockEncoder`](#class-blockencoderschema-opts)
+    + [`streams.RawDecoder`](#class-rawdecoderschema-opts)
+    + [`streams.RawEncoder`](#class-rawencoderschema-opts)
+
 + [IPC & RPC](#ipc--rpc)
+  + [`Protocol`](#class-protocol)
+  + Event emitters:
+    + [`messages.MessageEmitter`](#class-messageemitter)
+    + [`messages.MessageListener`](#class-messagelistener)
 
 
 ## Parsing schemas
+
+### `assemble(path, [opts,] cb)`
+
++ `path` {String} Path to Avro IDL file.
++ `opts` {Object} Options:
+  + `importHook(path, kind, cb)` {Function} Function called to load each file.
+    The default will look up the files in the local file-system and load them
+    via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
+    depending on the kind of import requested. *In the browser, no default
+    is provided.*
+  + `oneWayVoid` {Boolean} By default, using `void` as message response type is
+    equivalent to passing `null`. When this option is set, messages with `void`
+    response type will be defined as one-way.
++ `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
+  property will contain the path to the file which caused it.
+
+Assemble an IDL file into its attributes. These can then be passed to `parse`
+to create the corresponding protocol.
 
 ### `parse(schema, [opts])`
 
@@ -74,21 +125,6 @@ var buf = type.toBuffer(PETS.CAT);
 
 Finally, type hooks work well with logical types (for example to dynamically
 add `logicalType` attributes to a schema).
-
-### `assemble(path, [opts,] cb)`
-
-+ `path` {String} Path to Avro IDL file.
-+ `opts` {Object} Options:
-  + `importHook(path, kind, cb)` {Function} Function called to load each file.
-    The default will look up the files in the local file-system and load them
-    via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
-    depending on the kind of import requested. *In the browser, no default
-    is provided.*
-+ `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
-  property will contain the path to the file which caused it.
-
-Assemble an IDL file into its attributes. These can then be passed to `parse`
-to create the corresponding protocol.
 
 
 ## Avro types
@@ -371,6 +407,96 @@ only ever need to call this if you are encoding very large values and need to
 reclaim memory.
 
 
+#### Class `ArrayType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
+##### `type.getItemsType()`
+
+The type of the array's items.
+
+
+#### Class `EnumType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
+##### `type.getAliases()`
+
+Optional type aliases. These are used when adapting a schema from another type.
+
+##### `type.getSymbols()`
+
+Returns a copy of the type's symbols (an array of strings representing the
+`enum`'s valid values).
+
+
+#### Class `FixedType(attrs, [opts])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
+
+##### `type.getAliases()`
+
+Optional type aliases. These are used when adapting a schema from another type.
+
+##### `type.getSize()`
+
+The size in bytes of instances of this type.
+
+
+#### Class `LogicalType(attrs, [opts,] [Types])`
+
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
++ `Types` {Array} Optional of type classes. If specified, only these will be
+  accepted as underlying type.
+
+"Abstract class" used to implement custom native types.
+
+##### `type.getUnderlyingType()`
+
+Get the underlying Avro type. This can be useful when a logical type can
+support different underlying types.
+
+To implement a custom logical type, the steps are:
+
++ Call `LogicalType`'s constructor inside your own subclass' to make sure the
+  underlying type is property set up. Throwing an error anywhere inside your
+  constructor will prevent the logical type from being used (the underlying
+  type will be used instead).
++ Extend `LogicalType` in your own subclass (typically using `util.inherits`).
++ Override the methods below (prefixed with an underscore because they are
+  internal to the class that defines them and should only be called by the
+  internal `LogicalType` methods).
+
+See [here][logical-types] for a couple sample implementations.
+
+##### `type._fromValue(val)`
+
++ `val` {...} A value deserialized by the underlying type.
+
+This function should return the final, wrapped, value.
+
+##### `type._toValue(any)`
+
++ `any` {...} A wrapped value.
+
+This function should return a value which can be serialized by the underlying
+type.
+
+##### `type._resolve(type)`
+
++ `type` {Type} The writer's type.
+
+This function should return:
+
++ `undefined` if the writer's values cannot be converted.
++ Otherwise, a function which converts a value deserialized by the writer's
+  type into a wrapped value for the current type.
+
+
 #### Class `LongType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
@@ -432,45 +558,6 @@ so requires implementing the following methods (a few examples are available
   See [`Type.compare`](#typecompareval1-val2).
 
 
-#### Class `ArrayType(attrs, [opts])`
-
-+ `attrs` {Object} Decoded type attributes.
-+ `opts` {Object} Parsing options.
-
-##### `type.getItemsType()`
-
-The type of the array's items.
-
-
-#### Class `EnumType(attrs, [opts])`
-
-+ `attrs` {Object} Decoded type attributes.
-+ `opts` {Object} Parsing options.
-
-##### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
-
-##### `type.getSymbols()`
-
-Returns a copy of the type's symbols (an array of strings representing the
-`enum`'s valid values).
-
-
-#### Class `FixedType(attrs, [opts])`
-
-+ `attrs` {Object} Decoded type attributes.
-+ `opts` {Object} Parsing options.
-
-##### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
-
-##### `type.getSize()`
-
-The size in bytes of instances of this type.
-
-
 #### Class `MapType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
@@ -503,7 +590,30 @@ an object with the following methods:
 
 ##### `type.getRecordConstructor()`
 
-The [`Record`](#class-record) constructor for instances of this type.
+The [`Record`](#class-record) constructor for instances of this type. Indeed,
+each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
+`Record` constructor when its schema is parsed. This helps make decoding and
+encoding records more efficient. This also lets us provide helpful methods on
+decoded values (see below).
+
+##### Class `Record(...)`
+
+Calling the constructor directly can sometimes be a convenient shortcut to
+instantiate new records of a given type. In particular, it will correctly
+initialize all the missing record's fields with their default values.
+
+###### `Record.getType()`
+
+Convenience class method to get the record's type.
+
+The `Record` prototype also exposes the following methods (available on each
+decoded `record` value):
+
++ `record.clone([opts])`
++ `record.compare(val)`
++ `record.isValid([opts])`
++ `record.toBuffer()`
++ `record.toString()`
 
 
 #### Class `UnionType(attrs, [opts])`
@@ -542,108 +652,7 @@ switch (branchType.getName(true)) {
 ```
 
 
-#### Class `LogicalType(attrs, [opts,] [Types])`
-
-+ `attrs` {Object} Decoded type attributes.
-+ `opts` {Object} Parsing options.
-+ `Types` {Array} Optional of type classes. If specified, only these will be
-  accepted as underlying type.
-
-"Abstract class" used to implement custom native types.
-
-##### `type.getUnderlyingType()`
-
-Get the underlying Avro type. This can be useful when a logical type can
-support different underlying types.
-
-To implement a custom logical type, the steps are:
-
-+ Call `LogicalType`'s constructor inside your own subclass' to make sure the
-  underlying type is property set up. Throwing an error anywhere inside your
-  constructor will prevent the logical type from being used (the underlying
-  type will be used instead).
-+ Extend `LogicalType` in your own subclass (typically using `util.inherits`).
-+ Override the methods below (prefixed with an underscore because they are
-  internal to the class that defines them and should only be called by the
-  internal `LogicalType` methods).
-
-See [here][logical-types] for a couple sample implementations.
-
-##### `type._fromValue(val)`
-
-+ `val` {...} A value deserialized by the underlying type.
-
-This function should return the final, wrapped, value.
-
-##### `type._toValue(any)`
-
-+ `any` {...} A wrapped value.
-
-This function should return a value which can be serialized by the underlying
-type.
-
-##### `type._resolve(type)`
-
-+ `type` {Type} The writer's type.
-
-This function should return:
-
-+ `undefined` if the writer's values cannot be converted.
-+ Otherwise, a function which converts a value deserialized by the writer's
-  type into a wrapped value for the current type.
-
-
-## Records
-
-Each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
-`Record` constructor when its schema is parsed. It is available using the
-`RecordType`'s `getRecordConstructor` methods. This helps make decoding and
-encoding records more efficient.
-
-#### Class `Record(...)`
-
-Calling the constructor directly can sometimes be a convenient shortcut to
-instantiate new records of a given type. In particular, it will correctly
-initialize all the missing record's fields with their default values.
-
-##### `record.clone([opts])`
-
-+ `opts` {Object} See [`type.clone`](#typecloneval-opts).
-
-Deep copy the record.
-
-##### `record.compare(val)`
-
-+ `val` {Record} See [`type.compare`](#typecompareval1-val2).
-
-Compare the record to another.
-
-##### `record.getType()`
-
-Get the record's `type`.
-
-##### `record.isValid([opts])`
-
-+ `opts` {Object} See [`type.isValid`](#typeisvalidval-opts).
-
-Check whether the record is valid.
-
-##### `record.toBuffer()`
-
-Return binary encoding of record.
-
-##### `record.toString()`
-
-Return JSON-stringified record.
-
-##### `Record.getType()`
-
-Convenience class method to get the record's type.
-
-
 ## Files and streams
-
-*Not available in the browser.*
 
 The following convenience functions are available for common operations on
 container files:
@@ -652,19 +661,20 @@ container files:
 
 + `path` {String} Path to Avro container file.
 + `opts` {Object} Decoding options, passed to
-  [`BlockDecoder`](Api#class-blockdecoderopts).
+  [`BlockDecoder`](#class-blockdecoderopts).
 
-Returns a readable stream of decoded objects from an Avro container file.
+Returns a readable stream of decoded objects from an Avro container file. *Not
+available in the browser.*
 
 #### `createFileEncoder(path, schema, [opts])`
 
 + `path` {String} Destination path.
 + `schem` {Object|String|Type} Type used to serialize.
 + `opts` {Object} Encoding options, passed to
-  [`BlockEncoder`](Api#class-blockencoderschema-opts).
+  [`BlockEncoder`](#class-blockencoderschema-opts).
 
 Returns a writable stream of objects. These will end up serialized into an Avro
-container file.
+container file. *Not available in the browser.*
 
 #### `extractFileHeader(path, [opts])`
 
@@ -675,16 +685,7 @@ container file.
 
 Extract header from an Avro container file synchronously. If no header is
 present (i.e. the path doesn't point to a valid Avro container file), `null` is
-returned.
-
-
-For more specific use-cases, the following stream classes are available in the
-`avro.streams` namespace:
-
-+ [`BlockDecoder`](#blockdecoderopts)
-+ [`RawDecoder`](#rawdecoderschema-opts)
-+ [`BlockEncoder`](#blockencoderschema-opts)
-+ [`RawEncoder`](#rawencoderschema-opts)
+returned. *Not available in the browser.*
 
 
 #### Class `BlockDecoder([opts])`
@@ -717,23 +718,6 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 Get built-in decompression functions (currently `null` and `deflate`).
 
 
-#### Class `RawDecoder(schema, [opts])`
-
-+ `schema` {Object|String|Type} Writer schema. Required since the input doesn't
-  contain a header. Argument parsing logic is the same as for
-  [`parse`](#parseschema-opts).
-+ `opts` {Object} Decoding options. Available keys:
-  + `decode` {Boolean} Whether to decode records before returning them.
-    Defaults to `true`.
-
-A duplex stream which can be used to decode a stream of serialized Avro objects
-with no headers or blocks.
-
-##### Event `'data'`
-
-+ `data` {...} Decoded element or raw bytes.
-
-
 #### Class `BlockEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
@@ -763,6 +747,23 @@ A duplex stream to create Avro container object files.
 ##### `BlockEncoder.getDefaultCodecs()`
 
 Get built-in compression functions (currently `null` and `deflate`).
+
+
+#### Class `RawDecoder(schema, [opts])`
+
++ `schema` {Object|String|Type} Writer schema. Required since the input doesn't
+  contain a header. Argument parsing logic is the same as for
+  [`parse`](#parseschema-opts).
++ `opts` {Object} Decoding options. Available keys:
+  + `decode` {Boolean} Whether to decode records before returning them.
+    Defaults to `true`.
+
+A duplex stream which can be used to decode a stream of serialized Avro objects
+with no headers or blocks.
+
+##### Event `'data'`
+
++ `data` {...} Decoded element or raw bytes.
 
 
 #### Class `RawEncoder(schema, [opts])`
@@ -818,8 +819,8 @@ differences however:
   [`createEmitter`](#protocolcreateemittertransport-opts-cb) for how to obtain
   one.
 + `cb(err, res)` {Function} Function called with the remote call's response
-  (and eventual error) when available. This can be omitted when the message is
-  one way.
+  (and eventual error) when available. If not specified and an error occurs,
+  the error will be emitted on `emitter` instead.
 
 Send a message. This is always done asynchronously.
 
@@ -868,9 +869,10 @@ There are two major types of transports:
 
 ##### `protocol.createListener(transport, [opts,] [cb])`
 
-+ `transport` {Duplex|Object|Function} Similar to [`createEmitter`](#)'s
-  corresponding argument, except that readable and writable roles are reversed
-  for stateless transports.
++ `transport` {Duplex|Object|Function} Similar to
+  [`createEmitter`](#protocolcreateemittertransport-opts-cb)'s corresponding
+  argument, except that readable and writable roles are reversed for stateless
+  transports.
 + `opts` {Object} Identical to `createEmitter`'s options.
   + `IdType` {LogicalType} Metadata logical type.
   + `bufferSize` {Number} Internal serialization buffer size (in bytes).
