@@ -92,9 +92,8 @@ using Avro's *logical types*, with the following two steps:
   to [`parse`][parse-api]'s `logicalTypes`.
 
 For example, we can use this [`DateType`
-implementation](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js)
-to transparently deserialize/serialize native `Date` objects. Usage is
-straightforward:
+](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js) to
+transparently deserialize/serialize native `Date` objects:
 
 ```javascript
 var type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
@@ -126,9 +125,9 @@ var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
 Finally, as a more fully featured example, you can take a look at this
-[`DecimalType`
-implementation](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
-of the [decimal logical type][decimal-type] described in the spec.
+[`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
+which implements the [decimal logical type][decimal-type] described in the
+spec.
 
 
 # Custom long types
