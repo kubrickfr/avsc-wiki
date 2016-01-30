@@ -81,10 +81,11 @@ to create the corresponding protocol.
     type which will then be used in place of the result of parsing `schema`.
     Using this option, it is possible to customize the parsing process by
     intercepting the creation of any type. Here are a few examples of what is
-    possible using a custom hook:
-    + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/7b0a8a0f1b3d0b689cd3)
-    + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/0d81b5099b8b10b25942)
-    + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/44b79b41613567bb0b75)
+    possible using a custom hook (source available
+    [here](https://gist.github.com/mtth/c0088c745de048c4e466)):
+    + Representing `enum`s as longs rather than strings.
+    + Obfuscating all names inside a schema.
+    + Inlining fields to implement basic inheritance between records.
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -358,11 +359,9 @@ type, the steps are:
   + `_toValue`
   + `_resolve` (optional)
 
-See [here][logical-types] for more information. A couple sample implementations
-are available as well:
-
-+ [`DateType`](https://gist.github.com/mtth/13bdf246c6b798417e73)
-+ [`DecimalType`](https://gist.github.com/mtth/999d189c63e55fee1186)
+See [here][logical-types] for more information. A couple [sample
+implementations](https://gist.github.com/mtth/1aec40375fbcb077aee7)
+are available as well.
 
 ##### `type.getUnderlyingType()`
 

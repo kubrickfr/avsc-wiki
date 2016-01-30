@@ -154,7 +154,7 @@ var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 
 Finally, as a more fully featured example, you can take a look at a [sample
 implementation](https://gist.github.com/mtth/999d189c63e55fee1186) of the
-[decimal logical type][decimal-type] described in the spec].
+[decimal logical type][decimal-type] described in the spec.
 
 
 # Custom long types
