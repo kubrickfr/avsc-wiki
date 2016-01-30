@@ -152,80 +152,9 @@ var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
-Finally, as a more fully featured example, we provide a sample implementation
-of the [decimal logical type][decimal-type] described in the spec:
-
-```javascript
-/**
- * Sample decimal logical type implementation.
- *
- * It wraps its values in a very simple custom `Decimal` class.
- *
- */
-function DecimalType(attrs, opts) {
-  LogicalType.call(this, attrs, opts, [BytesType, FixedType]);
-
-  // Validate attributes.
-  var precision = attrs.precision;
-  if (precision !== (precision | 0) || precision <= 0) {
-    throw new Error('invalid precision');
-  }
-  var scale = attrs.scale;
-  if (scale !== (scale | 0) || scale < 0 || scale > precision) {
-    throw new Error('invalid scale');
-  }
-  var type = this.getUnderlyingType();
-  if (type instanceof FixedType) {
-    var size = type.getSize();
-    var maxPrecision = Math.log(Math.pow(2, 8 * size - 1) - 1) / Math.log(10);
-    if (precision > (maxPrecision | 0)) {
-      throw new Error('fixed size too small to hold required precision');
-    }
-  }
-
-  // A basic decimal class for this precision and scale.
-  function Decimal(unscaled) { this.unscaled = unscaled; }
-  Decimal.prototype.precision = precision;
-  Decimal.prototype.scale = scale;
-  Decimal.prototype.toNumber = function () {
-    return this.unscaled * Math.pow(10, -scale);
-  };
-
-  this.Decimal = Decimal;
-}
-util.inherits(DecimalType, LogicalType);
-
-DecimalType.prototype._fromValue = function (buf) {
-  return new this.Decimal(buf.readIntBE(0, buf.length));
-};
-
-DecimalType.prototype._toValue = function (dec) {
-  if (!(dec instanceof this.Decimal)) {
-    throw new Error('invalid decimal');
-  }
-
-  var type = this.getUnderlyingType();
-  var buf;
-  if (type instanceof FixedType) {
-    buf = new Buffer(type.getSize());
-  } else {
-    var size = Math.log(dec > 0 ? dec : - 2 * dec) / (Math.log(2) * 8) | 0;
-    buf = new Buffer(size + 1);
-  }
-  buf.writeIntBE(dec.unscaled, 0, buf.length);
-  return buf;
-};
-
-DecimalType.prototype._resolve = function (type) {
-  if (
-    type instanceof DecimalType &&
-    type.Decimal.prototype.precision === this.Decimal.prototype.precision &&
-    type.Decimal.prototype.scale === this.Decimal.prototype.scale
-  ) {
-    return function (dec) { return dec; };
-  }
-};
-```
+Finally, as a more fully featured example, you can take a look at a [sample
+implementation](https://gist.github.com/mtth/999d189c63e55fee1186) of the
+[decimal logical type][decimal-type] described in the spec].
 
 
 # Custom long types

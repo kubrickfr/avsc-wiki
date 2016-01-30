@@ -343,48 +343,59 @@ The size in bytes of instances of this type.
 + `Types` {Array} Optional of type classes. If specified, only these will be
   accepted as underlying type.
 
-"Abstract class" used to implement custom native types.
-
-##### `type.getUnderlyingType()`
-
-Get the underlying Avro type. This can be useful when a logical type can
-support different underlying types.
-
-To implement a custom logical type, the steps are:
+"Abstract class" used to implement custom types. To implement a new logical
+type, the steps are:
 
 + Call `LogicalType`'s constructor inside your own subclass' to make sure the
   underlying type is property set up. Throwing an error anywhere inside your
   constructor will prevent the logical type from being used (the underlying
   type will be used instead).
 + Extend `LogicalType` in your own subclass (typically using `util.inherits`).
-+ Override the methods below (prefixed with an underscore because they are
++ Override the following methods (prefixed with an underscore because they are
   internal to the class that defines them and should only be called by the
-  internal `LogicalType` methods).
+  internal `LogicalType` methods):
+  + `_fromValue`
+  + `_toValue`
+  + `_resolve` (optional)
 
-See [here][logical-types] for a couple sample implementations.
+See [here][logical-types] for more information. A couple sample implementations
+are available as well:
+
++ [`DateType`](https://gist.github.com/mtth/13bdf246c6b798417e73)
++ [`DecimalType`](https://gist.github.com/mtth/999d189c63e55fee1186)
+
+##### `type.getUnderlyingType()`
+
+Use this method to get the underlying Avro type. This can be useful when a
+logical type can support different underlying types.
 
 ##### `type._fromValue(val)`
 
 + `val` {...} A value deserialized by the underlying type.
 
-This function should return the final, wrapped, value.
+This method should return the final, wrapped, value. *This method is abstract
+and should be implemented but not called directly.*
 
 ##### `type._toValue(any)`
 
 + `any` {...} A wrapped value.
 
-This function should return a value which can be serialized by the underlying
-type.
+This method should return a value which can be serialized by the underlying
+type. *This method is abstract and should be implemented but not called
+directly.*
+
 
 ##### `type._resolve(type)`
 
 + `type` {Type} The writer's type.
 
-This function should return:
+This method should return:
 
 + `undefined` if the writer's values cannot be converted.
 + Otherwise, a function which converts a value deserialized by the writer's
   type into a wrapped value for the current type.
+
+*This method is abstract and should be implemented but not called directly.*
 
 
 #### Class `LongType(attrs, [opts])`
