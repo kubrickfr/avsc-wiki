@@ -91,22 +91,10 @@ using Avro's *logical types*, with the following two steps:
 + Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
   to [`parse`][parse-api]'s `logicalTypes`.
 
-Below is a sample implementation for a suitable `DateType` which will
-transparently deserialize/serialize native `Date` objects:
-
-```javascript
-var util = require('util');
-
-function DateType(attrs, opts) {
-  LogicalType.call(this, attrs, opts, [LongType]); // Require underlying `long`.
-}
-util.inherits(DateType, LogicalType);
-
-DateType.prototype._fromValue = function (val) { return new Date(val); };
-DateType.prototype._toValue = function (date) { return +date; };
-```
-
-Usage is straightforward:
+For example, we can use this [`DateType`
+implementation](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js)
+to transparently deserialize/serialize native `Date` objects. Usage is
+straightforward:
 
 ```javascript
 var type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
@@ -127,22 +115,7 @@ var date = type.fromBuffer(buf).time; // `Date` object.
 Logical types can also be used with schema evolution. This is done by
 implementing an additional `_resolve` method. It should return a function which
 converts values of the writer's type into the logical type's values. For
-example, we can allow our `DateType` to read dates which were serialized as
-strings:
-
-```javascript
-DateType.prototype._resolve = function (type) {
-  if (
-    type instanceof StringType || // Support parsing strings.
-    type instanceof LongType ||
-    type instanceof DateType
-  ) {
-    return this._fromValue;
-  }
-};
-```
-
-And use it as follows:
+example, the above `DateType` can read dates which were serialized as strings:
 
 ```javascript
 var stringType = avro.parse('string');
@@ -152,9 +125,10 @@ var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
-Finally, as a more fully featured example, you can take a look at a [sample
-implementation](https://gist.github.com/mtth/999d189c63e55fee1186) of the
-[decimal logical type][decimal-type] described in the spec.
+Finally, as a more fully featured example, you can take a look at this
+[`DecimalType`
+implementation](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
+of the [decimal logical type][decimal-type] described in the spec.
 
 
 # Custom long types
