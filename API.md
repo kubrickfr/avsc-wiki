@@ -81,11 +81,10 @@ to create the corresponding protocol.
     type which will then be used in place of the result of parsing `schema`.
     Using this option, it is possible to customize the parsing process by
     intercepting the creation of any type. Here are a few examples of what is
-    possible using a custom hook (source available
-    [here](https://gist.github.com/mtth/c0088c745de048c4e466)):
-    + Representing `enum`s as longs rather than strings.
-    + Obfuscating all names inside a schema.
-    + Inlining fields to implement basic inheritance between records.
+    possible using a custom hook:
+    + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
+    + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
+    + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -161,8 +160,8 @@ Serialize an object into a JSON-encoded string.
     also be invalid, the latter do not trigger a callback. `path` will be an
     array of strings identifying where the mismatch occurred. This option is
     especially useful when dealing with complex records, for example to:
-      + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/a22933256a4b46ed8e33)
-      + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/f3934d3c82e3cc4901e0)
+      + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-collect-js)
+      + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-assert-js)
 
 Check whether `val` is a valid `type` value.
 
@@ -359,9 +358,11 @@ type, the steps are:
   + `_toValue`
   + `_resolve` (optional)
 
-See [here][logical-types] for more information. A couple [sample
-implementations](https://gist.github.com/mtth/1aec40375fbcb077aee7)
-are available as well.
+See [here][logical-types] for more information. A couple sample implementations
+are available as well:
+
++ [`DateType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js)
++ [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
 
 ##### `type.getUnderlyingType()`
 
