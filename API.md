@@ -126,28 +126,6 @@ add `logicalType` attributes to a schema).
 
 ## Avro types
 
-All the classes below are available in the `avro.types` namespace:
-
-+ [`Type`](#class-type)
-+ Primitive types:
-  + `BooleanType`
-  + `BytesType`
-  + `DoubleType`
-  + `FloatType`
-  + `IntType`
-  + [`LongType`](#class-longtypeattrs-opts)
-  + `NullType`
-  + `StringType`
-+ Complex types:
-  + [`ArrayType`](#class-arraytypeattrs-opts)
-  + [`EnumType`](#class-enumtypeattrs-opts)
-  + [`FixedType`](#class-fixedtypeattrs-opts)
-  + [`MapType`](#class-maptypeattrs-opts)
-  + [`RecordType`](#class-recordtypeattrs-opts)
-  + [`UnionType`](#class-uniontypeattrs-opts)
-+ [`LogicalType`](#class-logicaltypeattrs-opts-types)
-
-
 ### Class `Type`
 
 "Abstract" base Avro type class; all implementations inherit from it.
