@@ -82,9 +82,9 @@ to create the corresponding protocol.
     Using this option, it is possible to customize the parsing process by
     intercepting the creation of any type. Here are a few examples of what is
     possible using a custom hook:
-    + [Representing `enum`s as integers rather than strings](https://gist.github.com/mtth/7b0a8a0f1b3d0b689cd3)
-    + [Obfuscating all names inside a schema](https://gist.github.com/mtth/0d81b5099b8b10b25942)
-    + [Inlining fields to implement basic inheritance between records](https://gist.github.com/mtth/44b79b41613567bb0b75)
+    + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/7b0a8a0f1b3d0b689cd3)
+    + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/0d81b5099b8b10b25942)
+    + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/44b79b41613567bb0b75)
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -158,63 +158,12 @@ Serialize an object into a JSON-encoded string.
   + `errorHook(path, any, type)` {Function} Function called when an invalid
     value is encountered. When an invalid value causes its parent values to
     also be invalid, the latter do not trigger a callback. `path` will be an
-    array of strings identifying where the mismatch occurred. See below for a
-    few examples.
+    array of strings identifying where the mismatch occurred. This option is
+    especially useful when dealing with complex records, for example to:
+      + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/a22933256a4b46ed8e33)
+      + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/f3934d3c82e3cc4901e0)
 
 Check whether `val` is a valid `type` value.
-
-For complex schemas, it can be difficult to figure out which part(s) of `val`
-are invalid. The `errorHook` option provides access to more information about
-these mismatches. We illustrate a few use-cases below:
-
-```javascript
-// A sample schema.
-var personType = avro.parse({
-  type: 'record',
-  name: 'Person',
-  fields: [
-    {name: 'age', type: 'int'},
-    {name: 'names', type: {type: 'array', items: 'string'}}
-  ]
-});
-
-// A corresponding invalid record.
-var invalidPerson = {age: null, names: ['ann', 3, 'bob']};
-```
-
-As a first use-case, we use the `errorHook` to implement a function to gather
-all invalid paths a value (if any):
-
-```javascript
-function getInvalidPaths(type, val) {
-  var paths = [];
-  type.isValid(val, {errorHook: function (path) { paths.push(path.join()); }});
-  return paths;
-}
-
-var paths = getInvalidPaths(personType, invalidPerson); // == ['age', 'names,1']
-```
-
-We can also implement an `assertValid` function which throws a helpful error on
-the first mismatch encountered (if any):
-
-```javascript
-var util = require('util');
-
-function assertValid(type, val) {
-  return type.isValid(val, {errorHook: hook});
-
-  function hook(path, any) {
-    throw new Error(util.format('invalid %s: %j', path.join(), any));
-  }
-}
-
-try {
-  assertValid(personType, invalidPerson); // Will throw.
-} catch (err) {
-  // err.message === 'invalid age: null'
-}
-```
 
 ##### `type.clone(val, [opts])`
 
