@@ -124,10 +124,12 @@ var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
-Finally, as a more fully featured example, you can take a look at this
+As a more fully featured example, you can also take a look at this
 [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
 which implements the [decimal logical type][decimal-type] described in the
-spec.
+spec. Or, see how to use a logical type to implement a
+[`MetaType`](https://gist.github.com/mtth/fb87030c8cc142730d15), the type of
+all types.
 
 
 # Custom long types
