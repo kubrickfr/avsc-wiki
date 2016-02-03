@@ -792,13 +792,13 @@ Returns a copy of the original protocol, which inherits all its handlers.
 ##### `protocol.getMessages()`
 
 Retrieve all the messages defined in the protocol. Each message is an object
-with the following (read-only) properties:
+with the following methods:
 
-+ `name` {String}
-+ `requestType` {Type}
-+ `responseType` {Type}
-+ `errorType` {Type}
-+ `oneWay` {Boolean}
++ `getName()`
++ `getRequestType()`
++ `getResponseType()`
++ `getErrorType()`
++ `isOneWay()`
 
 ##### `protocol.getName()`
 
