@@ -49,6 +49,10 @@
   + `oneWayVoid` {Boolean} By default, using `void` as message response type is
     equivalent to passing `null`. When this option is set, messages with `void`
     response type will also be defined as one-way.
+  + `reassignJavadoc` {Boolean} By default Javadoc comments become a `doc`
+    attribute on the type, field, or message definition that follows. Setting
+    this option will reassign a field type's Javadoc to its field, and a
+    response type's Javadoc to its message.
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
