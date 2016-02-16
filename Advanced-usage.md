@@ -246,29 +246,20 @@ node processes via [`Protocol`s](Api#class-protocol).
 
 To enable this, we first declare the types involved inside an [Avro
 protocol][protocol-declaration]. For example, consider the following simple
-protocol which supports two calls (saved as `./math.avpr`):
+protocol which supports two calls (saved as `./math.avdl`):
 
-```json
-{
-  "protocol": "Math",
-  "doc": "A sample interface for performing math.",
-  "messages": {
-    "multiply": {
-      "doc": "A call for multiplying doubles.",
-      "request": [
-        {"name": "numbers", "type": {"type": "array", "items": "double"}}
-      ],
-      "response": "double"
-    },
-    "add": {
-      "doc": "A call which adds integers, optionally after some delay.",
-      "request": [
-        {"name": "numbers", "type": {"type": "array", "items": "int"}},
-        {"name": "delay", "type": "float", "default": 0}
-      ],
-      "response": "int"
-    }
-  }
+```javascript
+/**
+ * A sample protocol for performing math.
+ *
+ * This protocol defines two RPC calls.
+ *
+ */
+protocol Math {
+  // One to multiply numbers.
+  double multiply(array<double> numbers);
+  // And another to add numbers, with an optional delay.
+  int add(array<int> numbers, float delay = 0);
 }
 ```
 
@@ -277,28 +268,31 @@ Servers and clients then share the same protocol and respectively:
 + Implement interface calls (servers):
 
   ```javascript
-  var protocol = avro.parse('./math.avpr')
-    .on('add', function (req, ee, cb) {
-      var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
-      setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
-    })
-    .on('multiply', function (req, ee, cb) {
-      var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
-      cb(null, prod);
-    });
+  avro.assemble('math.avdl', function (err, attrs) {
+    var protocol = avro.parse(attrs)
+      .on('add', function (req, ee, cb) {
+        var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
+        setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+      })
+      .on('multiply', function (req, ee, cb) {
+        var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
+        cb(null, prod);
+      });
+  });
   ```
 
 + Call the interface (clients):
 
   ```javascript
-  var protocol = avro.parse('./math.avpr');
-  var ee; // Message emitter, see below for various instantiation examples.
-
-  protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
-    console.log(res); // 9!
-  });
-  protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
-    console.log(res); // 8!
+  avro.assemble('math.avdl', function (err, attrs) {
+    var protocol = avro.parse(attrs);
+    var ee; // Message emitter, see below for various instantiation examples.
+    protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
+      console.log(res); // 9!
+    });
+    protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
+      console.log(res); // 8!
+    });
   });
   ```
 
@@ -366,3 +360,4 @@ app.listen(3000);
 [decimal-type]: https://avro.apache.org/docs/current/spec.html#Decimal
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
 [protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
+[express]: http://expressjs.com/
