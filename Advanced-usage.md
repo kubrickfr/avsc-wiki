@@ -244,8 +244,8 @@ disable this behavior by setting `LongType.using`'s `noUnpack` argument to
 `avsc` provides an efficient and "type-safe" API for communicating with remote
 node processes via [`Protocol`s](Api#class-protocol). To enable this, we first
 declare the types involved inside an [Avro protocol][protocol-declaration]. For
-example, consider the following simple protocol which supports two calls (saved
-as `./math.avdl`):
+example, consider the following simple protocol which supports two calls
+(defined using Avro [IDL notation][idl] and saved as `./math.avdl`):
 
 ```java
 protocol Math {
@@ -353,4 +353,5 @@ app.listen(3000);
 [decimal-type]: https://avro.apache.org/docs/current/spec.html#Decimal
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
 [protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
+[idl]: https://avro.apache.org/docs/current/idl.html
 [express]: http://expressjs.com/
