@@ -242,19 +242,12 @@ disable this behavior by setting `LongType.using`'s `noUnpack` argument to
 # Remote procedure calls
 
 `avsc` provides an efficient and "type-safe" API for communicating with remote
-node processes via [`Protocol`s](Api#class-protocol).
+node processes via [`Protocol`s](Api#class-protocol). To enable this, we first
+declare the types involved inside an [Avro protocol][protocol-declaration]. For
+example, consider the following simple protocol which supports two calls (saved
+as `./math.avdl`):
 
-To enable this, we first declare the types involved inside an [Avro
-protocol][protocol-declaration]. For example, consider the following simple
-protocol which supports two calls (saved as `./math.avdl`):
-
-```javascript
-/**
- * A sample protocol for performing math.
- *
- * This protocol defines two RPC calls.
- *
- */
+```java
 protocol Math {
   // One to multiply numbers.
   double multiply(array<double> numbers);
