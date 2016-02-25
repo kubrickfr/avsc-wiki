@@ -68,17 +68,17 @@ to create the corresponding protocol.
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`). *This last option is not supported in the browser.*
 + `opts` {Object} Parsing options. The following keys are currently supported:
-  + `namespace` {String} Optional parent namespace.
-  + `registry` {Object} Registry of predefined type names. This can for example
-    be used to override the types used for primitives or to split a schema
-    declaration over multiple files.
-  + `logicalTypes` {Object} Optional dictionary of
-    [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
-    support serialization and deserialization of arbitrary native objects.
   + `assertLogicalTypes` {Boolean} The Avro specification mandates that we fall
     through to the underlying type if a logical type is invalid. When set, this
     option will override this behavior and throw an error when a logical type
     can't be applied.
+  + `logicalTypes` {Object} Optional dictionary of
+    [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
+    support serialization and deserialization of arbitrary native objects.
+  + `namespace` {String} Optional parent namespace.
+  + `registry` {Object} Registry of predefined type names. This can for example
+    be used to override the types used for primitives or to split a schema
+    declaration over multiple files.
   + `typeHook(attrs, opts)` {Function} Function called before each new type is
     instantiated. The relevant decoded schema is available as first argument
     and the parsing options as second. This function can optionally return a
@@ -291,6 +291,13 @@ be used to compare schemas for equality.
 
 + `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
   Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
+
+##### `Type.isType(any)`
+
++ `any` {...} Any object.
+
+Check whether `any` is an instance of `Type`. This is similar to `any
+instanceof Type` but will work across contexts (e.g. `iframe`s).
 
 ##### `Type.__reset(size)`
 
