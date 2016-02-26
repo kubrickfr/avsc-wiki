@@ -18,7 +18,8 @@
     + `types.NullType`
     + [`types.RecordType`](#class-recordtypeattrs-opts)
     + `types.StringType`
-    + [`types.UnionType`](#class-uniontypeattrs-opts)
+    + [`types.UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts)
+    + [`types.WrappedUnionType`](#class-wrappeduniontypeattrs-opts)
 + Files and streams
   + [`createFileDecoder`](#createfiledecoderpath-opts)
   + [`createFileEncoder`](#createfileencoderpath-schema-opts)
@@ -89,6 +90,11 @@ to create the corresponding protocol.
     + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
     + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
     + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
+  + `unwrapUnions` {Boolean} Decode union values without a wrapping object.
+    Not all unions can be unambiguously represented in this way, see
+    [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts) for more
+    information. An error will be raised when a union inside the schema doesn't
+    satisfy these requirements.
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -174,7 +180,8 @@ Check whether `val` is a valid `type` value.
 + `val` {...} The object to copy.
 + `opts` {Object} Options:
   + `coerceBuffers` {Boolean} Allow coercion of JSON buffer representations
-    into actual `Buffer` objects.
+    into actual `Buffer` objects. When used with unwrapped unions, ambiguities
+    caused by this coercion are always resolved in favor of the buffer type.
   + `fieldHook(field, any, type)` {Function} Function called when each record
     field is populated. The value returned by this function will be used
     instead of `any`. `field` is the current `Field` instance and `type` the
@@ -183,9 +190,11 @@ Check whether `val` is a valid `type` value.
     qualified name of its type, however some serializers incorrectly omit the
     namespace (which can cause collisions). Passing in this option will attempt
     to lookup unqualified names as well and return correctly qualified names.
+    This option has no effect when used with unwrapped unions.
   + `wrapUnions` {Boolean} Avro's JSON representation expects all union values
     to be wrapped inside objects. Setting this parameter to `true` will try to
-    wrap unwrapped union values into their first matching type.
+    wrap unwrapped union values into their first matching type. This option has
+    no effect when used with unwrapped unions.
 
 Deep copy a value of `type`.
 
@@ -529,40 +538,52 @@ decoded `record` value):
 + `record.toString()`
 
 
-#### Class `UnionType(attrs, [opts])`
+#### Class `UnwrappedUnionType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
+
+This class is used to represent unions when a schema is parsed with
+`unwrapUnions` option set. Its values are decoded without a wrapping object:
+`null` and `48` would be valid values for the schema `["null", "int"]` (as
+opposed to `null` and `{'int': 48}` for wrapped unions).
+
+This representation is usually more convenient and natural, however it isn't
+able to guarantee correctness for all unions. For example, we wouldn't be able
+to tell which branch the value `23` comes from in a schema `["int", "float"]`.
+More concretely, a union can be represented using this class if it has at most
+a single branch inside each of the categories below:
+
++ `'null'`
++ `'boolean'`
++ `'int'`, `'long'`, `'float'`, `'double'`
++ `'string'`, `'enum'`
++ `'bytes'`, `'fixed'`
++ `'array'`
++ `'map'`, `'record'`
+
+So `['null', 'int', 'string']` is supported, but `['bytes', {name: 'Id', type:
+'fixed', size: 2]` is not (it wouldn't be possible to know which category a
+buffer of size 2 belongs to).
 
 ##### `type.getTypes()`
 
 The possible types that this union can take.
 
-Additionally, the constructor of non-`null` values (i.e. single-key objects)
-decoded by this type exposes the following method:
 
-##### `constructor.getBranchType()`
+#### Class `WrappedUnionType(attrs, [opts])`
 
-Returns the currently active branch's type. This can for example be used to
-retrieve the object's single key.
++ `attrs` {Object} Decoded type attributes.
++ `opts` {Object} Parsing options.
 
-```javascript
-var type = avro.parse(['int', 'string']);
-var buf; // A buffer containing an encoded `type` union.
-var val = type.fromBuffer(buf); // The decoded union.
-var branchType = val.constructor.getBranchType(); // `IntType` or `StringType`.
+This class is the default representation for unions (used unless `parse`'s
+`unwrapUnions` option is set). It uses Avro's JSON encoding and is able to
+correctly represent all unions (branch type information is never lost since it
+is included in the decoded value).
 
-// This lets us get the union's wrapped value without using `Object.keys()`.
-var branchVal = val[branchType.getName(true)];
+##### `type.getTypes()`
 
-// We can also directly switch on the branch's type.
-switch (branchType.getName(true)) {
-  case 'string':
-    // Do something.
-  case 'int':
-    // Do something else.
-}
-```
+The possible types that this union can take.
 
 
 ## Files and streams
