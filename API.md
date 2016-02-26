@@ -838,9 +838,6 @@ Emitted when the server's handshake response is received.
 
 ##### Event `'eot'`
 
-+ `pending` {Number} Number of interrupted requests. This will always be zero,
-  unless the emitter was destroyed with `noWait` set.
-
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
 
@@ -865,9 +862,6 @@ Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
 Emitted right before the server sends a handshake response.
 
 ##### Event `'eot'`
-
-+ `pending` {Number} Number of cancelled pending responses. This will always be
-  zero, unless the listener was destroyed with `noWait` set.
 
 End of transmission event, emitted after the listener is destroyed and there are
 no more responses to send.
