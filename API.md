@@ -282,7 +282,11 @@ evolution can be used to significantly speed up decoding.
 
 Returns a random value of `type`.
 
-##### `type.getName()`
+##### `type.getName([noUndef])`
+
++ `noUndef` {Boolean} If `type` doesn't have a name, return its "type name"
+  instead of `undefined`. When set, this method returns the type's union
+  branch name.
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
@@ -562,9 +566,9 @@ a single branch inside each of the categories below:
 + `'array'`
 + `'map'`, `'record'`
 
-So `['null', 'int', 'string']` is supported, but `['bytes', {name: 'Id', type:
-'fixed', size: 2]` is not (it wouldn't be possible to know which category a
-buffer of size 2 belongs to).
+So `['null', 'int']` and `['null', 'string', {type: 'array', items: 'string'}]`
+are supported, but `['int', 'float']` and `['bytes', {name: 'Id', type:
+'fixed', size: 2}]` are not.
 
 ##### `type.getTypes()`
 
@@ -578,8 +582,8 @@ The possible types that this union can take.
 
 This class is the default representation for unions (used unless `parse`'s
 `unwrapUnions` option is set). It uses Avro's JSON encoding and is able to
-correctly represent all unions (branch type information is never lost since it
-is included in the decoded value).
+correctly represent all unions: branch type information is never lost since it
+is included in the decoded value.
 
 ##### `type.getTypes()`
 
