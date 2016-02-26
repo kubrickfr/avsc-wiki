@@ -273,12 +273,13 @@ evolution can be used to significantly speed up decoding.
 
 Returns a random value of `type`.
 
-##### `type.getName([noRef])`
-
-+ `noRef` {Boolean} Return built-in names (e.g. `'record'`, `'map'`,
-  `'boolean'`) rather than user-specified references.
+##### `type.getName()`
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
+
+##### `type.getTypeName()`
+
+Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
 ##### `type.getSchema([noDeref])`
 
