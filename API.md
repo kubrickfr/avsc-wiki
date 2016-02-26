@@ -301,11 +301,6 @@ Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 Returns `type`'s [canonical schema][canonical-schema] (as a string). This can
 be used to compare schemas for equality.
 
-##### `type.getFingerprint([algorithm])`
-
-+ `algorithm` {String} Algorithm used to generate the schema's [fingerprint][].
-  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
-
 ##### `Type.isType(any)`
 
 + `any` {...} Any object.
@@ -847,6 +842,26 @@ Returns the protocol's fully qualified name.
 
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
+
+##### `protocol.getSchema([noDeref])`
+
++ `noDeref` {Boolean} Do not dereference any type names.
+
+Returns `protocol`'s canonical schema.
+
+##### `protocol.getFingerprint([algorithm])`
+
++ `algorithm` {String} Algorithm used to generate the protocol's fingerprint.
+  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
+
+Returns a buffer containing the protocol's [fingerprint][].
+
+##### `Protocol.getFingerprint(type, [algorithm])`
+
++ `algorithm` {String} Algorithm used to generate the type's fingerprint.
+  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
+
+Convenience method to compute a type's [fingerprint][].
 
 
 #### Class `MessageEmitter`
