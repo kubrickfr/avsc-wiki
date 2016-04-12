@@ -90,11 +90,9 @@ to create the corresponding protocol.
     + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
     + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
     + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
-  + `unwrapUnions` {Boolean} Decode union values without a wrapping object.
-    Not all unions can be unambiguously represented in this way, see
-    [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts) for more
-    information. An error will be raised when a union inside the schema doesn't
-    satisfy these requirements.
+  + `wrapUnions` {Boolean} Decode union values using a wrapper object (similar
+    to Avro's JSON encoding). By default union values are represented without
+    this object. See [Wrapped unions][wrapped-unions] for more information.
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -191,10 +189,8 @@ Check whether `val` is a valid `type` value.
     namespace (which can cause collisions). Passing in this option will attempt
     to lookup unqualified names as well and return correctly qualified names.
     This option has no effect when used with unwrapped unions.
-  + `wrapUnions` {Boolean} Avro's JSON representation expects all union values
-    to be wrapped inside objects. Setting this parameter to `true` will try to
-    wrap unwrapped union values into their first matching type. This option has
-    no effect when used with unwrapped unions.
+  + `wrapUnions` {Boolean} Allow wrapping of union values into their first
+    matching branch. This option has no effect when used with unwrapped unions.
 
 Deep copy a value of `type`.
 
@@ -282,11 +278,11 @@ evolution can be used to significantly speed up decoding.
 
 Returns a random value of `type`.
 
-##### `type.getName([noUndef])`
+##### `type.getName([asBranch])`
 
-+ `noUndef` {Boolean} If `type` doesn't have a name, return its "type name"
-  instead of `undefined`. When set, this method returns the type's union
-  branch name.
++ `asBranch` {Boolean} If `type` doesn't have a name, return its "type name"
+  instead of `undefined`. (This method then returns the type's branch name when
+  included in a union.)
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
@@ -294,16 +290,36 @@ Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
 Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
-##### `type.getSchema([noDeref])`
+##### `type.getSchema([opts])`
 
-+ `noDeref` {Boolean} Do not dereference any type names.
++ `opts` {Object} Options:
+  + `exportAttrs` {Boolean} Include aliases, field defaults, order, and logical
+    type attributes in the returned schema.
+  + `noDeref` {Boolean} Do not dereference any type names.
 
 Returns `type`'s [canonical schema][canonical-schema] (as a string). This can
 be used to compare schemas for equality.
 
-##### `Type.isType(any)`
+##### `type.getFingerprint([algorithm])`
+
++ `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
+  *Only `'md5'` is supported in the browser.*
+
+Return a buffer identifying `type`.
+
+##### `type.equals(other)`
+
++ `other` {...} Any object.
+
+Check whether two types are equal (i.e. have the same canonical schema).
+
+##### `Type.isType(any, [prefix,] ...)`
 
 + `any` {...} Any object.
++ `prefix` {String} If specified, this function will only return `true` if
+  the type's type name starts with at least one of these prefixes. For example,
+  `Type.isType(type, 'union', 'int')` will return `true` if and only if `type`
+  is either a union type or integer type.
 
 Check whether `any` is an instance of `Type`. This is similar to `any
 instanceof Type` but will work across contexts (e.g. `iframe`s).
@@ -377,6 +393,7 @@ type, the steps are:
   + `_fromValue`
   + `_toValue`
   + `_resolve` (optional)
+  + `_export` (optional)
 
 See [here][logical-types] for more information. A couple sample implementations
 are available as well:
@@ -404,7 +421,6 @@ This method should return a value which can be serialized by the underlying
 type. *This method is abstract and should be implemented but not called
 directly.*
 
-
 ##### `type._resolve(type)`
 
 + `type` {Type} The writer's type.
@@ -416,6 +432,16 @@ This method should return:
   type into a wrapped value for the current type.
 
 *This method is abstract and should be implemented but not called directly.*
+
+##### `type._export(attrs)`
+
++ `attrs` {Object} The type's raw exported attributes, containing `type` and
+  `logicalType` keys.
+
+This method should add attributes to be exported to the `attrs` object. These
+will then be included into any [`type.getSchema`](#typegetschema-opts) calls
+with `exportAttrs` set. *A default implementation exporting nothing is
+provided.*
 
 
 #### Class `LongType(attrs, [opts])`
@@ -925,3 +951,4 @@ side.
 [framing-messages]: https://avro.apache.org/docs/current/spec.html#Message+Framing
 [event-emitter]: https://nodejs.org/api/events.html#events_class_events_eventemitter
 [protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
+[wrapped-unions]: Advanced-usage#wrapped-union-types
