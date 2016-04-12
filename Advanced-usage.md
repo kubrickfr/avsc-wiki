@@ -151,7 +151,7 @@ encountering a number outside the supported precision range.)
 There are multiple JavaScript libraries to represent 64-bit integers, with
 different characteristics (e.g. some are faster but do not run in the browser).
 Rather than tie us to any particular one, `avsc` lets us choose the most
-adequate with [`LongType.using`](Api#longtypeusingmethods-nounpack). Below
+adequate with [`LongType.__with`](Api#longtype__withmethods-nounpack). Below
 are a few sample implementations for popular libraries (refer to the API
 documentation for details on each option):
 
@@ -160,7 +160,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('node-int64');
 
-  var longType = avro.types.LongType.using({
+  var longType = avro.types.LongType.__with({
     fromBuffer: function (buf) { return new Long(buf); },
     toBuffer: function (n) { return n.toBuffer(); },
     fromJSON: function (obj) { return new Long(obj); },
@@ -175,7 +175,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('int64-native');
 
-  var longType = avro.types.LongType.using({
+  var longType = avro.types.LongType.__with({
     fromBuffer: function (buf) { return new Long('0x' + buf.toString('hex')); },
     toBuffer: function (n) { return new Buffer(n.toString().slice(2), 'hex'); },
     fromJSON: function (obj) { return new Long(obj); },
@@ -190,7 +190,7 @@ documentation for details on each option):
   ```javascript
   var Long = require('long');
 
-  var longType = avro.types.LongType.using({
+  var longType = avro.types.LongType.__with({
     fromBuffer: function (buf) {
       return new Long(buf.readInt32LE(), buf.readInt32LE(4));
     },
@@ -229,13 +229,13 @@ var decoded = type.fromBuffer(buf); // == obj (No precision loss.)
 
 Because the built-in JSON parser is itself limited by JavaScript's internal
 number representation, using the `toString` and `fromString` methods is
-generally still unsafe (see `LongType.using`'s documentation for a possible
+generally still unsafe (see `LongType.__with`'s documentation for a possible
 workaround).
 
 Finally, to make integration easier, `toBuffer` and `fromBuffer` deal with
 already unpacked buffers by default. To leverage an external optimized packing
 and unpacking routine (for example when using a native C++ addon), we can
-disable this behavior by setting `LongType.using`'s `noUnpack` argument to
+disable this behavior by setting `LongType.__with`'s `noUnpack` argument to
 `true`.
 
 

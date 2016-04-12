@@ -415,7 +415,7 @@ This method should return:
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `LongType.using(methods, [noUnpack])`
+##### `LongType.__with(methods, [noUnpack])`
 
 + `methods` {Object} Method implementations dictionary keyed by method name,
   see below for details on each of the functions to implement.
