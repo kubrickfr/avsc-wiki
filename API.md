@@ -916,13 +916,13 @@ Emitted when the server's handshake response is received.
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
 
-##### `emitter.emitMessage(name, envelope, [props,] cb)`
+##### `emitter.emitMessage(name, envelope, [opts,] cb)`
 
 + `name` {String} Message name.
 + `envelope` {Object} Message contents `{header, request}`.
-+ `props` {Object} Call parameters, currently the following are supported:
++ `opts` {Object} Call options, currently the following are supported:
   + `timeout` {Number}
-+ `cb(err, envelope, props)` {Function} Callback.
++ `cb(err, envelope, meta)` {Function} Callback.
 
 Send a message. This function provides a lower level API than
 [`protocol.emit`](#); for example it exposes message headers and the timeout
@@ -995,7 +995,7 @@ Check whether the listener was destroyed.
 
 ##### `listener.onMessage(fn)`
 
-+ `fn(name, envelope, props, cb)` {Function} Handler.
++ `fn(name, envelope, meta, cb)` {Function} Handler.
 
 Add a handler to be called each time a message arrives in this listener.
 
