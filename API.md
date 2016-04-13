@@ -796,17 +796,16 @@ Send a message. This is always done asynchronously.
 
 Add a handler for a given message.
 
-##### `protocol.createEmitter(transport, [opts,] [cb])`
+##### `protocol.createEmitter(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
-  + `IdType` {LogicalType} Metadata logical type.
-  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
-    Defaults to 2048.
-  + `frameSize` {Number} Size used when [framing messages][framing-messages].
-    Defaults to 2048.
-+ `cb(pending)` {Function} End of transmission callback.
+  + `cache` {Object}
+  + `noPing` {Boolean}
+  + `objectMode` {Boolean}
+  + `serverFingerprint` {Buffer}
+  + `strictErrors` {Boolean}
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
 emitter can then be used to communicate with a remote server of compatible
@@ -826,26 +825,36 @@ There are two major types of transports:
   Stream factory `fn(cb)` which should return a writable stream and call its
   callback argument with a readable stream (when available).
 
-##### `protocol.createListener(transport, [opts,] [cb])`
+##### `protocol.createListener(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} Similar to
   [`createEmitter`](#protocolcreateemittertransport-opts-cb)'s corresponding
   argument, except that readable and writable roles are reversed for stateless
   transports.
-+ `opts` {Object} Identical to `createEmitter`'s options.
-  + `IdType` {LogicalType} Metadata logical type.
-  + `bufferSize` {Number} Internal serialization buffer size (in bytes).
-    Defaults to 2048.
-  + `frameSize` {Number} Size used when [framing messages][framing-messages].
-    Defaults to 2048.
-+ `cb(pending)` {Function} End of transmission callback.
++ `opts` {Object} Options.
+  + `cache` {Object}
+  + `objectMode` {Boolean}
+  + `strictErrors` {Boolean}
 
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
 
+##### `protocol.getHandler(name)`
+
++ `name` {String} Message name.
+
+Get the function called each time a message is received for this protocol, or
+`undefined` if no handler was set for this message.
+
 ##### `protocol.subprotocol()`
 
 Returns a copy of the original protocol, which inherits all its handlers.
+
+##### `protocol.getMessage(name)`
+
++ `name` {String} Message name.
+
+Get a single message from this protocol.
 
 ##### `protocol.getMessages()`
 
@@ -869,9 +878,9 @@ Returns the protocol's fully qualified name.
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
 
-##### `protocol.getSchema([noDeref])`
+##### `protocol.getSchema([opts])`
 
-+ `noDeref` {Boolean} Do not dereference any type names.
++ `opts` {Object} Same options as [`Type.getSchema`](#).
 
 Returns `protocol`'s canonical schema.
 
@@ -882,12 +891,12 @@ Returns `protocol`'s canonical schema.
 
 Returns a buffer containing the protocol's [fingerprint][].
 
-##### `Protocol.getFingerprint(type, [algorithm])`
+##### `protocol.equals(other)`
 
-+ `algorithm` {String} Algorithm used to generate the type's fingerprint.
-  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
++ `other` {...} Any object.
 
-Convenience method to compute a type's [fingerprint][].
+Check whether the argument is equal to `protocol` (w.r.t canonical
+representations).
 
 
 #### Class `MessageEmitter`
@@ -906,6 +915,40 @@ Emitted when the server's handshake response is received.
 
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
+
+##### `emitter.emitMessage(name, envelope, [props,] cb)`
+
++ `name` {String} Message name.
++ `envelope` {Object} Message contents `{header, request}`.
++ `props` {Object} Call parameters, currently the following are supported:
+  + `timeout` {Number}
++ `cb(err, envelope, props)` {Function} Callback.
+
+Send a message. This function provides a lower level API than
+[`protocol.emit`](#); for example it exposes message headers and the timeout
+parameter.
+
+##### `emitter.getCache()`
+
+Get the emitter's cache of remote protocols. This cache can be reused to
+instantiate new emitters and avoid having to perform additional handshakes.
+
+##### `emitter.getPending()`
+
+Get the number of pending calls (i.e. the number of messages emittes which
+haven't yet had a response).
+
+##### `emitter.getProtocol()`
+
+Get the emitter's underlying protoocl.
+
+##### `emitter.getTimeout()`
+
+Get the emitter's default timeout.
+
+##### `emitter.isDestroyed()`
+
+Check whether the listener was destroyed.
 
 ##### `emitter.destroy([noWait])`
 
@@ -931,6 +974,30 @@ Emitted right before the server sends a handshake response.
 
 End of transmission event, emitted after the listener is destroyed and there are
 no more responses to send.
+
+##### `listener.getCache()`
+
+Get the listener's cache of remote protocols. This cache can be reused to
+instantiate new listeners and avoid having to perform additional handshakes.
+
+##### `listener.getPending()`
+
+Get the number of pending calls (i.e. the number of handler calls which haven't
+yet returned).
+
+##### `listener.getProtocol()`
+
+Get the listener's underlying protoocl.
+
+##### `listener.isDestroyed()`
+
+Check whether the listener was destroyed.
+
+##### `listener.onMessage(fn)`
+
++ `fn(name, envelope, props, cb)` {Function} Handler.
+
+Add a handler to be called each time a message arrives in this listener.
 
 ##### `listener.destroy([noWait])`
 

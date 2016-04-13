@@ -1,7 +1,13 @@
++ [Wrapped unions](#wrapped-unions)
 + [Schema evolution](#schema-evolution)
 + [Logical types](#logical-types)
 + [Custom long types](#custom-long-types)
 + [Remote procedure calls](#remote-procedure-calls)
+
+
+# Wrapped unions
+
+TODO
 
 
 # Schema evolution
@@ -123,6 +129,8 @@ var buf = stringType.toBuffer(str);
 var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
+
+TODO: Export attributes.
 
 As a more fully featured example, you can also take a look at this
 [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
@@ -328,7 +336,7 @@ var ee = protocol.createEmitter(function (cb) {
     port: 3000,
     headers: {'content-type': 'avro/binary'},
     method: 'POST'
-  }).on('response', function (res) { cb(res); });
+  }).on('response', function (res) { cb(null, res); });
 });
 ```
 
@@ -340,7 +348,7 @@ Using [express][] for example:
 var app = require('express')();
 
 app.post('/', function (req, res) {
-  protocol.createListener(function (cb) { cb(res); return req; });
+  protocol.createListener(function (cb) { cb(null, res); return req; });
 });
 
 app.listen(3000);
