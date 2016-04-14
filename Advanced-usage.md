@@ -1,13 +1,7 @@
-+ [Wrapped unions](#wrapped-unions)
 + [Schema evolution](#schema-evolution)
 + [Logical types](#logical-types)
 + [Custom long types](#custom-long-types)
 + [Remote procedure calls](#remote-procedure-calls)
-
-
-# Wrapped unions
-
-TODO
 
 
 # Schema evolution

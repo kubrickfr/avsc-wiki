@@ -31,9 +31,8 @@
     + [`streams.RawEncoder`](#class-rawencoderschema-opts)
 + IPC & RPC
   + [`Protocol`](#class-protocol)
-  + Event emitters:
-    + [`messages.MessageEmitter`](#class-messageemitter)
-    + [`messages.MessageListener`](#class-messagelistener)
+  + [`Protocol.MessageEmitter`](#class-messageemitter)
+  + [`Protocol.MessageListener`](#class-messagelistener)
 
 
 ## Parsing schemas
@@ -90,9 +89,9 @@ to create the corresponding protocol.
     + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
     + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
     + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
-  + `wrapUnions` {Boolean} Decode union values using a wrapper object (similar
-    to Avro's JSON encoding). By default union values are represented without
-    this object. See [Wrapped unions][wrapped-unions] for more information.
+  + `wrapUnions` {Boolean} Represent unions using a
+    [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts) instead of the
+    default [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts).
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
@@ -524,16 +523,22 @@ The type of the map's values (keys are always strings).
 
 Optional type aliases. These are used when adapting a schema from another type.
 
-##### `type.getFields()`
+##### `type.getField(name)`
 
-Returns a copy of the array of fields contained in this record. Each field is
-an object with the following methods:
++ `name` {String} Field name.
+
+Convenience method to retrieve a field by name. A field is an object with the
+following methods:
 
 + `getAliases()`
 + `getDefault()`
 + `getName()`
 + `getOrder()`
 + `getType()`
+
+##### `type.getFields()`
+
+Returns a copy of the array of fields contained in this record.
 
 ##### `type.getRecordConstructor()`
 
@@ -753,7 +758,7 @@ an API modeled after node.js' core [`EventEmitter`][event-emitter].
 [protocol declaration][protocol-declaration] and provide a way of sending
 remote messages (for example to another machine, or another process on the same
 machine). For this reason, instances of this class are very similar to
-`EventEmitter`s, exposing both [`emit`](#protocolemitname-req-emitter-cb) and
+`EventEmitter`s, exposing both [`emit`](#protocolemitname-req-emitter) and
 [`on`](#protocolonname-handler) methods.
 
 Being able to send remote messages (and to do so efficiently) introduces a few
@@ -775,7 +780,7 @@ differences however:
 + `req` {Object} Request value, must correspond to the message's declared
   request type.
 + `emitter` {MessageEmitter} Emitter used to send the message. See
-  [`createEmitter`](#protocolcreateemittertransport-opts-cb) for how to obtain
+  [`createEmitter`](#protocolcreateemittertransport-opts) for how to obtain
   one.
 + `cb(err, res)` {Function} Function called with the remote call's response
   (and eventual error) when available. If not specified and an error occurs,
@@ -801,11 +806,19 @@ Add a handler for a given message.
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
-  + `cache` {Object}
-  + `noPing` {Boolean}
-  + `objectMode` {Boolean}
-  + `serverFingerprint` {Buffer}
-  + `strictErrors` {Boolean}
+  + `cache` {Object} Cache of protocol adapters.
+  + `noPing` {Boolean} Do not emit a ping request when the emitter is created.
+    For stateful transports this will assume that a connection has already been
+    established, for stateless transports this will delay handshakes until the
+    first message is sent.
+  + `objectMode` {Boolean} Expect a transport in object mode. Instead of
+    exchanging buffers, objects {id, payload} will be written and expected.
+    This can be used to implement custom transport encodings.
+  + `serverFingerprint` {Buffer} Fingerprint of remote server to use for the
+    initial handshake. This will only be used if the corresponding adapter
+    exists in the cache.
+  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
+    objects.
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
 emitter can then be used to communicate with a remote server of compatible
@@ -813,17 +826,12 @@ protocol.
 
 There are two major types of transports:
 
-+ Stateful
++ Stateful: a pair of binary streams `{readable, writable}`. As a convenience
+  passing a single duplex stream is also supported and equivalent to passing
+  `{readable: duplex, writable: duplex}`.
 
-  A pair of binary streams `{readable, writable}`.
-
-  As a convenience passing a single duplex stream is also supported and
-  equivalent to passing `{readable: duplex, writable: duplex}`.
-
-+ Stateless
-
-  Stream factory `fn(cb)` which should return a writable stream and call its
-  callback argument with a readable stream (when available).
++ Stateless: stream factory `fn(cb)` which should return a writable stream and
+  call its callback argument with a readable stream (when available).
 
 ##### `protocol.createListener(transport, [opts])`
 
@@ -832,9 +840,13 @@ There are two major types of transports:
   argument, except that readable and writable roles are reversed for stateless
   transports.
 + `opts` {Object} Options.
-  + `cache` {Object}
-  + `objectMode` {Boolean}
-  + `strictErrors` {Boolean}
+  + `cache` {Object} Cache of protocol adapters.
+  + `objectMode` {Boolean} Expect a transport in object mode. Instead of
+    exchanging buffers, objects {id, payload} will be written and expected.
+    This can be used to implement custom transport encodings.
+  + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
+    strings. When set, the returned error parameter must either be a valid
+    union branch or `undefined`.
 
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
@@ -849,6 +861,7 @@ Get the function called each time a message is received for this protocol, or
 ##### `protocol.subprotocol()`
 
 Returns a copy of the original protocol, which inherits all its handlers.
+Adding new handlers to a subprotocol won't affect the parent protocol.
 
 ##### `protocol.getMessage(name)`
 
