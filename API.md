@@ -573,10 +573,9 @@ decoded `record` value):
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-This class is used to represent unions when a schema is parsed with
-`unwrapUnions` option set. Its values are decoded without a wrapping object:
-`null` and `48` would be valid values for the schema `["null", "int"]` (as
-opposed to `null` and `{'int': 48}` for wrapped unions).
+This class is the default used to represent unions. Its values are decoded
+without a wrapping object: `null` and `48` would be valid values for the schema
+`["null", "int"]` (as opposed to `null` and `{'int': 48}` for wrapped unions).
 
 This representation is usually more convenient and natural, however it isn't
 able to guarantee correctness for all unions. For example, we wouldn't be able
@@ -606,8 +605,8 @@ The possible types that this union can take.
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-This class is the default representation for unions (used unless `parse`'s
-`unwrapUnions` option is set). It uses Avro's JSON encoding and is able to
+This class is the representation using for unions for types generated with
+`parse`'s `wrapUnions` option set. It uses Avro's JSON encoding and is able to
 correctly represent all unions: branch type information is never lost since it
 is included in the decoded value.
 
@@ -786,7 +785,10 @@ differences however:
   (and eventual error) when available. If not specified and an error occurs,
   the error will be emitted on `emitter` instead.
 
-Send a message. This is always done asynchronously.
+Send a message. This is always done asynchronously. This method is a simpler
+version of [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb),
+providing convenience functionality such as converting string errors to `Error`
+objects.
 
 ##### `protocol.on(name, handler)`
 
@@ -1008,7 +1010,9 @@ Check whether the listener was destroyed.
 
 ##### `listener.onMessage(fn)`
 
-+ `fn(name, envelope, meta, cb)` {Function} Handler.
++ `fn(name, envelope, meta, cb)` {Function} Handler. The callback `cb` should
+  be called as: `cb(err, envelope)` where `err` is an eventual error and
+  `envelope` an object `{header, error, response}`.
 
 Add a handler to be called each time a message arrives in this listener.
 
@@ -1031,4 +1035,3 @@ side.
 [framing-messages]: https://avro.apache.org/docs/current/spec.html#Message+Framing
 [event-emitter]: https://nodejs.org/api/events.html#events_class_events_eventemitter
 [protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
-[wrapped-unions]: Advanced-usage#wrapped-union-types
