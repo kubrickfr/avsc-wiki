@@ -659,9 +659,10 @@ returned. *Not available in the browser.*
     `compressedData` is a buffer of compressed data, and must call `cb(err,
     uncompressedData)` on completion. The default contains handlers for the
     `'null'` and `'deflate'` codecs.
-  + `decode` {Boolean} Whether to decode records before returning them.
-    Defaults to `true`.
-  + `parseOpts` {Object} Options passed when parsing the writer's schema.
+  + `noDecode` {Boolean} Do not decode records before returning them.
+  + `parseHook(attrs)` {Function} Function called to generate the type from the
+    schema contained in the file. This can be used to pass in addtional options
+    when parsing the schema (e.g. logical type information).
 
 A duplex stream which decodes bytes coming from on Avro object container file.
 
@@ -798,8 +799,7 @@ objects.
 + `handler(req, listener, cb)` {Function} Handler, called each time a message
   with matching name is received. The `listener` argument will be the
   corresponding `MessageListener` instance. The final callback argument
-  `cb(err, res)` should be called to send the response back to the emitter
-  (except when the message is one way, in which case `cb` will be `undefined`).
+  `cb(err, res)` should be called to send the response back to the emitter.
 
 Add a handler for a given message.
 
