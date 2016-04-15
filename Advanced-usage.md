@@ -117,14 +117,14 @@ converts values of the writer's type into the logical type's values. For
 example, the above `DateType` can read dates which were serialized as strings:
 
 ```javascript
-var stringType = avro.parse('string');
 var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
-var buf = stringType.toBuffer(str);
+var stringType = avro.parse('string');
+var buf = stringType.toBuffer(str); // `str` encoded as an Avro string.
+
+var dateType = type.getField('time').getType();
 var resolver = dateType.createResolver(stringType);
 var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
-
-TODO: Export attributes.
 
 As a more fully featured example, you can also take a look at this
 [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
