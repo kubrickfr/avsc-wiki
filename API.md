@@ -409,16 +409,17 @@ logical type can support different underlying types.
 
 + `val` {...} A value deserialized by the underlying type.
 
-This method should return the final, wrapped, value. *This method is abstract
-and should be implemented but not called directly.*
+This method should return the converted value. *This method is abstract and
+should be implemented but not called directly.*
 
 ##### `type._toValue(any)`
 
-+ `any` {...} A wrapped value.
++ `any` {...} A derived value.
 
 This method should return a value which can be serialized by the underlying
-type. *This method is abstract and should be implemented but not called
-directly.*
+type. If `any` isn't a valid value for this logical type, you can either return
+`undefined` or throw an exception (slower). *This method is abstract and should
+be implemented but not called directly.*
 
 ##### `type._resolve(type)`
 
@@ -594,6 +595,10 @@ a single branch inside each of the categories below:
 So `['null', 'int']` and `['null', 'string', {type: 'array', items: 'string'}]`
 are supported, but `['int', 'float']` and `['bytes', {name: 'Id', type:
 'fixed', size: 2}]` are not.
+
+Finally, note that by using logical types, it is possible to work around the
+above requirements (by delegating the branch inference to the logical types
+themselves).
 
 ##### `type.getTypes()`
 
