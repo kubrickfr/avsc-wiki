@@ -68,6 +68,9 @@ to create the corresponding protocol.
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`). *This last option is not supported in the browser.*
 + `opts` {Object} Parsing options. The following keys are currently supported:
+  + `allowAnonymousTypes` {Boolean} Allow named types (`enum`, `fixed`,
+    `record`, and `error`) to omit their `name` field. Such anonymous types
+    can be resolved by any compatible matching type.
   + `assertLogicalTypes` {Boolean} The Avro specification mandates that we fall
     through to the underlying type if a logical type is invalid. When set, this
     option will override this behavior and throw an error when a logical type
