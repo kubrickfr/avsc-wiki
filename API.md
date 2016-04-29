@@ -1,5 +1,7 @@
 + Schemas and IDL files
   + [`assemble`](#assemblepath-opts-cb)
+  + [`combine`](#combinetypes-opts)
+  + [`infer`](#inferval-opts)
   + [`parse`](#parseschema-opts)
 + Avro types
   + [`Type`](#class-type)
@@ -56,8 +58,34 @@
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
-Assemble an IDL file into its attributes. These can then be passed to `parse`
-to create the corresponding protocol.
+Assemble an IDL file into its attributes. These can then be passed to
+[`parse`](#parseschema-opts) to create the corresponding protocol.
+
+## `combine(types, [opts])`
+
++ `types` {Array} Array of types to combine.
++ `opts` {Object} All the options of [`parse`](#parseschema-opts) are
+  available, as well as:
+  + `noNullDefaults` {Boolean} When combining records with missing fields, the
+    default behavior is to make these fields optional (wrapping them inside a
+    nullable union). Setting this flag will instead combine both records into a
+    map.
+
+Merge multiple types into one. The resulting type will support all the initial
+types' values. By default this function will return anonymous types, but it is
+possible for example to use a type hook to add in the names appropriately.
+Combining wrapped unions is currently not supported.
+
+### `infer(val, [opts])`
+
++ `val` {...} The value used to infer the type.
++ `opts` {Object} Options. All the options of
+  [`Type.combine`](#combinetypes-opts) are supported, along with:
+  + `attrsHook(val)` Function called each time attributes must be inferred from
+    a value. This function should either return the attributes (or type) to
+    use, or `undefined` to proceed with the default behavior.
+
+Generate a type from a value.
 
 ### `parse(schema, [opts])`
 
@@ -68,9 +96,6 @@ to create the corresponding protocol.
   + A path to a file containing a JSON-stringified schema (e.g.
     `'./Schema.avsc'`). *This last option is not supported in the browser.*
 + `opts` {Object} Parsing options. The following keys are currently supported:
-  + `allowAnonymousTypes` {Boolean} Allow named types (`enum`, `fixed`,
-    `record`, and `error`) to omit their `name` field. Such anonymous types
-    can be resolved by any compatible matching type.
   + `assertLogicalTypes` {Boolean} The Avro specification mandates that we fall
     through to the underlying type if a logical type is invalid. When set, this
     option will override this behavior and throw an error when a logical type
@@ -79,6 +104,11 @@ to create the corresponding protocol.
     [`LogicalType`](#class-logicaltypeattrs-opts-types). This can be used to
     support serialization and deserialization of arbitrary native objects.
   + `namespace` {String} Optional parent namespace.
+  + `noAnonymousTypes` {Boolean} Throw an error if a named type (`enum`,
+    `fixed`, `record`, or `error`) is missing its `name` field. By default
+    anonymous types are supported; they behave exactly like their named
+    equivalent except that they cannot be referenced and can be resolved by any
+    compatible type.
   + `registry` {Object} Registry of predefined type names. This can for example
     be used to override the types used for primitives or to split a schema
     declaration over multiple files.
