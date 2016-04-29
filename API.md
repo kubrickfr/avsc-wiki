@@ -61,26 +61,24 @@
 Assemble an IDL file into its attributes. These can then be passed to
 [`parse`](#parseschema-opts) to create the corresponding protocol.
 
-## `combine(types, [opts])`
+### `combine(types, [opts])`
 
 + `types` {Array} Array of types to combine.
 + `opts` {Object} All the options of [`parse`](#parseschema-opts) are
   available, as well as:
   + `noNullDefaults` {Boolean} When combining records with missing fields, the
-    default behavior is to make these fields optional (wrapping them inside a
-    nullable union). Setting this flag will instead combine both records into a
-    map.
+    default behavior is to make these fields optional (wrapping their type
+    inside a nullable union and setting their default to `null`). Activating
+    this flag will instead combine both records into a map.
 
 Merge multiple types into one. The resulting type will support all the initial
-types' values. By default this function will return anonymous types, but it is
-possible for example to use a type hook to add in the names appropriately.
-Combining wrapped unions is currently not supported.
+types' values.
 
 ### `infer(val, [opts])`
 
 + `val` {...} The value used to infer the type.
-+ `opts` {Object} Options. All the options of
-  [`Type.combine`](#combinetypes-opts) are supported, along with:
++ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
+  are supported, along with:
   + `attrsHook(val)` Function called each time attributes must be inferred from
     a value. This function should either return the attributes (or type) to
     use, or `undefined` to proceed with the default behavior.
