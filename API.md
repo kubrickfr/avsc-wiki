@@ -66,7 +66,7 @@ Assemble an IDL file into its attributes. These can then be passed to
 + `types` {Array} Array of types to combine.
 + `opts` {Object} All the options of [`parse`](#parseschema-opts) are
   available, as well as:
-  + `noNullDefaults` {Boolean} When combining records with missing fields, the
+  + `strictDefaults` {Boolean} When combining records with missing fields, the
     default behavior is to make these fields optional (wrapping their type
     inside a nullable union and setting their default to `null`). Activating
     this flag will instead combine both records into a map.
