@@ -69,19 +69,20 @@ Assemble an IDL file into its attributes. These can then be passed to
   + `strictDefaults` {Boolean} When combining records with missing fields, the
     default behavior is to make these fields optional (wrapping their type
     inside a nullable union and setting their default to `null`). Activating
-    this flag will instead combine both records into a map.
+    this flag will instead combine records into a map.
 
-Merge multiple types into one. The resulting type will support all the initial
+Merge multiple types into one. The resulting type will support all the input
 types' values.
 
 ### `infer(val, [opts])`
 
 + `val` {...} The value used to infer the type.
 + `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
-  are supported, along with:
-  + `attrsHook(val)` Function called each time attributes must be inferred from
-    a value. This function should either return the attributes (or type) to
-    use, or `undefined` to proceed with the default behavior.
+  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
+  with:
+  + `valueHook(val, opts)` Function called each time a type is inferred from a
+    value. This function should either return an alternate type to use, or
+    `undefined` to proceed with the default inference logic.
 
 Generate a type from a value.
 
