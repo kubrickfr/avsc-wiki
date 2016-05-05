@@ -1,9 +1,8 @@
-+ Schemas and IDL files
++ Types
   + [`assemble`](#assemblepath-opts-cb)
   + [`combine`](#combinetypes-opts)
   + [`infer`](#inferval-opts)
   + [`parse`](#parseschema-opts)
-+ Avro types
   + [`Type`](#class-type)
   + Built-in types:
     + [`types.ArrayType`](#class-arraytypeattrs-opts)
@@ -61,31 +60,6 @@
 Assemble an IDL file into its attributes. These can then be passed to
 [`parse`](#parseschema-opts) to create the corresponding protocol.
 
-### `combine(types, [opts])`
-
-+ `types` {Array} Array of types to combine.
-+ `opts` {Object} All the options of [`parse`](#parseschema-opts) are
-  available, as well as:
-  + `strictDefaults` {Boolean} When combining records with missing fields, the
-    default behavior is to make these fields optional (wrapping their type
-    inside a nullable union and setting their default to `null`). Activating
-    this flag will instead combine records into a map.
-
-Merge multiple types into one. The resulting type will support all the input
-types' values.
-
-### `infer(val, [opts])`
-
-+ `val` {...} The value used to infer the type.
-+ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
-  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
-  with:
-  + `valueHook(val, opts)` Function called each time a type is inferred from a
-    value. This function should either return an alternate type to use, or
-    `undefined` to proceed with the default inference logic.
-
-Generate a type from a value.
-
 ### `parse(schema, [opts])`
 
 + `schema` {Object|String} An Avro protocol or type schema, represented by one
@@ -127,6 +101,31 @@ Generate a type from a value.
 
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
+
+### `infer(val, [opts])`
+
++ `val` {...} The value used to infer the type.
++ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
+  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
+  with:
+  + `valueHook(val, opts)` Function called each time a type needs to be
+    inferred from a value. This function should either return an alternate type
+    to use, or `undefined` to proceed with the default inference logic.
+
+Generate a type from a value.
+
+### `combine(types, [opts])`
+
++ `types` {Array} Array of types to combine.
++ `opts` {Object} All the options of [`parse`](#parseschema-opts) are
+  available, as well as:
+  + `strictDefaults` {Boolean} When combining records with missing fields, the
+    default behavior is to make such fields optional (wrapping their type
+    inside a nullable union and setting their default to `null`). Activating
+    this flag will instead combine the records into a map.
+
+Merge multiple types into one. The resulting type will support all the input
+types' values.
 
 
 ## Avro types
