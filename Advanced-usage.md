@@ -1,7 +1,27 @@
++ [Type inference](#type-inference)
 + [Schema evolution](#schema-evolution)
 + [Logical types](#logical-types)
 + [Custom long types](#custom-long-types)
 + [Remote procedure calls](#remote-procedure-calls)
+
+# Type inference
+
+Avro requires a schema in order to be able to encode and decode values. Writing
+such a schema isn't always straightforward however, especially when unfamiliar
+with the syntax. [`infer`][infer-api] aims to help by auto-generating a valid
+type for any value:
+
+```javascript
+var type = avro.infer([1, 4.5, 8]);
+// We can now encode or any array of floats using this type:
+var buf = type.toBuffer([4, 6.1]);
+var val = type.fromBuffer(buf); // [4, 6.1]
+// We can also access the auto-generated schema:
+var schema = type.getSchema();
+```
+
+For most use-cases, the resulting type should be sufficient; and in cases where
+it isn't, it should hopefully provide a helpful starting point.
 
 
 # Schema evolution
@@ -349,6 +369,7 @@ app.listen(3000);
 ```
 
 
+[infer-api]: API#inferval-opts
 [parse-api]: API#parseschema-opts
 [create-resolver-api]: API#typecreateresolverwritertype
 [logical-type-api]: API#class-logicaltypeattrs-opts-types
