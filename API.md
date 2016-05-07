@@ -36,7 +36,7 @@
   + [`Protocol.MessageListener`](#class-messagelistener)
 
 
-## Parsing schemas
+## Types
 
 ### `assemble(path, [opts,] cb)`
 
@@ -102,18 +102,6 @@ Assemble an IDL file into its attributes. These can then be passed to
 Parse a schema and return an instance of the corresponding
 [`Type`](#class-type) or [`Protocol`](#class-protocol).
 
-### `infer(val, [opts])`
-
-+ `val` {...} The value used to infer the type.
-+ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
-  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
-  with:
-  + `valueHook(val, opts)` Function called each time a type needs to be
-    inferred from a value. This function should either return an alternate type
-    to use, or `undefined` to proceed with the default inference logic.
-
-Generate a type from a value.
-
 ### `combine(types, [opts])`
 
 + `types` {Array} Array of types to combine.
@@ -127,8 +115,18 @@ Generate a type from a value.
 Merge multiple types into one. The resulting type will support all the input
 types' values.
 
+### `infer(val, [opts])`
 
-## Avro types
++ `val` {...} The value used to infer the type.
++ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
+  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
+  with:
+  + `valueHook(val, opts)` Function called each time a type needs to be
+    inferred from a value. This function should either return an alternate type
+    to use, or `undefined` to proceed with the default inference logic.
+
+Generate a type from a value.
+
 
 ### Class `Type`
 
