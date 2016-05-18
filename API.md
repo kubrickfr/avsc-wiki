@@ -198,6 +198,9 @@ Serialize an object into a JSON-encoded string.
     especially useful when dealing with complex records, for example to:
       + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-collect-js)
       + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-assert-js)
+  + `noUndeclaredFields` {Boolean} When set, records with attributes that don't
+    correspond to a declared field will be considered invalid. The default is
+    to ignore any extra attributes.
 
 Check whether `val` is a valid `type` value.
 
