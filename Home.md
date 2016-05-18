@@ -1,4 +1,4 @@
-+ [Overview](#what-is-avro)
++ [Overview](#overview)
 + [Browser support](#browser-support)
 
 # Overview
@@ -26,9 +26,16 @@ Quoting the [official documentation][avro-documentation]:
 >   statically typed languages.
 
 Avro is roughly similar to [Protocol Buffers][protocol-buffers], in that they
-both deal with structured data (as opposed to JSON and [MessagePack] for
+both deal with structured data (as opposed to JSON and [MessagePack][] for
 example). This allows for various benefits: for example built-in data
 validation, and faster, more compact encodings.
+
+
+## Why JavaScript?
+
+It turns out JavaScript is a great fit for Avro. JavaScript's dynamic nature
+lets us generate optimized code for each data type. This lets us be often
+(much) faster than JSON (see the [Benchmarks page](Benchmarks)).
 
 
 # Browser support
@@ -63,3 +70,5 @@ increase by less than the sizes indicated.
 [asf]: http://www.apache.org/
 [avro-documentation]: http://avro.apache.org/docs/current/
 [saucelabs]: https://saucelabs.com/
+[protocol-buffers]: https://developers.google.com/protocol-buffers/
+[messagepack]: http://msgpack.org/index.html
