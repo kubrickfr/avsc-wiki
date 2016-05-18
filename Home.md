@@ -9,8 +9,8 @@ specification][avro-specification].
 ## What is Avro?
 
 Avro is a data serialization system. It is part of the [Apache Software
-Foundation][asf] and is widely used both in offline systems (e.g. Hadoop) and
-online (e.g. Kafka).
+Foundation][asf] and is widely used both in offline systems (e.g. in
+combination with Hadoop) and online (e.g. as message encoding for Kafka).
 
 Quoting the [official documentation][avro-documentation]:
 
@@ -25,10 +25,13 @@ Quoting the [official documentation][avro-documentation]:
 >   generation as an optional optimization, only worth implementing for
 >   statically typed languages.
 
-## 
+Avro is roughly similar to [Protocol Buffers][protocol-buffers], in that they
+both deal with structured data (as opposed to JSON and [MessagePack] for
+example). This allows for various benefits: for example built-in data
+validation, and faster, more compact encodings.
 
 
-# Browser usage
+# Browser support
 
 ## Compatibility table
 
