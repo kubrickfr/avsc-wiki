@@ -858,6 +858,10 @@ Add a handler for a given message.
     exists in the cache.
   + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
     objects.
+  + `timeout` {Number} Timeout in milliseconds used when sending requests. It
+    is possible to override this per request via the
+    [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb) function.
+    Specify `0` for no timeout. Defaults to `10000`.
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
 emitter can then be used to communicate with a remote server of compatible
