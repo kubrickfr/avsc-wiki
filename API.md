@@ -846,6 +846,9 @@ Add a handler for a given message.
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
   + `cache` {Object} Cache of protocol adapters.
+  + `endWritable` {Boolean} Set this to `false` to prevent the transport's
+    writable stream from being `end`ed when the emitter is destroyed. Defaults
+    to `true`.
   + `noPing` {Boolean} Do not emit a ping request when the emitter is created.
     For stateful transports this will assume that a connection has already been
     established, for stateless transports this will delay handshakes until the
@@ -858,8 +861,8 @@ Add a handler for a given message.
     exists in the cache.
   + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
     objects.
-  + `timeout` {Number} Timeout in milliseconds used when sending requests. It
-    is possible to override this per request via the
+  + `timeout` {Number} Default timeout in milliseconds used when sending
+    requests. It is possible to override this per request via the
     [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb) function.
     Specify `0` for no timeout. Defaults to `10000`.
 
@@ -884,6 +887,9 @@ There are two major types of transports:
   transports.
 + `opts` {Object} Options.
   + `cache` {Object} Cache of protocol adapters.
+  + `endWritable` {Boolean} Set this to `false` to prevent the transport's
+    writable stream from being `end`ed when the emitter is destroyed. Defaults
+    to `true`.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects {id, payload} will be written and expected.
     This can be used to implement custom transport encodings.
@@ -981,8 +987,8 @@ no more pending requests.
 + `cb(err, envelope, meta)` {Function} Callback.
 
 Send a message. This function provides a lower level API than
-[`protocol.emit`](#); for example it exposes message headers and the timeout
-parameter.
+[`protocol.emit`](#protocolemitname-req-emitter-cb); for example it exposes
+message headers and the timeout parameter.
 
 ##### `emitter.getCache()`
 
