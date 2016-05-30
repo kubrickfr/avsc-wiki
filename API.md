@@ -845,7 +845,9 @@ Add a handler for a given message.
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
-  + `cache` {Object} Cache of protocol adapters.
+  + `cache` {Object} Cache of remote server protocols. This can be used in
+    combination with existing emitters' [`emitter.getCache`](#emittergetcache)
+    to avoid performing too many handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed. Defaults
     to `true`.
@@ -886,9 +888,12 @@ There are two major types of transports:
   argument, except that readable and writable roles are reversed for stateless
   transports.
 + `opts` {Object} Options.
-  + `cache` {Object} Cache of protocol adapters.
+  + `cache` {Object} Cache of remote client protocols. This can be used in
+    combination with existing listeners'
+    [`listener.getCache`](#listenergetcache) to avoid performing too many
+    handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
-    writable stream from being `end`ed when the emitter is destroyed. Defaults
+    writable stream from being `end`ed when the listener is destroyed. Defaults
     to `true`.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects {id, payload} will be written and expected.
