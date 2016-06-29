@@ -55,7 +55,7 @@ module you `require`, you will get a different distribution:
 + `'avsc/etc/browser/avsc'`: the full distribution (~51kB minified and
   compressed), including serialization, protocols, and Avro file support. This
   is also the default distribution you get when you `require('avsc')` directly.
-+ `'avsc/etc/browser/avsc-prototols'`: a slightly lighter distribution (~34kB)
++ `'avsc/etc/browser/avsc-protocols'`: a slightly lighter distribution (~34kB)
   which doesn't include file support.
 + `'avsc/etc/browser/avsc-types'`: the lightest distribution (~20kB) which
   only includes serialization support.
