@@ -359,9 +359,11 @@ instanceof Type` but will work across contexts (e.g. `iframe`s).
 
 + `size` {Number} New buffer size in bytes.
 
-This method resizes the internal buffer used to encode all types. You should
-only ever need to call this if you are encoding very large values and need to
-reclaim memory.
+This method resizes the internal buffer used to encode all types. You can call
+this method if you are encoding very large values and need to reclaim memory.
+In some cases, it can also be beneficial to call this method at startup with a
+sufficiently large buffer size to allow the JavaScript engine to better
+optimize encoding.
 
 
 #### Class `ArrayType(attrs, [opts])`
@@ -651,11 +653,31 @@ is included in the decoded value.
 
 The possible types that this union can take.
 
+Additionally, each value decoded from a wrapped union exposes its corresponding
+type via its constructor:
+
+```javascript
+var type = new avro.types.UnwrappedUnionType(['int', 'long']);
+var val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
+var branchType = val.constructor.getBranchType() // == <LongType>
+```
+
 
 ## Files and streams
 
 The following convenience functions are available for common operations on
 container files:
+
+#### `extractFileHeader(path, [opts])`
+
++ `path` {String} Path to Avro container file.
++ `opts` {Object} Options:
+  + `decode` {Boolean} Decode schema and codec metadata (otherwise they will be
+    returned as bytes). Defaults to `true`.
+
+Extract header from an Avro container file synchronously. If no header is
+present (i.e. the path doesn't point to a valid Avro container file), `null` is
+returned. *Not available in the browser.*
 
 #### `createFileDecoder(path, [opts])`
 
@@ -669,23 +691,31 @@ available in the browser.*
 #### `createFileEncoder(path, schema, [opts])`
 
 + `path` {String} Destination path.
-+ `schem` {Object|String|Type} Type used to serialize.
++ `schema` {Object|String|Type} Type used to serialize.
 + `opts` {Object} Encoding options, passed to
   [`BlockEncoder`](#class-blockencoderschema-opts).
 
 Returns a writable stream of objects. These will end up serialized into an Avro
 container file. *Not available in the browser.*
 
-#### `extractFileHeader(path, [opts])`
+#### `createBlobDecoder(blob, [opts])`
 
-+ `path` {String} Path to Avro container file.
-+ `opts` {Object} Options:
-  + `decode` {Boolean} Decode schema and codec metadata (otherwise they will be
-    returned as bytes). Defaults to `true`.
++ `blob` {Blob} Binary blob.
++ `opts` {Object} Decoding options, passed to
+  [`BlockDecoder`](#class-blockdecoderopts).
 
-Extract header from an Avro container file synchronously. If no header is
-present (i.e. the path doesn't point to a valid Avro container file), `null` is
-returned. *Not available in the browser.*
+Returns a readable stream of decoded objects from an Avro container blob. *Only
+available in the browser when using the full distribution.*
+
+#### `createBlobEncoder(schema, [opts])`
+
++ `schema` {Object|String|Type} Type used to serialize.
++ `opts` {Object} Encoding options, passed to
+  [`BlockEncoder`](#class-blockencoderschema-opts).
+
+Returns a duplex stream of objects. Written values will end up serialized into
+an Avro container blob which will be output as the stream's only readable
+value. *Only available in the browser when using the full distribution.*
 
 
 #### Class `BlockDecoder([opts])`
@@ -709,6 +739,8 @@ A duplex stream which decodes bytes coming from on Avro object container file.
 + `codec` {String} The codec's name.
 + `header` {Object} The file's header, containing in particular the raw schema
   and codec.
+
+This event is guaranteed to be emitted before the first `'data'` event.
 
 ##### Event `'data'`
 
