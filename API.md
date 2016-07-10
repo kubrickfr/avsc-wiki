@@ -654,10 +654,11 @@ is included in the decoded value.
 The possible types that this union can take.
 
 Additionally, each value decoded from a wrapped union exposes its corresponding
-type via its constructor:
+type via its constructor. This is also typically faster than calling
+`Object.keys()` on the value when the active branch is unknown.
 
 ```javascript
-var type = new avro.types.UnwrappedUnionType(['int', 'long']);
+var type = new avro.types.WrappedUnionType(['int', 'long']);
 var val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
 var branchType = val.constructor.getBranchType() // == <LongType>
 ```
