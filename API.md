@@ -734,6 +734,22 @@ value. *Only available in the browser when using the full distribution.*
 
 A duplex stream which decodes bytes coming from on Avro object container file.
 
+Sample use of the `codecs` option to decode a Snappy encoded file using
+[snappy](https://www.npmjs.com/package/snappy):
+
+```javascript
+var snappy = require('snappy');
+
+var blockDecoder = new avro.streams.BlockDecoder({
+  codecs: {
+    snappy: function (buf, cb) {
+      // We could also do some validation here using the checksum.
+      return snappy.uncompress(buf.slice(0, buf.length - 4), cb);
+    }
+  }
+});
+```
+
 ##### Event `'metadata'`
 
 + `type` {Type} The type used to write the file.
