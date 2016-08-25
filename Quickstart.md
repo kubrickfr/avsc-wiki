@@ -20,9 +20,9 @@ and [`encode`](Api#typeencodeval-buf-pos) and its corresponding objects. For
 example the `StringType` knows how to handle JavaScript strings:
 
 ```javascript
-var stringType = new avro.types.StringType();
-var buf = stringType.toBuffer('Hi'); // Buffer containing 'Hi''s Avro encoding.
-var str = stringType.fromBuffer(buf); // === 'Hi'
+const stringType = new avro.types.StringType();
+const buf = stringType.toBuffer('Hi'); // Buffer containing 'Hi''s Avro encoding.
+const str = stringType.fromBuffer(buf); // === 'Hi'
 ```
 
 The [`toBuffer`](API#typetobufferval) and
@@ -36,21 +36,21 @@ Each `type` also provides other methods which can be useful. Here are a few
 + JSON-encoding:
 
   ```javascript
-  var jsonString = type.toString('Hi'); // === '"Hi"'
-  var str = type.fromString(jsonString); // === 'Hi'
+  const jsonString = type.toString('Hi'); // === '"Hi"'
+  const str = type.fromString(jsonString); // === 'Hi'
   ```
 
 + Validity checks:
 
   ```javascript
-  var b1 = stringType.isValid('hello'); // === true ('hello' is a valid string.)
-  var b2 = stringType.isValid(-2); // === false (-2 is not.)
+  const b1 = stringType.isValid('hello'); // === true ('hello' is a valid string.)
+  const b2 = stringType.isValid(-2); // === false (-2 is not.)
   ```
 
 + Random object generation:
 
   ```javascript
-  var s = stringType.random(); // A random string.
+  const s = stringType.random(); // A random string.
   ```
 
 
@@ -66,13 +66,13 @@ heavy lifting:
 
 ```javascript
 // Equivalent to what we did earlier.
-var stringType = avro.parse({type: 'string'});
+const stringType = avro.parse({type: 'string'});
 
 // A slightly more complex type.
-var mapType = avro.parse({type: 'map', values: 'long'});
+const mapType = avro.parse({type: 'map', values: 'long'});
 
 // The sky is the limit!
-var personType = avro.parse({
+const personType = avro.parse({
   name: 'Person',
   type: 'record',
   fields: [
@@ -110,7 +110,7 @@ Since schemas are often stored in separate files, passing a path to `parse`
 will attempt to load a JSON-serialized schema from there:
 
 ```javascript
-var couponType = avro.parse('./Coupon.avsc');
+const couponType = avro.parse('./Coupon.avsc');
 ```
 
 For advanced use-cases, `parse` also has a few options which are detailed the
@@ -124,14 +124,14 @@ serialized Avro records along with their schema. Reading them is as simple as
 calling [`createFileDecoder`](Api#createfiledecoderpath-opts):
 
 ```javascript
-var personStream = avro.createFileDecoder('./persons.avro');
+const personStream = avro.createFileDecoder('./persons.avro');
 ```
 
 `personStream` is a [readable stream][rstream] of decoded records, which we can
 for example use as follows:
 
 ```javascript
-personStream.on('data', function (person) {
+personStream.on('data', (person) => {
   if (person.address.city === 'San Francisco') {
     doSomethingWith(person);
   }
@@ -142,21 +142,21 @@ In case we need the records' `type` or the file's codec, they are available by
 listening to the `'metadata'` event:
 
 ```javascript
-personStream.on('metadata', function (type, codec) { /* Something useful. */ });
+personStream.on('metadata', (type, codec) => { /* Something useful. */ });
 ```
 
 To access a file's header synchronously, there also exists an
 [`extractFileHeader`](Api#extractfileheaderpath-opts) method:
 
 ```javascript
-var header = avro.extractFileHeader('persons.avro');
+const header = avro.extractFileHeader('persons.avro');
 ```
 
 Writing to an Avro container file is possible using
 [`createFileEncoder`](Api#createfileencoderpath-type-opts):
 
 ```javascript
-var encoder = avro.createFileEncoder('./processed.avro', type);
+const encoder = avro.createFileEncoder('./processed.avro', type);
 ```
 
 

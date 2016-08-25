@@ -12,12 +12,12 @@ with the syntax. [`infer`][infer-api] aims to help by auto-generating a valid
 type for any value:
 
 ```javascript
-var type = avro.infer([1, 4.5, 8]);
+const type = avro.infer([1, 4.5, 8]);
 // We can now encode or any array of floats using this type:
-var buf = type.toBuffer([4, 6.1]);
-var val = type.fromBuffer(buf); // [4, 6.1]
+const buf = type.toBuffer([4, 6.1]);
+const val = type.fromBuffer(buf); // [4, 6.1]
 // We can also access the auto-generated schema:
-var schema = type.getSchema();
+const schema = type.getSchema();
 ```
 
 For most use-cases, the resulting type should be sufficient; and in cases where
@@ -35,7 +35,7 @@ decoding fields, we can significantly increase throughput.
 As a motivating example, consider the following event:
 
 ```javascript
-var heavyType = avro.parse({
+const heavyType = avro.parse({
   name: 'Event',
   type: 'record',
   fields: [
@@ -53,7 +53,7 @@ by using the following reader's schema, and creating the corresponding
 resolver:
 
 ```javascript
-var lightType = avro.parse({
+const lightType = avro.parse({
   name: 'LightEvent',
   aliases: ['Event'],
   type: 'record',
@@ -62,7 +62,7 @@ var lightType = avro.parse({
   ]
 });
 
-var resolver = lightType.createResolver(heavyType);
+const resolver = lightType.createResolver(heavyType);
 ```
 
 We decode only the `userId` field, and then, if the ID matches, process the
@@ -71,7 +71,7 @@ decoded record if the ID matches, and `undefined` otherwise.
 
 ```javascript
 function fastDecode(buf) {
-  var lightRecord = lightType.fromBuffer(buf, resolver, true);
+  const lightRecord = lightType.fromBuffer(buf, resolver, true);
   if (lightRecord.userId % 100 === 48) { // Arbitrary check.
     return heavyType.fromBuffer(buf);
   }
@@ -92,7 +92,7 @@ can often be much more convenient to work with native JavaScript objects. As a
 quick motivating example, let's imagine we have the following schema:
 
 ```javascript
-var schema = {
+const schema = {
   name: 'Transaction',
   type: 'record',
   fields: [
@@ -116,19 +116,19 @@ For example, we can use this [`DateType`
 transparently deserialize/serialize native `Date` objects:
 
 ```javascript
-var type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
+const type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
 
 // We create a new transaction.
-var transaction = {
+const transaction = {
   amount: 32,
   time: new Date('Thu Nov 05 2015 11:38:05 GMT-0800 (PST)')
 };
 
 // Our type is able to directly serialize it, including the date.
-var buf = type.toBuffer(transaction);
+const buf = type.toBuffer(transaction);
 
 // And we can get the date back just as easily.
-var date = type.fromBuffer(buf).time; // `Date` object.
+const date = type.fromBuffer(buf).time; // `Date` object.
 ```
 
 Logical types can also be used with schema evolution. This is done by
@@ -137,13 +137,13 @@ converts values of the writer's type into the logical type's values. For
 example, the above `DateType` can read dates which were serialized as strings:
 
 ```javascript
-var str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
-var stringType = avro.parse('string');
-var buf = stringType.toBuffer(str); // `str` encoded as an Avro string.
+const str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
+const stringType = avro.parse('string');
+const buf = stringType.toBuffer(str); // `str` encoded as an Avro string.
 
-var dateType = type.getField('time').getType();
-var resolver = dateType.createResolver(stringType);
-var date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
+const dateType = type.getField('time').getType();
+const resolver = dateType.createResolver(stringType);
+const date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
 
 As a more fully featured example, you can also take a look at this
@@ -180,50 +180,50 @@ documentation for details on each option):
 + [`node-int64`](https://www.npmjs.com/package/node-int64):
 
   ```javascript
-  var Long = require('node-int64');
+  const Long = require('node-int64');
 
-  var longType = avro.types.LongType.__with({
-    fromBuffer: function (buf) { return new Long(buf); },
-    toBuffer: function (n) { return n.toBuffer(); },
-    fromJSON: function (obj) { return new Long(obj); },
-    toJSON: function (n) { return +n; },
-    isValid: function (n) { return n instanceof Long; },
-    compare: function (n1, n2) { return n1.compare(n2); }
+  const longType = avro.types.LongType.__with({
+    fromBuffer: (buf) => { return new Long(buf); },
+    toBuffer: (n) => { return n.toBuffer(); },
+    fromJSON: (obj) => { return new Long(obj); },
+    toJSON: (n) => { return +n; },
+    isValid: (n) => { return n instanceof Long; },
+    compare: (n1, n2) => { return n1.compare(n2); }
   });
   ```
 
 + [`int64-native`](https://www.npmjs.com/package/int64-native):
 
   ```javascript
-  var Long = require('int64-native');
+  const Long = require('int64-native');
 
-  var longType = avro.types.LongType.__with({
-    fromBuffer: function (buf) { return new Long('0x' + buf.toString('hex')); },
-    toBuffer: function (n) { return new Buffer(n.toString().slice(2), 'hex'); },
-    fromJSON: function (obj) { return new Long(obj); },
-    toJSON: function (n) { return +n; },
-    isValid: function (n) { return n instanceof Long; },
-    compare: function (n1, n2) { return n1.compare(n2); }
+  const longType = avro.types.LongType.__with({
+    fromBuffer: (buf) => { return new Long('0x' + buf.toString('hex')); },
+    toBuffer: (n) => { return new Buffer(n.toString().slice(2), 'hex'); },
+    fromJSON: (obj) => { return new Long(obj); },
+    toJSON: (n) => { return +n; },
+    isValid: (n) => { return n instanceof Long; },
+    compare: (n1, n2) => { return n1.compare(n2); }
   });
   ```
 
 + [`long`](https://www.npmjs.com/package/long):
 
   ```javascript
-  var Long = require('long');
+  const Long = require('long');
 
-  var longType = avro.types.LongType.__with({
-    fromBuffer: function (buf) {
+  const longType = avro.types.LongType.__with({
+    fromBuffer: (buf) => {
       return new Long(buf.readInt32LE(), buf.readInt32LE(4));
     },
-    toBuffer: function (n) {
-      var buf = new Buffer(8);
+    toBuffer: (n) => {
+      const buf = new Buffer(8);
       buf.writeInt32LE(n.getLowBits());
       buf.writeInt32LE(n.getHighBits(), 4);
       return buf;
     },
     fromJSON: Long.fromValue,
-    toJSON: function (n) { return +n; },
+    toJSON: (n) => { return +n; },
     isValid: Long.isLong,
     compare: Long.compare
   });
@@ -237,16 +237,16 @@ the `registry` when parsing a schema:
 ```javascript
 // Our schema here is very simple, but this would work for arbitrarily complex
 // ones (applying to all longs inside of it).
-var type = avro.parse('long', {registry: {'long': longType}});
+const type = avro.parse('long', {registry: {'long': longType}});
 
 // Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
 // rounded when represented as a double):
-var buf = new Buffer([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
+const buf = new Buffer([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
 
 // Assuming we are using the `node-int64` implementation.
-var obj = new Long(buf);
-var encoded = type.toBuffer(obj); // == buf
-var decoded = type.fromBuffer(buf); // == obj (No precision loss.)
+const obj = new Long(buf);
+const encoded = type.toBuffer(obj); // == buf
+const decoded = type.fromBuffer(buf); // == obj (No precision loss.)
 ```
 
 Because the built-in JSON parser is itself limited by JavaScript's internal
@@ -283,14 +283,14 @@ Servers and clients then share the same protocol and respectively:
 + Implement interface calls (servers):
 
   ```javascript
-  avro.assemble('math.avdl', function (err, attrs) {
-    var protocol = avro.parse(attrs)
-      .on('add', function (req, ee, cb) {
-        var sum = req.numbers.reduce(function (agg, el) { return agg + el; }, 0);
-        setTimeout(function () { cb(null, sum); }, 1000 * req.delay);
+  avro.assemble('math.avdl', (err, attrs) => {
+    const protocol = avro.parse(attrs)
+      .on('add', (req, ee, cb) => {
+        const sum = req.numbers.reduce((agg, el) => { return agg + el; }, 0);
+        setTimeout(() => { cb(null, sum); }, 1000 * req.delay);
       })
-      .on('multiply', function (req, ee, cb) {
-        var prod = req.numbers.reduce(function (agg, el) { return agg * el; }, 1);
+      .on('multiply', (req, ee, cb) => {
+        const prod = req.numbers.reduce((agg, el) => { return agg * el; }, 1);
         cb(null, prod);
       });
   });
@@ -299,13 +299,13 @@ Servers and clients then share the same protocol and respectively:
 + Call the interface (clients):
 
   ```javascript
-  avro.assemble('math.avdl', function (err, attrs) {
-    var protocol = avro.parse(attrs);
-    var ee; // Message emitter, see below for various instantiation examples.
-    protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, function (err, res) {
+  avro.assemble('math.avdl', (err, attrs) => {
+    const protocol = avro.parse(attrs);
+    const ee; // Message emitter, see below for various instantiation examples.
+    protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, (err, res) => {
       console.log(res); // 9!
     });
-    protocol.emit('multiply', {numbers: [4, 2]}, ee, function (err, res) {
+    protocol.emit('multiply', {numbers: [4, 2]}, ee, (err, res) => {
       console.log(res); // 8!
     });
   });
@@ -321,18 +321,18 @@ E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
 ### Client
 
 ```javascript
-var net = require('net');
+const net = require('net');
 
-var ee = protocol.createEmitter(net.createConnection({port: 8000}));
+const ee = protocol.createEmitter(net.createConnection({port: 8000}));
 ```
 
 ### Server
 
 ```javascript
-var net = require('net');
+const net = require('net');
 
 net.createServer()
-  .on('connection', function (con) { protocol.createListener(con); })
+  .on('connection', (con) => { protocol.createListener(con); })
   .listen(8000);
 ```
 
@@ -343,14 +343,14 @@ For example HTTP requests/responses.
 ### Client
 
 ```javascript
-var http = require('http');
+const http = require('http');
 
-var ee = protocol.createEmitter(function (cb) {
+const ee = protocol.createEmitter((cb) => {
   return http.request({
     port: 3000,
     headers: {'content-type': 'avro/binary'},
     method: 'POST'
-  }).on('response', function (res) { cb(null, res); });
+  }).on('response', (res) => { cb(null, res); });
 });
 ```
 
@@ -359,10 +359,10 @@ var ee = protocol.createEmitter(function (cb) {
 Using [express][] for example:
 
 ```javascript
-var app = require('express')();
+const app = require('express')();
 
-app.post('/', function (req, res) {
-  protocol.createListener(function (cb) { cb(null, res); return req; });
+app.post('/', (req, res) => {
+  protocol.createListener((cb) => { cb(null, res); return req; });
 });
 
 app.listen(3000);

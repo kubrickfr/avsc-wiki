@@ -257,7 +257,7 @@ For example, assume we have the following two versions of a type:
 
 ```javascript
 // A schema's first version.
-var v1 = avro.parse({
+const v1 = avro.parse({
   name: 'Person',
   type: 'record',
   fields: [
@@ -267,7 +267,7 @@ var v1 = avro.parse({
 });
 
 // The updated version.
-var v2 = avro.parse({
+const v2 = avro.parse({
   type: 'record',
   name: 'Person',
   fields: [
@@ -295,11 +295,11 @@ default value.
 
 ```javascript
 //  We can therefore create a resolver.
-var resolver = v2.createResolver(v1);
+const resolver = v2.createResolver(v1);
 
 // And pass it whenever we want to decode from the old type to the new.
-var buf = v1.toBuffer({name: 'Ann', age: 25});
-var obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
+const buf = v1.toBuffer({name: 'Ann', age: 25});
+const obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: null}
 ```
 
 See the [advanced usage page](Advanced-usage) for more details on how schema
@@ -658,9 +658,9 @@ type via its constructor. This is also typically faster than calling
 `Object.keys()` on the value when the active branch is unknown.
 
 ```javascript
-var type = new avro.types.WrappedUnionType(['int', 'long']);
-var val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
-var branchType = val.constructor.getBranchType() // == <LongType>
+const type = new avro.types.WrappedUnionType(['int', 'long']);
+const val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
+const branchType = val.constructor.getBranchType() // == <LongType>
 ```
 
 
@@ -739,11 +739,11 @@ Sample use of the `codecs` option to decode a Snappy encoded file using
 handling](https://avro.apache.org/docs/1.8.0/spec.html#snappy)):
 
 ```javascript
-var snappy = require('snappy');
+const snappy = require('snappy');
 
-var blockDecoder = new avro.streams.BlockDecoder({
+const blockDecoder = new avro.streams.BlockDecoder({
   codecs: {
-    snappy: function (buf, cb) {
+    snappy: (buf, cb) => {
       // The checksum is ignored here, we could use it for validation instead.
       return snappy.uncompress(buf.slice(0, buf.length - 4), cb);
     }
