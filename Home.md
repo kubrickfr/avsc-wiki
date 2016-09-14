@@ -4,7 +4,8 @@
 # Overview
 
 `avsc` is a pure JavaScript implementation of the [Avro
-specification][avro-specification].
+specification][avro-specification] (compliant with the current version,
+`1.8.1`).
 
 ## What is Avro?
 
