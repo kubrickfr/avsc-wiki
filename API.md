@@ -906,8 +906,12 @@ Add a handler for a given message.
     established, for stateless transports this will delay handshakes until the
     first message is sent.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
-    exchanging buffers, objects {id, payload} will be written and expected.
+    exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
+  + `scope` {String} Scope used to prefix messages accross a shared connection.
+    There should be at most one emitter or listener per scope on a single
+    stateful transport. Scoping isn't supported on stateless transports.
+    Matching emitter/listener pairs should have matching scopes.
   + `serverFingerprint` {Buffer} Fingerprint of remote server to use for the
     initial handshake. This will only be used if the corresponding adapter
     exists in the cache.
@@ -946,8 +950,12 @@ There are two major types of transports:
     writable stream from being `end`ed when the listener is destroyed. Defaults
     to `true`.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
-    exchanging buffers, objects {id, payload} will be written and expected.
+    exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
+  + `scope` {String} Scope used to namespace messages accross a shared
+    connection. There should be at most one emitter or listener per scope on a
+    single stateful transport. Scoping isn't supported on stateless transports.
+    Matching emitter/listener pairs should have matching scopes.
   + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
     strings. When set, the returned error parameter must either be a valid
     union branch or `undefined`.
