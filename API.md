@@ -900,7 +900,7 @@ Add a handler for a given message.
     to avoid performing too many handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed. Defaults
-    to `true`.
+    to `true` if no `scope` is set, else `false`.
   + `noPing` {Boolean} Do not emit a ping request when the emitter is created.
     For stateful transports this will assume that a connection has already been
     established, for stateless transports this will delay handshakes until the
@@ -947,8 +947,8 @@ There are two major types of transports:
     [`listener.getCache`](#listenergetcache) to avoid performing too many
     handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
-    writable stream from being `end`ed when the listener is destroyed. Defaults
-    to `true`.
+    writable stream from being `end`ed when the emitter is destroyed. Defaults
+    to `true` if no `scope` is set, else `false`.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
