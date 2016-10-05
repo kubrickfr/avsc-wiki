@@ -85,13 +85,13 @@ Assemble an IDL file into its attributes. These can then be passed to
   + `registry` {Object} Registry of predefined type names. This can for example
     be used to override the types used for primitives or to split a schema
     declaration over multiple files.
-  + `typeHook(attrs, opts)` {Function} Function called before each new type is
-    instantiated. The relevant decoded schema is available as first argument
-    and the parsing options as second. This function can optionally return a
-    type which will then be used in place of the result of parsing `schema`.
-    Using this option, it is possible to customize the parsing process by
-    intercepting the creation of any type. Here are a few examples of what is
-    possible using a custom hook:
+  + `typeHook(attrs, opts)` {Function} Function called before each type
+    declaration or reference is parsed. The relevant decoded schema is
+    available as first argument and the parsing options as second. This
+    function can optionally return a type which will then be used in place of
+    the result of parsing `schema`. Using this option, it is possible to
+    customize the parsing process by intercepting the creation of any type.
+    Here are a few examples of what is possible using a custom hook:
     + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
     + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
     + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
@@ -899,8 +899,9 @@ Add a handler for a given message.
     combination with existing emitters' [`emitter.getCache`](#emittergetcache)
     to avoid performing too many handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
-    writable stream from being `end`ed when the emitter is destroyed. Defaults
-    to `true` if no `scope` is set, else `false`.
+    writable stream from being `end`ed when the emitter is destroyed (for
+    stateful transports) or when a request is sent (for stateless transports).
+    Defaults to `true`.
   + `noPing` {Boolean} Do not emit a ping request when the emitter is created.
     For stateful transports this will assume that a connection has already been
     established, for stateless transports this will delay handshakes until the
@@ -908,10 +909,10 @@ Add a handler for a given message.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
-  + `scope` {String} Scope used to prefix messages accross a shared connection.
-    There should be at most one emitter or listener per scope on a single
-    stateful transport. Scoping isn't supported on stateless transports.
-    Matching emitter/listener pairs should have matching scopes.
+  + `scope` {String} Scope used to multiplex messages accross a shared
+    connection. There should be at most one emitter or listener per scope on a
+    single stateful transport. Matching emitter/listener pairs should have
+    matching scopes. Scoping isn't supported on stateless transports.
   + `serverFingerprint` {Buffer} Fingerprint of remote server to use for the
     initial handshake. This will only be used if the corresponding adapter
     exists in the cache.
@@ -947,16 +948,17 @@ There are two major types of transports:
     [`listener.getCache`](#listenergetcache) to avoid performing too many
     handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
-    writable stream from being `end`ed when the emitter is destroyed. Defaults
-    to `true` if no `scope` is set, else `false`.
+    writable stream from being `end`ed when the emitter is destroyed (for
+    stateful transports) or when a response is sent (for stateless transports).
+    Defaults to `true`.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
-  + `scope` {String} Scope used to namespace messages accross a shared
+  + `scope` {String} Scope used to multiplex messages accross a shared
     connection. There should be at most one emitter or listener per scope on a
-    single stateful transport. Scoping isn't supported on stateless transports.
-    Matching emitter/listener pairs should have matching scopes.
-  + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
+    single stateful transport. Matching emitter/listener pairs should have
+    matching scopes. Scoping isn't supported on stateless transports.
+    + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
     strings. When set, the returned error parameter must either be a valid
     union branch or `undefined`.
 
