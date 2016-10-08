@@ -758,7 +758,7 @@ instantiate a type with the `wrapUnions` option set:
 
 ```javascript
 const decoder = new avro.streams.BlockDecoder({
-  parseHook: function (attrs) { return avro.parse(attrs, {wrapUnions: true}); }
+  parseHook: (attrs) => { return avro.parse(attrs, {wrapUnions: true}); }
 });
 ```
 
