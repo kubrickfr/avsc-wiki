@@ -730,7 +730,8 @@ value. *Only available in the browser when using the full distribution.*
   + `noDecode` {Boolean} Do not decode records before returning them.
   + `parseHook(attrs)` {Function} Function called to generate the type from the
     schema contained in the file. This can be used to pass in addtional options
-    when parsing the schema (e.g. logical type information).
+    when parsing the schema (e.g. logical type information). See below for an
+    example.
 
 A duplex stream which decodes bytes coming from on Avro object container file.
 
@@ -750,6 +751,17 @@ const blockDecoder = new avro.streams.BlockDecoder({
   }
 });
 ```
+
+Note that the `BlockDecoder`'s `opts` aren't used when parsing the writer's
+type. A `parseHook` should be used instead. The example below shows how to
+instantiate a type with the `wrapUnions` option set:
+
+```javascript
+const decoder = new avro.streams.BlockDecoder({
+  parseHook: function (attrs) { return avro.parse(attrs, {wrapUnions: true}); }
+});
+```
+
 
 ##### Event `'metadata'`
 
