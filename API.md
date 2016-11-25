@@ -1,59 +1,110 @@
-+ Types
-  + [`assemble`](#assemblepath-opts-cb)
-  + [`combine`](#combinetypes-opts)
-  + [`infer`](#inferval-opts)
-  + [`parse`](#parseschema-opts)
++ Types:
   + [`Type`](#class-type)
+    + [`Type.forSchema(schema, [opts])`](#)
+    + [`Type.forTypes(types, [opts])`](#)
+    + [`Type.forValue(val, [opts])`](#)
+    + [`Type.__reset(size)`](#)
+    + [`type.clone(val, [opts])`](#)
+    + [`type.compareBuffers(buf1, buf2)`](#)
+    + [`type.createResolver(type)`](#)
+    + [`type.decode(buf, pos, [resolver])`](#)
+    + [`type.encode(val, buf, [pos])`](#)
+    + [`type.equals(any)`](#)
+    + [`type.fromBuffer(buf, [resolver, noCheck])`](#)
+    + [`type.fromString([val])`](#)
+    + [`type.getAliases()`](#)
+    + [`type.getFingerprint([algorithm])`](#)
+    + [`type.getName()`](#)
+    + [`type.getSchema()`](#)
+    + [`type.isValid(val, [opts])`](#)
+    + [`type.random()`](#)
+    + [`type.toBuffer(val)`](#)
+    + [`type.toString([val])`](#)
   + Built-in types:
-    + [`types.ArrayType`](#class-arraytypeattrs-opts)
-    + `types.BooleanType`
-    + `types.BytesType`
-    + `types.DoubleType`
-    + [`types.EnumType`](#class-enumtypeattrs-opts)
-    + [`types.FixedType`](#class-fixedtypeattrs-opts)
-    + `types.FloatType`
-    + `types.IntType`
-    + [`types.LogicalType`](#class-logicaltypeattrs-opts-types)
-    + [`types.LongType`](#class-longtypeattrs-opts)
-    + [`types.MapType`](#class-maptypeattrs-opts)
-    + `types.NullType`
-    + [`types.RecordType`](#class-recordtypeattrs-opts)
-    + `types.StringType`
-    + [`types.UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts)
-    + [`types.WrappedUnionType`](#class-wrappeduniontypeattrs-opts)
-+ Files and streams
-  + [`createFileDecoder`](#createfiledecoderpath-opts)
-  + [`createFileEncoder`](#createfileencoderpath-schema-opts)
-  + [`extractFileHeader`](#extractfileheaderpath-opts)
-  + Streams:
-    + [`streams.BlockDecoder`](#class-blockdecoderopts)
-    + [`streams.BlockEncoder`](#class-blockencoderschema-opts)
-    + [`streams.RawDecoder`](#class-rawdecoderschema-opts)
-    + [`streams.RawEncoder`](#class-rawencoderschema-opts)
-+ IPC & RPC
+    + [`ArrayType`](#class-arraytypeattrs-opts)
+      + [`type.getItemsType()`](#)
+    + `BooleanType`
+    + `BytesType`
+    + `DoubleType`
+    + [`EnumType`](#class-enumtypeattrs-opts)
+      + [`type.getSymbols()`](#)
+    + [`FixedType`](#class-fixedtypeattrs-opts)
+      + [`type.getSize()`](#)
+    + `FloatType`
+    + `IntType`
+    + [`LogicalType`](#class-logicaltypeattrs-opts-types)
+      + [`type.getUnderlyingType()`](#)
+    + [`LongType`](#class-longtypeattrs-opts)
+      + [`LongType.__with(methods, [noUnpack])`](#)
+    + [`MapType`](#class-maptypeattrs-opts)
+      + [`type.getValuesType()`](#)
+    + `NullType`
+    + [`RecordType`](#class-recordtypeattrs-opts)
+      + [`type.getField(name)`](#)
+      + [`type.getFields()`](#)
+      + [`type.getRecordConstructor()`](#)
+    + `StringType`
+    + [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts)
+      + [`type.getTypes()`](#)
+    + [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts)
+      + [`type.getTypes()`](#)
++ Containers:
+  + [`createFileDecoder(fpath, [opts])`](#createfiledecoderpath-opts)
+  + [`createFileEncoder(fpath, schema, [opts])`](#createfileencoderpath-schema-opts)
+  + [`extractFileHeader(fpath, [opts])`](#extractfileheaderpath-opts)
+  + Built-in streams:
+    + [`BlockDecoder`](#class-blockdecoderopts)
+    + [`BlockEncoder`](#class-blockencoderschema-opts)
+    + [`RawDecoder`](#class-rawdecoderschema-opts)
+    + [`RawEncoder`](#class-rawencoderschema-opts)
++ IDL specifications:
+  + [`assembleProtocolSchema(path, [opts,] cb)`](#)
+  + [`parseProtocolSchema(str, [opts])`](#)
+  + [`parseTypeSchema(str)`](#)
++ ICP & RPC:
   + [`Protocol`](#class-protocol)
-  + [`Protocol.MessageEmitter`](#class-messageemitter)
-  + [`Protocol.MessageListener`](#class-messagelistener)
+    + [`Protocol.forSchema(schema, opts)`](#)
+    + [`protocol.createEmitter()`](#)
+    + [`protocol.createListener()`](#)
+    + [`protocol.emit()`](#)
+    + [`protocol.equals(any)`](#)
+    + [`protocol.getFingerprint()`](#)
+    + [`protocol.getHandler()`](#)
+    + [`protocol.getMessage(name)`](#)
+    + [`protocol.getMessages()`](#)
+    + [`protocol.getName()`](#)
+    + [`protocol.getSchema()`](#)
+    + [`protocol.getType(name)`](#)
+    + [`protocol.on()`](#)
+    + [`protocol.subprotocol()`](#)
+  + [`MessageEmitter`](#class-messageemitter)
+    + [`emitter.destroy(noWait)`](#)
+    + [`emitter.isDestroyed()`](#)
+    + [`emitter.emitMessage(env)`](#)
+    + [`emitter.getCache()`](#)
+    + [`emitter.getPending()`](#)
+  + [`MessageListener`](#class-messagelistener)
+    + [`listener.destroy(noWait)`](#)
+    + [`listener.isDestroyed()`](#)
+    + [`listener.emitMessage(env)`](#)
+    + [`listener.getCache()`](#)
+    + [`listener.getPending()`](#)
 
 
 ## Types
 
-### `assemble(path, [opts,] cb)`
+### `assembleProtocolSchema(path, [opts,] cb)`
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
+  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
+    mark the corresponding message as one-way. When this option is set, `void`
+    becomes equivalent to `null`.
   + `importHook(path, kind, cb)` {Function} Function called to load each file.
     The default will look up the files in the local file-system and load them
     via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
     depending on the kind of import requested. *In the browser, no default
     is provided.*
-  + `oneWayVoid` {Boolean} By default, using `void` as message response type is
-    equivalent to passing `null`. When this option is set, messages with `void`
-    response type will also be defined as one-way.
-  + `reassignJavadoc` {Boolean} By default Javadoc comments become a `doc`
-    attribute on the type, field, or message definition that follows. Setting
-    this option will reassign a field type's Javadoc to its field, and a
-    response type's Javadoc to its message.
 + `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
