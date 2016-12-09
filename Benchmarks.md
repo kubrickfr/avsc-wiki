@@ -22,14 +22,14 @@ Libraries compared:
 We show below representative throughput rates (higher is better) for processing
 a [realistic record schema][coupon-schema], modeled after a popular open-source
 API. The code to reproduce these results is available in
-`etc/benchmarks/javascript`.
+`etc/benchmarks/js-serialization-libraries/`.
 
 
 ## Node.js throughputs
 
 As of `3.0.0` (`3f7a977`).
 
-![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/javascript/results/png/coupons-throughput-2172789.png)
+![Throughput rates chart](https://raw.githubusercontent.com/mtth/avsc/master/etc/benchmarks/js-serialization-libraries/results/png/coupons-throughput-2172789.png)
 
 
 ## Browser throughputs
@@ -68,8 +68,8 @@ The tables below should throughput rates (records per second, higher is
 better). They were computed over 150,000 records, taking the median of 15 runs.
 Percentages are relative to the fastest throughput for the schema. All
 benchmarks were run on a MacBook Air (1.7GHz Intel Core i7). The code is
-available in `etc/benchmarks/avro`. `-1` values indicate that the library
-doesn't support the schema.
+available in `etc/benchmarks/avro-serialization-implementations/`. `-1` values
+indicate that the library doesn't support the schema.
 
 As of `3.0.0` (`7bc3503`).
 
