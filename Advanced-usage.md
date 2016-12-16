@@ -207,7 +207,7 @@ documentation for details on each option):
 
   const longType = avro.types.LongType.__with({
     fromBuffer: (buf) => { return new Long('0x' + buf.toString('hex')); },
-    toBuffer: (n) => { return new Buffer(n.toString().slice(2), 'hex'); },
+    toBuffer: (n) => { return Buffer.from(n.toString().slice(2), 'hex'); },
     fromJSON: (obj) => { return new Long(obj); },
     toJSON: (n) => { return +n; },
     isValid: (n) => { return n instanceof Long; },
@@ -225,7 +225,7 @@ documentation for details on each option):
       return new Long(buf.readInt32LE(), buf.readInt32LE(4));
     },
     toBuffer: (n) => {
-      const buf = new Buffer(8);
+      const buf = Buffer.alloc(8);
       buf.writeInt32LE(n.getLowBits());
       buf.writeInt32LE(n.getHighBits(), 4);
       return buf;
@@ -233,7 +233,7 @@ documentation for details on each option):
     fromJSON: Long.fromValue,
     toJSON: (n) => { return +n; },
     isValid: Long.isLong,
-    compare: Long.compare
+    compare: (n1, n2) => { return n1.compare(n2); }
   });
   ```
 
@@ -249,7 +249,7 @@ const type = avro.Type.forSchema('long', {registry: {'long': longType}});
 
 // Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
 // rounded when represented as a double):
-const buf = new Buffer([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
+const buf = Buffer.from([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
 
 // Assuming we are using the `node-int64` implementation.
 const obj = new Long(buf);
