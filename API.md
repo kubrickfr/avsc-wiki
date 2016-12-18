@@ -86,6 +86,7 @@
   - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
     - [Event `'data'`](#event-data-3)
 - [IPC & RPC](#ipc--rpc)
+  - [`discoverProtocolSchema(transport, [opts,] cb)`](#discoverprotocolschematransport-opts-cb)
   - [Class `Protocol`](#class-protocol)
     - [`Protocol.forSchema(schema, [opts])`](#protocolforschemaschema-opts)
     - [`protocol.createClient([opts])`](#protocolcreateclientopts)
@@ -980,6 +981,18 @@ The encoding equivalent of `RawDecoder`.
 # IPC & RPC
 
 Avro also defines a way of executing remote procedure calls.
+
+## `discoverProtocolSchema(transport, [opts,] cb)`
+
++ `transport` {Transport} See below.
++ `opts` {Object} Options:
+  + `scope` {String} Remove server scope.
+  + `timeout` {Number} Maximum delay to wait for a response, `0` for no limit.
+    Defaults to `10000`.
++ `cb(err, schema)` {Function} Callback.
+
+Discover a remote server's protocol schema. This can be useful to emit requests
+to another server without having a local copy of the protocol.
 
 ## Class `Protocol`
 
