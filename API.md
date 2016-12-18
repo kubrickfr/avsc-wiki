@@ -1,62 +1,64 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-  - [Types](#types)
-      - [`assembleProtocolSchema(path, [opts,] cb)`](#assembleprotocolschemapath-opts-cb)
-      - [`parseProtocolSchema(spec, [opts])`](#parseprotocolschemaspec-opts)
-      - [`parseTypeSchema(spec)`](#parsetypeschemaspec)
-    - [Class `Type`](#class-type)
-      - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
-      - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
-      - [`Type.forValue(val, [opts])`](#typeforvalueval-opts)
-      - [`Type.isType(any, [prefix,] ...)`](#typeistypeany-prefix-)
-      - [`Type.__reset(size)`](#type__resetsize)
-      - [`type.decode(buf, [pos,] [resolver])`](#typedecodebuf-pos-resolver)
-      - [`type.encode(val, buf, [pos])`](#typeencodeval-buf-pos)
-      - [`type.fromBuffer(buf, [resolver,] [noCheck])`](#typefrombufferbuf-resolver-nocheck)
-      - [`type.toBuffer(val)`](#typetobufferval)
-      - [`type.fromString(str)`](#typefromstringstr)
-      - [`type.toString([val])`](#typetostringval)
-      - [`type.isValid(val, [opts])`](#typeisvalidval-opts)
-      - [`type.clone(val, [opts])`](#typecloneval-opts)
-      - [`type.compare(val1, val2)`](#typecompareval1-val2)
-      - [`type.compareBuffers(buf1, buf2)`](#typecomparebuffersbuf1-buf2)
-      - [`type.createResolver(writerType)`](#typecreateresolverwritertype)
-      - [`type.random()`](#typerandom)
-      - [`type.getName([asBranch])`](#typegetnameasbranch)
-      - [`type.getTypeName()`](#typegettypename)
-      - [`type.getSchema([opts])`](#typegetschemaopts)
-      - [`type.getFingerprint([algorithm])`](#typegetfingerprintalgorithm)
-      - [`type.equals(other)`](#typeequalsother)
-      - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
-        - [`type.getItemsType()`](#typegetitemstype)
-      - [Class `EnumType(attrs, [opts])`](#class-enumtypeattrs-opts)
-        - [`type.getAliases()`](#typegetaliases)
-        - [`type.getSymbols()`](#typegetsymbols)
-      - [Class `FixedType(attrs, [opts])`](#class-fixedtypeattrs-opts)
-        - [`type.getAliases()`](#typegetaliases-1)
-        - [`type.getSize()`](#typegetsize)
-      - [Class `LogicalType(attrs, [opts,] [Types])`](#class-logicaltypeattrs-opts-types)
-        - [`type.getUnderlyingType()`](#typegetunderlyingtype)
-        - [`type._fromValue(val)`](#type_fromvalueval)
-        - [`type._toValue(any)`](#type_tovalueany)
-        - [`type._resolve(type)`](#type_resolvetype)
-        - [`type._export(attrs)`](#type_exportattrs)
-      - [Class `LongType(attrs, [opts])`](#class-longtypeattrs-opts)
-        - [`LongType.__with(methods, [noUnpack])`](#longtype__withmethods-nounpack)
-      - [Class `MapType(attrs, [opts])`](#class-maptypeattrs-opts)
-        - [`type.getValuesType()`](#typegetvaluestype)
-      - [Class `RecordType(attrs, [opts])`](#class-recordtypeattrs-opts)
-        - [`type.getAliases()`](#typegetaliases-2)
-        - [`type.getField(name)`](#typegetfieldname)
-        - [`type.getFields()`](#typegetfields)
-        - [`type.getRecordConstructor()`](#typegetrecordconstructor)
-        - [Class `Record(...)`](#class-record)
-          - [`Record.getType()`](#recordgettype)
-      - [Class `UnwrappedUnionType(attrs, [opts])`](#class-unwrappeduniontypeattrs-opts)
-        - [`type.getTypes()`](#typegettypes)
-      - [Class `WrappedUnionType(attrs, [opts])`](#class-wrappeduniontypeattrs-opts)
-        - [`type.getTypes()`](#typegettypes-1)
+
+- [Schema parsing](#schema-parsing)
+    - [`assembleProtocolSchema(path, [opts,] cb)`](#assembleprotocolschemapath-opts-cb)
+    - [`parseProtocolSchema(spec, [opts])`](#parseprotocolschemaspec-opts)
+    - [`parseTypeSchema(spec)`](#parsetypeschemaspec)
+- [Type generation and usage](#type-generation-and-usage)
+  - [Class `Type`](#class-type)
+    - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
+    - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
+    - [`Type.forValue(val, [opts])`](#typeforvalueval-opts)
+    - [`Type.isType(any, [prefix,] ...)`](#typeistypeany-prefix-)
+    - [`Type.__reset(size)`](#type__resetsize)
+    - [`type.clone(val, [opts])`](#typecloneval-opts)
+    - [`type.compare(val1, val2)`](#typecompareval1-val2)
+    - [`type.compareBuffers(buf1, buf2)`](#typecomparebuffersbuf1-buf2)
+    - [`type.createResolver(writerType)`](#typecreateresolverwritertype)
+    - [`type.decode(buf, [pos,] [resolver])`](#typedecodebuf-pos-resolver)
+    - [`type.encode(val, buf, [pos])`](#typeencodeval-buf-pos)
+    - [`type.fromBuffer(buf, [resolver,] [noCheck])`](#typefrombufferbuf-resolver-nocheck)
+    - [`type.fromString(str)`](#typefromstringstr)
+    - [`type.getFingerprint([algorithm])`](#typegetfingerprintalgorithm)
+    - [`type.getName([asBranch])`](#typegetnameasbranch)
+    - [`type.getSchema([opts])`](#typegetschemaopts)
+    - [`type.getTypeName()`](#typegettypename)
+    - [`type.isValid(val, [opts])`](#typeisvalidval-opts)
+    - [`type.random()`](#typerandom)
+    - [`type.toBuffer(val)`](#typetobufferval)
+    - [`type.toString([val])`](#typetostringval)
+    - [`type.equals(other)`](#typeequalsother)
+  - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
+    - [`type.getItemsType()`](#typegetitemstype)
+  - [Class `EnumType(attrs, [opts])`](#class-enumtypeattrs-opts)
+    - [`type.getAliases()`](#typegetaliases)
+    - [`type.getSymbols()`](#typegetsymbols)
+  - [Class `FixedType(attrs, [opts])`](#class-fixedtypeattrs-opts)
+    - [`type.getAliases()`](#typegetaliases-1)
+    - [`type.getSize()`](#typegetsize)
+  - [Class `LogicalType(attrs, [opts,] [Types])`](#class-logicaltypeattrs-opts-types)
+    - [`type.getUnderlyingType()`](#typegetunderlyingtype)
+    - [`type._fromValue(val)`](#type_fromvalueval)
+    - [`type._toValue(any)`](#type_tovalueany)
+    - [`type._resolve(type)`](#type_resolvetype)
+    - [`type._export(attrs)`](#type_exportattrs)
+  - [Class `LongType(attrs, [opts])`](#class-longtypeattrs-opts)
+    - [`LongType.__with(methods, [noUnpack])`](#longtype__withmethods-nounpack)
+  - [Class `MapType(attrs, [opts])`](#class-maptypeattrs-opts)
+    - [`type.getValuesType()`](#typegetvaluestype)
+  - [Class `RecordType(attrs, [opts])`](#class-recordtypeattrs-opts)
+    - [`type.getAliases()`](#typegetaliases-2)
+    - [`type.getField(name)`](#typegetfieldname)
+    - [`type.getFields()`](#typegetfields)
+    - [`type.getRecordConstructor()`](#typegetrecordconstructor)
+    - [Class `Record(...)`](#class-record)
+      - [`Record.getType()`](#recordgettype)
+  - [Class `UnwrappedUnionType(attrs, [opts])`](#class-unwrappeduniontypeattrs-opts)
+    - [`type.getTypes()`](#typegettypes)
+  - [Class `WrappedUnionType(attrs, [opts])`](#class-wrappeduniontypeattrs-opts)
+    - [`type.getTypes()`](#typegettypes-1)
 - [Files and streams](#files-and-streams)
       - [`extractFileHeader(path, [opts])`](#extractfileheaderpath-opts)
       - [`createFileDecoder(path, [opts])`](#createfiledecoderpath-opts)
@@ -119,15 +121,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Types
+# Schema parsing
 
-This section covers functionality related to instantiating and using Avro
-types. For example:
-
-+ Parsing schemas and IDL files.
-+ Serializing and validating data.
-
-#### `assembleProtocolSchema(path, [opts,] cb)`
+### `assembleProtocolSchema(path, [opts,] cb)`
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
@@ -145,7 +141,7 @@ types. For example:
 Assemble an IDL file into its schema. This schema can then be passed to
 `Protocol.forSchema` to instantiate the corresponding `Protocol` object.
 
-#### `parseProtocolSchema(spec, [opts])`
+### `parseProtocolSchema(spec, [opts])`
 
 + `spec` {String} Protocol IDL specification.
 + `opts` {Object} Options:
@@ -156,7 +152,7 @@ Assemble an IDL file into its schema. This schema can then be passed to
 Synchronous version of `assembleProtocolSchema`. Note that it doesn't support
 imports.
 
-#### `parseTypeSchema(spec)`
+### `parseTypeSchema(spec)`
 
 + `spec` {String} _Type_ IDL specification.
 
@@ -169,13 +165,15 @@ const type = Type.forSchema(schema);
 type.isValid({id: 123, name: 'abc'}); // true.
 ```
 
-### Class `Type`
+# Type generation and usage
 
 "Abstract" base Avro type class; all implementations inherit from it. It
 shouldn't be instantiate directly, but rather through one of the following
 factory methods described below.
 
-#### `Type.forSchema(schema, [opts])`
+## Class `Type`
+
+### `Type.forSchema(schema, [opts])`
 
 + `schema` {Object|String} Decoded schema. This schema can be a string if it is
   a reference to a primitive type (e.g. `'int'`, ), or a reference to a type in
@@ -213,7 +211,7 @@ factory methods described below.
 
 Instantiate a type for its schema.
 
-#### `Type.forTypes(types, [opts])`
+### `Type.forTypes(types, [opts])`
 
 + `types` {Array} Array of types to combine.
 + `opts` {Object} All the options of `Type.forSchema` are available, as well
@@ -226,7 +224,7 @@ Instantiate a type for its schema.
 Merge multiple types into one. The resulting type will support all the input
 types' values.
 
-#### `Type.forValue(val, [opts])`
+### `Type.forValue(val, [opts])`
 
 + `val` {Any} Value to generate the type for.
 + `opts` {Object} All of `Type.forTypes`' options are supported, along with:
@@ -239,7 +237,7 @@ types' values.
 
 Infer a type from a value.
 
-#### `Type.isType(any, [prefix,] ...)`
+### `Type.isType(any, [prefix,] ...)`
 
 + `any` {...} Any object.
 + `prefix` {String} If specified, this function will only return `true` if
@@ -250,7 +248,7 @@ Infer a type from a value.
 Check whether `any` is an instance of `Type`. This is similar to `any
 instanceof Type` but will work across contexts (e.g. `iframe`s).
 
-#### `Type.__reset(size)`
+### `Type.__reset(size)`
 
 + `size` {Number} New buffer size in bytes.
 
@@ -260,79 +258,7 @@ In some cases, it can also be beneficial to call this method at startup with a
 sufficiently large buffer size to allow the JavaScript engine to better
 optimize encoding.
 
-#### `type.decode(buf, [pos,] [resolver])`
-
-+ `buf` {Buffer} Buffer to read from.
-+ `pos` {Number} Offset to start reading from.
-+ `resolver` {Resolver} Optional resolver to decode values serialized from
-  another schema. See [`createResolver`](#typecreateresolverwritertype) for how
-  to create one.
-
-Returns `{value: value, offset: offset}` if `buf` contains a valid encoding of
-`type` (`value` being the decoded value, and `offset` the new offset in the
-buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
-
-#### `type.encode(val, buf, [pos])`
-
-+ `val` {...} The value to encode. An error will be raised if this isn't a
-  valid `type` value.
-+ `buf` {Buffer} Buffer to write to.
-+ `pos` {Number} Offset to start writing at.
-
-Encode a value into an existing buffer. If enough space was available in `buf`,
-returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
-(positive) number of bytes by which the buffer was short.
-
-#### `type.fromBuffer(buf, [resolver,] [noCheck])`
-
-+ `buf` {Buffer} Bytes containing a serialized value of `type`.
-+ `resolver` {Resolver} To decode values serialized from another schema. See
-  [`createResolver`](#typecreateresolverwritertype) for how to create an
-  resolver.
-+ `noCheck` {Boolean} Do not check that the entire buffer has been read. This
-  can be useful when using an resolver which only decodes fields at the start of
-  the buffer, allowing decoding to bail early and yield significant performance
-  speedups.
-
-Deserialize a buffer into its corresponding value.
-
-#### `type.toBuffer(val)`
-
-+ `val` {...} The value to encode. It must be a valid `type` value.
-
-Returns a `Buffer` containing the Avro serialization of `val`.
-
-#### `type.fromString(str)`
-
-+ `str` {String} String representing a JSON-serialized object.
-
-Deserialize a JSON-encoded object of `type`.
-
-#### `type.toString([val])`
-
-+ `val` {...} The value to serialize. If not specified, this method will return
-  a human-friendly description of `type`.
-
-Serialize an object into a JSON-encoded string.
-
-#### `type.isValid(val, [opts])`
-
-+ `val` {...} The value to validate.
-+ `opts` {Object} Options:
-  + `errorHook(path, any, type)` {Function} Function called when an invalid
-    value is encountered. When an invalid value causes its parent values to
-    also be invalid, the latter do not trigger a callback. `path` will be an
-    array of strings identifying where the mismatch occurred. This option is
-    especially useful when dealing with complex records, for example to:
-      + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-collect-js)
-      + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-assert-js)
-  + `noUndeclaredFields` {Boolean} When set, records with attributes that don't
-    correspond to a declared field will be considered invalid. The default is
-    to ignore any extra attributes.
-
-Check whether `val` is a valid `type` value.
-
-#### `type.clone(val, [opts])`
+### `type.clone(val, [opts])`
 
 + `val` {...} The object to copy.
 + `opts` {Object} Options:
@@ -353,7 +279,7 @@ Check whether `val` is a valid `type` value.
 
 Deep copy a value of `type`.
 
-#### `type.compare(val1, val2)`
+### `type.compare(val1, val2)`
 
 + `val1` {...} Value of `type`.
 + `val2` {...} Value of `type`.
@@ -362,7 +288,7 @@ Returns `0` if both values are equal according to their [sort
 order][sort-order], `-1` if the first is smaller than the second , and `1`
 otherwise. Comparing invalid values is undefined behavior.
 
-#### `type.compareBuffers(buf1, buf2)`
+### `type.compareBuffers(buf1, buf2)`
 
 + `buf1` {Buffer} `type` value bytes.
 + `buf2` {Buffer} `type` value bytes.
@@ -370,7 +296,7 @@ otherwise. Comparing invalid values is undefined behavior.
 Similar to [`compare`](#typecompareval1-val2), but doesn't require decoding
 values.
 
-#### `type.createResolver(writerType)`
+### `type.createResolver(writerType)`
 
 + `writerType` {Type} Writer type.
 
@@ -433,11 +359,56 @@ const obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: 
 See the [advanced usage page](Advanced-usage) for more details on how schema
 evolution can be used to significantly speed up decoding.
 
-#### `type.random()`
+### `type.decode(buf, [pos,] [resolver])`
 
-Returns a random value of `type`.
++ `buf` {Buffer} Buffer to read from.
++ `pos` {Number} Offset to start reading from.
++ `resolver` {Resolver} Optional resolver to decode values serialized from
+  another schema. See [`createResolver`](#typecreateresolverwritertype) for how
+  to create one.
 
-#### `type.getName([asBranch])`
+Returns `{value: value, offset: offset}` if `buf` contains a valid encoding of
+`type` (`value` being the decoded value, and `offset` the new offset in the
+buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
+
+### `type.encode(val, buf, [pos])`
+
++ `val` {...} The value to encode. An error will be raised if this isn't a
+  valid `type` value.
++ `buf` {Buffer} Buffer to write to.
++ `pos` {Number} Offset to start writing at.
+
+Encode a value into an existing buffer. If enough space was available in `buf`,
+returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
+(positive) number of bytes by which the buffer was short.
+
+### `type.fromBuffer(buf, [resolver,] [noCheck])`
+
++ `buf` {Buffer} Bytes containing a serialized value of `type`.
++ `resolver` {Resolver} To decode values serialized from another schema. See
+  [`createResolver`](#typecreateresolverwritertype) for how to create an
+  resolver.
++ `noCheck` {Boolean} Do not check that the entire buffer has been read. This
+  can be useful when using an resolver which only decodes fields at the start of
+  the buffer, allowing decoding to bail early and yield significant performance
+  speedups.
+
+Deserialize a buffer into its corresponding value.
+
+### `type.fromString(str)`
+
++ `str` {String} String representing a JSON-serialized object.
+
+Deserialize a JSON-encoded object of `type`.
+
+### `type.getFingerprint([algorithm])`
+
++ `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
+  *Only `'md5'` is supported in the browser.*
+
+Return a buffer identifying `type`.
+
+### `type.getName([asBranch])`
 
 + `asBranch` {Boolean} If `type` doesn't have a name, return its "type name"
   instead of `undefined`. (This method then returns the type's branch name when
@@ -445,11 +416,7 @@ Returns a random value of `type`.
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
-#### `type.getTypeName()`
-
-Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
-
-#### `type.getSchema([opts])`
+### `type.getSchema([opts])`
 
 + `opts` {Object} Options:
   + `exportAttrs` {Boolean} Include aliases, field defaults, order, and logical
@@ -459,59 +426,89 @@ Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 Returns `type`'s [canonical schema][canonical-schema]. This can be used to
 compare schemas for equality.
 
-#### `type.getFingerprint([algorithm])`
+### `type.getTypeName()`
 
-+ `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
-  *Only `'md5'` is supported in the browser.*
+Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
-Return a buffer identifying `type`.
+### `type.isValid(val, [opts])`
 
-#### `type.equals(other)`
++ `val` {...} The value to validate.
++ `opts` {Object} Options:
+  + `errorHook(path, any, type)` {Function} Function called when an invalid
+    value is encountered. When an invalid value causes its parent values to
+    also be invalid, the latter do not trigger a callback. `path` will be an
+    array of strings identifying where the mismatch occurred. This option is
+    especially useful when dealing with complex records, for example to:
+      + [Collect all paths to invalid nested values.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-collect-js)
+      + [Throw an error with the full path to an invalid nested value.](https://gist.github.com/mtth/fe006b5b001beeaed95f#file-assert-js)
+  + `noUndeclaredFields` {Boolean} When set, records with attributes that don't
+    correspond to a declared field will be considered invalid. The default is
+    to ignore any extra attributes.
+
+Check whether `val` is a valid `type` value.
+
+### `type.random()`
+
+Returns a random value of `type`.
+
+### `type.toBuffer(val)`
+
++ `val` {...} The value to encode. It must be a valid `type` value.
+
+Returns a `Buffer` containing the Avro serialization of `val`.
+
+### `type.toString([val])`
+
++ `val` {...} The value to serialize. If not specified, this method will return
+  a human-friendly description of `type`.
+
+Serialize an object into a JSON-encoded string.
+
+### `type.equals(other)`
 
 + `other` {...} Any object.
 
 Check whether two types are equal (i.e. have the same canonical schema).
 
-
-#### Class `ArrayType(schema, [opts])`
+## Class `ArrayType(schema, [opts])`
 
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getItemsType()`
+### `type.getItemsType()`
 
 The type of the array's items.
 
 
-#### Class `EnumType(attrs, [opts])`
+## Class `EnumType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getAliases()`
+### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 
-##### `type.getSymbols()`
+### `type.getSymbols()`
 
 Returns a copy of the type's symbols (an array of strings representing the
 `enum`'s valid values).
 
 
-#### Class `FixedType(attrs, [opts])`
+## Class `FixedType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getAliases()`
+### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 
-##### `type.getSize()`
+### `type.getSize()`
 
 The size in bytes of instances of this type.
 
-#### Class `LogicalType(attrs, [opts,] [Types])`
+## Class `LogicalType(attrs, [opts,] [Types])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
@@ -540,19 +537,19 @@ are available as well:
 + [`DateType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js)
 + [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
 
-##### `type.getUnderlyingType()`
+### `type.getUnderlyingType()`
 
 Use this method to get the underlying Avro type. This can be useful when a
 logical type can support different underlying types.
 
-##### `type._fromValue(val)`
+### `type._fromValue(val)`
 
 + `val` {...} A value deserialized by the underlying type.
 
 This method should return the converted value. *This method is abstract and
 should be implemented but not called directly.*
 
-##### `type._toValue(any)`
+### `type._toValue(any)`
 
 + `any` {...} A derived value.
 
@@ -561,7 +558,7 @@ type. If `any` isn't a valid value for this logical type, you can either return
 `undefined` or throw an exception (slower). *This method is abstract and should
 be implemented but not called directly.*
 
-##### `type._resolve(type)`
+### `type._resolve(type)`
 
 + `type` {Type} The writer's type.
 
@@ -573,7 +570,7 @@ This method should return:
 
 *This method is abstract and should be implemented but not called directly.*
 
-##### `type._export(attrs)`
+### `type._export(attrs)`
 
 + `attrs` {Object} The type's raw exported attributes, containing `type` and
   `logicalType` keys.
@@ -584,12 +581,12 @@ with `exportAttrs` set. *A default implementation exporting nothing is
 provided.*
 
 
-#### Class `LongType(attrs, [opts])`
+## Class `LongType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `LongType.__with(methods, [noUnpack])`
+### `LongType.__with(methods, [noUnpack])`
 
 + `methods` {Object} Method implementations dictionary keyed by method name,
   see below for details on each of the functions to implement.
@@ -645,26 +642,26 @@ so requires implementing the following methods (a few examples are available
   See [`Type.compare`](#typecompareval1-val2).
 
 
-#### Class `MapType(attrs, [opts])`
+## Class `MapType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getValuesType()`
+### `type.getValuesType()`
 
 The type of the map's values (keys are always strings).
 
 
-#### Class `RecordType(attrs, [opts])`
+## Class `RecordType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-##### `type.getAliases()`
+### `type.getAliases()`
 
 Optional type aliases. These are used when adapting a schema from another type.
 
-##### `type.getField(name)`
+### `type.getField(name)`
 
 + `name` {String} Field name.
 
@@ -677,11 +674,11 @@ following methods:
 + `getOrder()`
 + `getType()`
 
-##### `type.getFields()`
+### `type.getFields()`
 
 Returns a frozen copy of the array of fields contained in this record.
 
-##### `type.getRecordConstructor()`
+### `type.getRecordConstructor()`
 
 The [`Record`](#class-record) constructor for instances of this type. Indeed,
 each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
@@ -689,13 +686,13 @@ each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
 encoding records more efficient. This also lets us provide helpful methods on
 decoded values (see below).
 
-##### Class `Record(...)`
+### Class `Record(...)`
 
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type. In particular, it will correctly
 initialize all the missing record's fields with their default values.
 
-###### `Record.getType()`
+#### `Record.getType()`
 
 Convenience class method to get the record's type.
 
@@ -709,7 +706,7 @@ decoded `record` value):
 + `record.toString()`
 
 
-#### Class `UnwrappedUnionType(attrs, [opts])`
+## Class `UnwrappedUnionType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
@@ -740,12 +737,12 @@ Finally, note that by using logical types, it is possible to work around the
 above requirements (by delegating the branch inference to the logical types
 themselves).
 
-##### `type.getTypes()`
+### `type.getTypes()`
 
 The possible types that this union can take.
 
 
-#### Class `WrappedUnionType(attrs, [opts])`
+## Class `WrappedUnionType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
@@ -755,7 +752,7 @@ This class is the representation using for unions for types generated with
 correctly represent all unions: branch type information is never lost since it
 is included in the decoded value.
 
-##### `type.getTypes()`
+### `type.getTypes()`
 
 The possible types that this union can take.
 
@@ -768,7 +765,6 @@ const type = new avro.types.WrappedUnionType(['int', 'long']);
 const val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
 const branchType = val.constructor.getBranchType() // == <LongType>
 ```
-
 
 # Files and streams
 
