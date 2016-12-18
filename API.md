@@ -996,6 +996,10 @@ machine).
 ### `protocol.createClient([opts])`
 
 + `opts` {Object} Options:
+  + `defaultTimeout` {Number} Default timeout in milliseconds used when
+    emitting requests, specify `0` for no timeout (note that this may cause
+    memory leaks in the presence of communication errors). Defaults to `10000`.
+    Note that it can be overridden on a per-request basis.
   + `emitterPolicy(emitters)` {Function} Load-balancing function. Should return
     one of the passed in emitters.
   + `remoteProtocols` {Array} Array of protocols to cache locally. Useful to
@@ -1115,10 +1119,6 @@ Returns a frozen list of the named types declared in this protocol.
     connection. There should be at most one emitter or listener per scope on a
     single stateful transport. Matching emitter/listener pairs should have
     matching scopes. Scoping isn't supported on stateless transports.
-  + `timeout` {Number} Default timeout in milliseconds used when sending
-    requests. It is possible to override this per request via the
-    `client.emitMessage(/* ... */)` function. Specify `0` for no timeout.
-    Defaults to `10000`.
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this client. This
 emitter can then be used to communicate with a remote server of compatible
