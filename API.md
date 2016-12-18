@@ -122,8 +122,8 @@
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
     - [`server.use(middleware)`](#serverusemiddleware)
   - [Class `MessageEmitter`](#class-messageemitter)
-    - [Event `'handshake'`](#event-handshake)
     - [Event `'eot'`](#event-eot)
+    - [Event `'handshake'`](#event-handshake)
     - [`emitter.destroy([noWait])`](#emitterdestroynowait)
     - [`emitter.getClient()`](#emittergetclient)
     - [`emitter.getContext()`](#emittergetcontext)
@@ -131,8 +131,8 @@
     - [`emitter.getTimeout()`](#emittergettimeout)
     - [`emitter.isDestroyed()`](#emitterisdestroyed)
   - [Class `MessageListener`](#class-messagelistener)
-    - [Event `'handshake'`](#event-handshake-1)
     - [Event `'eot'`](#event-eot-1)
+    - [Event `'handshake'`](#event-handshake-1)
     - [`listener.destroy([noWait])`](#listenerdestroynowait)
     - [`listener.getServer()`](#listenergetserver)
     - [`listener.getPending()`](#listenergetpending)
@@ -1036,8 +1036,9 @@ send messages to a remote server for a compatible protocol.
   + `silent` {Boolean} Suppress default behavior of outputting handler errors
     to stderr.
     objects.
-  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
-    objects.
+  + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
+    strings. When set, handlers' returned error parameters must either be a
+    valid union branch or `undefined`.
 
 Generate a server corresponding to this protocol. This server can be used to
 respond to messages from compatible protocols' clients.
@@ -1082,8 +1083,7 @@ Get a single message from this protocol.
 
 ### `protocol.getMessages()`
 
-Retrieve all the messages defined in the protocol. Each message is an object
-with the following methods:
+Retrieve all the messages defined in the protocol.
 
 ### `protocol.getName()`
 
@@ -1154,22 +1154,16 @@ There are two major types of transports:
 
 ### `client.emitMessage(name, req, [opts,] [cb])`
 
-+ `name` {String} Name of the message to emit. If this message is sent to a
-  `Protocol` instance with no handler defined for this name, an "unsupported
-  message" error will be returned.
++ `name` {String} Name of the message to emit.
 + `req` {Object} Request value, must correspond to the message's declared
   request type.
-+ `emitter` {MessageEmitter} Emitter used to send the message. See
-  [`createEmitter`](#protocolcreateemittertransport-opts) for how to obtain
-  one.
++ `opts` {Object} Options:
+  + `timeout` {Number} Request specific timeout.
 + `cb(err, res)` {Function} Function called with the remote call's response
   (and eventual error) when available. If not specified and an error occurs,
   the error will be emitted on `emitter` instead.
 
-Send a message. This is always done asynchronously. This method is a simpler
-version of [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb),
-providing convenience functionality such as converting string errors to `Error`
-objects.
+Send a message. This is always done asynchronously.
 
 ### `client.getEmitters()`
 
@@ -1193,15 +1187,10 @@ Install a middleware function.
 
 ### `server.createListener(transport, [opts])`
 
-+ `transport` {Duplex|Object|Function} Similar to
-  [`createEmitter`](#protocolcreateemittertransport-opts-cb)'s corresponding
-  argument, except that readable and writable roles are reversed for stateless
-  transports.
++ `transport` {Duplex|Object|Function} Similar to `client.createEmitter`'s
+  corresponding argument, except that readable and writable roles are reversed
+  for stateless transports.
 + `opts` {Object} Options.
-  + `cache` {Object} Cache of remote client protocols. This can be used in
-    combination with existing listeners'
-    [`listener.getCache`](#listenergetcache) to avoid performing too many
-    handshakes.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed (for
     stateful transports) or when a response is sent (for stateless transports).
@@ -1213,9 +1202,6 @@ Install a middleware function.
     connection. There should be at most one emitter or listener per scope on a
     single stateful transport. Matching emitter/listener pairs should have
     matching scopes. Scoping isn't supported on stateless transports.
-    + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
-    strings. When set, the returned error parameter must either be a valid
-    union branch or `undefined`.
 
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
@@ -1233,10 +1219,9 @@ Returns the server's protocol.
 + `name` {String} Message name to add the handler for. An error will be thrown
   if this name isn't defined in the protocol. At most one handler can exist for
   a given name (any previously defined handler will be overwritten).
-+ `handler(req, listener, cb)` {Function} Handler, called each time a message
-  with matching name is received. The `listener` argument will be the
-  corresponding `MessageListener` instance. The final callback argument
-  `cb(err, res)` should be called to send the response back to the emitter.
++ `handler(req, cb)` {Function} Handler, called each time a message with
+  matching name is received. The callback argument `cb(err, res)` should be
+  called to send the response back to the emitter.
 
 Add a handler for a given message.
 
@@ -1251,17 +1236,17 @@ Install a middleware function.
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
 events:
 
+### Event `'eot'`
+
+End of transmission event, emitted after the client is destroyed and there are
+no more pending requests.
+
 ### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted when the server's handshake response is received.
-
-### Event `'eot'`
-
-End of transmission event, emitted after the client is destroyed and there are
-no more pending requests.
 
 ### `emitter.destroy([noWait])`
 
@@ -1296,17 +1281,17 @@ Check whether the listener was destroyed.
 Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
 [`EventEmitter`s][event-emitter], with the following events:
 
+### Event `'eot'`
+
+End of transmission event, emitted after the listener is destroyed and there are
+no more responses to send.
+
 ### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted right before the server sends a handshake response.
-
-### Event `'eot'`
-
-End of transmission event, emitted after the listener is destroyed and there are
-no more responses to send.
 
 ### `listener.destroy([noWait])`
 
