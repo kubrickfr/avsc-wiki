@@ -977,6 +977,40 @@ machine).
 + `schema` {Object}
 + `opts` {Object}
 
+### `protocol.createClient([opts])`
+
++ `opts` {Object} Options:
+  + `emitterPolicy(emitters)` {Function} Load-balancing function. Should return
+    one of the passed in emitters.
+  + `remoteProtocols` {Array} Array of protocols to cache locally. Useful to
+    avoid performing handshakes.
+  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
+    objects.
+  + `transport` {Transport} Convenience option to add a transport to the newly
+    created client.
+
+Generate a client corresponding to this protocol. This client can be used to
+send messages to a remote server for a compatible protocol.
+
+### `protocol.createServer([opts])`
+
++ `opts` {Object} Options:
+  + `emitterPolicy(emitters)` {Function} Load-balancing function. Should return
+    one of the passed in emitters.
+  + `errorFormatter(err)` {Function} Function called to serialize errors before
+    sending them over the wire. The default will use an error's `rpcCode`
+    attribute if it exists, otherwise the `'INTERNAL_SERVER_ERROR'` string.
+  + `remoteProtocols` {Array} Array of protocols to cache locally. Useful to
+    avoid performing handshakes.
+  + `silent` {Boolean} Suppress default behavior of outputting handler errors
+    to stderr.
+    objects.
+  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
+    objects.
+
+Generate a server corresponding to this protocol. This server can be used to
+respond to messages from compatible protocols' clients.
+
 ### `protocol.equals(other)`
 
 + `other` {...} Any object.
@@ -1041,9 +1075,8 @@ Returns a frozen list of the named types declared in this protocol.
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
-  + `cache` {Object} Cache of remote server protocols. This can be used in
-    combination with existing emitters' [`emitter.getCache`](#emittergetcache)
-    to avoid performing too many handshakes.
+  + `context` {...} Context object. Useful to pass information to middleware.
+    It can be retrieved via `client.getContext()`.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed (for
     stateful transports) or when a request is sent (for stateless transports).
@@ -1055,19 +1088,16 @@ Returns a frozen list of the named types declared in this protocol.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
-  + `scope` {String} Scope used to multiplex messages accross a shared
+  + `remoteProtocol` {Protocol} Remote protocol to use for the initial
+    handshake. If unspecified, the client's protocol will be used.
+  + `scope` {String} Scope used to multiplex messages across a shared
     connection. There should be at most one emitter or listener per scope on a
     single stateful transport. Matching emitter/listener pairs should have
     matching scopes. Scoping isn't supported on stateless transports.
-  + `serverFingerprint` {Buffer} Fingerprint of remote server to use for the
-    initial handshake. This will only be used if the corresponding adapter
-    exists in the cache.
-  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
-    objects.
   + `timeout` {Number} Default timeout in milliseconds used when sending
     requests. It is possible to override this per request via the
-    [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb) function.
-    Specify `0` for no timeout. Defaults to `10000`.
+    `client.emitMessage(/* ... */)` function. Specify `0` for no timeout.
+    Defaults to `10000`.
 
 Generate a [`MessageEmitter`](#class-messageemitter) for this client. This
 emitter can then be used to communicate with a remote server of compatible
@@ -1080,7 +1110,8 @@ There are two major types of transports:
   `{readable: duplex, writable: duplex}`.
 
 + Stateless: stream factory `fn(cb)` which should return a writable stream and
-  call its callback argument with a readable stream (when available).
+  call its callback argument with an eventual error and readable stream (if
+  available).
 
 ### `client.destroyEmitters([opts])`
 
