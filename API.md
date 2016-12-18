@@ -2,11 +2,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Schema parsing](#schema-parsing)
-    - [`assembleProtocolSchema(path, [opts,] cb)`](#assembleprotocolschemapath-opts-cb)
-    - [`parseProtocolSchema(spec, [opts])`](#parseprotocolschemaspec-opts)
-    - [`parseTypeSchema(spec)`](#parsetypeschemaspec)
-- [Type generation and usage](#type-generation-and-usage)
+- [Types and schemas](#types-and-schemas)
+  - [`assembleProtocolSchema(path, [opts,] cb)`](#assembleprotocolschemapath-opts-cb)
+  - [`parseProtocolSchema(spec, [opts])`](#parseprotocolschemaspec-opts)
+  - [`parseTypeSchema(spec)`](#parsetypeschemaspec)
   - [Class `Type`](#class-type)
     - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
     - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
@@ -38,7 +37,7 @@
   - [Class `FixedType(attrs, [opts])`](#class-fixedtypeattrs-opts)
     - [`type.getAliases()`](#typegetaliases-1)
     - [`type.getSize()`](#typegetsize)
-  - [Class `LogicalType(attrs, [opts,] [Types])`](#class-logicaltypeattrs-opts-types)
+  - [Class `LogicalType(attrs, [opts])`](#class-logicaltypeattrs-opts)
     - [`type.getUnderlyingType()`](#typegetunderlyingtype)
     - [`type._fromValue(val)`](#type_fromvalueval)
     - [`type._toValue(any)`](#type_tovalueany)
@@ -60,70 +59,69 @@
   - [Class `WrappedUnionType(attrs, [opts])`](#class-wrappeduniontypeattrs-opts)
     - [`type.getTypes()`](#typegettypes-1)
 - [Files and streams](#files-and-streams)
-      - [`extractFileHeader(path, [opts])`](#extractfileheaderpath-opts)
-      - [`createFileDecoder(path, [opts])`](#createfiledecoderpath-opts)
-      - [`createFileEncoder(path, schema, [opts])`](#createfileencoderpath-schema-opts)
-      - [`createBlobDecoder(blob, [opts])`](#createblobdecoderblob-opts)
-      - [`createBlobEncoder(schema, [opts])`](#createblobencoderschema-opts)
-      - [Class `BlockDecoder([opts])`](#class-blockdecoderopts)
-        - [Event `'metadata'`](#event-metadata)
-        - [Event `'data'`](#event-data)
-        - [`BlockDecoder.getDefaultCodecs()`](#blockdecodergetdefaultcodecs)
-      - [Class `BlockEncoder(schema, [opts])`](#class-blockencoderschema-opts)
-        - [Event `'data'`](#event-data-1)
-        - [`BlockEncoder.getDefaultCodecs()`](#blockencodergetdefaultcodecs)
-      - [Class `RawDecoder(schema, [opts])`](#class-rawdecoderschema-opts)
-        - [Event `'data'`](#event-data-2)
-      - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
-        - [Event `'data'`](#event-data-3)
+  - [`createBlobDecoder(blob, [opts])`](#createblobdecoderblob-opts)
+  - [`createBlobEncoder(schema, [opts])`](#createblobencoderschema-opts)
+  - [`createFileDecoder(path, [opts])`](#createfiledecoderpath-opts)
+  - [`createFileEncoder(path, schema, [opts])`](#createfileencoderpath-schema-opts)
+  - [`extractFileHeader(path, [opts])`](#extractfileheaderpath-opts)
+  - [Class `BlockDecoder([opts])`](#class-blockdecoderopts)
+    - [Event `'metadata'`](#event-metadata)
+    - [Event `'data'`](#event-data)
+    - [`BlockDecoder.getDefaultCodecs()`](#blockdecodergetdefaultcodecs)
+  - [Class `BlockEncoder(schema, [opts])`](#class-blockencoderschema-opts)
+    - [Event `'data'`](#event-data-1)
+    - [`BlockEncoder.getDefaultCodecs()`](#blockencodergetdefaultcodecs)
+  - [Class `RawDecoder(schema, [opts])`](#class-rawdecoderschema-opts)
+    - [Event `'data'`](#event-data-2)
+  - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
+    - [Event `'data'`](#event-data-3)
 - [IPC & RPC](#ipc--rpc)
-    - [Class `Protocol`](#class-protocol)
+  - [Class `Protocol`](#class-protocol)
     - [`Protocol.forSchema(schema, [opts])`](#protocolforschemaschema-opts)
-      - [`protocol.equals(other)`](#protocolequalsother)
-      - [`protocol.getDocumentation()`](#protocolgetdocumentation)
-        - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
-      - [`protocol.getMessage(name)`](#protocolgetmessagename)
-      - [`protocol.getMessages()`](#protocolgetmessages)
-      - [`protocol.getName()`](#protocolgetname)
-      - [`protocol.getSchema([opts])`](#protocolgetschemaopts)
-      - [`protocol.getTypes()`](#protocolgettypes)
-      - [`protocol.getType(name)`](#protocolgettypename)
-    - [Class `Client`](#class-client)
-      - [`client.createEmitter(transport, [opts])`](#clientcreateemittertransport-opts)
-      - [`client.destroyEmitters([opts])`](#clientdestroyemittersopts)
-      - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
-      - [`client.getEmitters()`](#clientgetemitters)
-      - [`client.getProtocol()`](#clientgetprotocol)
-      - [`client.getRemoteProtocols()`](#clientgetremoteprotocols)
-      - [`client.use(middleware)`](#clientusemiddleware)
-    - [Class `Server`](#class-server)
-      - [`server.createListener(transport, [opts])`](#servercreatelistenertransport-opts)
-      - [`server.getListeners()`](#servergetlisteners)
-      - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
-      - [`server.use(middleware)`](#serverusemiddleware)
-    - [Class `MessageEmitter`](#class-messageemitter)
-      - [Event `'handshake'`](#event-handshake)
-      - [Event `'eot'`](#event-eot)
-      - [`emitter.destroy([noWait])`](#emitterdestroynowait)
-      - [`emitter.getClient()`](#emittergetclient)
-      - [`emitter.getContext()`](#emittergetcontext)
-        - [`emitter.getPending()`](#emittergetpending)
-      - [`emitter.getTimeout()`](#emittergettimeout)
-      - [`emitter.isDestroyed()`](#emitterisdestroyed)
-    - [Class `MessageListener`](#class-messagelistener)
-      - [Event `'handshake'`](#event-handshake-1)
-      - [Event `'eot'`](#event-eot-1)
-      - [`listener.destroy([noWait])`](#listenerdestroynowait)
-      - [`listener.getServer()`](#listenergetserver)
-      - [`listener.getPending()`](#listenergetpending)
-      - [`listener.isDestroyed()`](#listenerisdestroyed)
-        - [`listener.destroy([noWait])`](#listenerdestroynowait-1)
+    - [`protocol.equals(other)`](#protocolequalsother)
+    - [`protocol.getDocumentation()`](#protocolgetdocumentation)
+    - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
+    - [`protocol.getMessage(name)`](#protocolgetmessagename)
+    - [`protocol.getMessages()`](#protocolgetmessages)
+    - [`protocol.getName()`](#protocolgetname)
+    - [`protocol.getSchema([opts])`](#protocolgetschemaopts)
+    - [`protocol.getTypes()`](#protocolgettypes)
+    - [`protocol.getType(name)`](#protocolgettypename)
+  - [Class `Client`](#class-client)
+    - [`client.createEmitter(transport, [opts])`](#clientcreateemittertransport-opts)
+    - [`client.destroyEmitters([opts])`](#clientdestroyemittersopts)
+    - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
+    - [`client.getEmitters()`](#clientgetemitters)
+    - [`client.getProtocol()`](#clientgetprotocol)
+    - [`client.getRemoteProtocols()`](#clientgetremoteprotocols)
+    - [`client.use(middleware)`](#clientusemiddleware)
+  - [Class `Server`](#class-server)
+    - [`server.createListener(transport, [opts])`](#servercreatelistenertransport-opts)
+    - [`server.getListeners()`](#servergetlisteners)
+    - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
+    - [`server.use(middleware)`](#serverusemiddleware)
+  - [Class `MessageEmitter`](#class-messageemitter)
+    - [Event `'handshake'`](#event-handshake)
+    - [Event `'eot'`](#event-eot)
+    - [`emitter.destroy([noWait])`](#emitterdestroynowait)
+    - [`emitter.getClient()`](#emittergetclient)
+    - [`emitter.getContext()`](#emittergetcontext)
+    - [`emitter.getPending()`](#emittergetpending)
+    - [`emitter.getTimeout()`](#emittergettimeout)
+    - [`emitter.isDestroyed()`](#emitterisdestroyed)
+  - [Class `MessageListener`](#class-messagelistener)
+    - [Event `'handshake'`](#event-handshake-1)
+    - [Event `'eot'`](#event-eot-1)
+    - [`listener.destroy([noWait])`](#listenerdestroynowait)
+    - [`listener.getServer()`](#listenergetserver)
+    - [`listener.getPending()`](#listenergetpending)
+    - [`listener.isDestroyed()`](#listenerisdestroyed)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Schema parsing
+# Types and schemas
 
-### `assembleProtocolSchema(path, [opts,] cb)`
+## `assembleProtocolSchema(path, [opts,] cb)`
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
@@ -141,7 +139,7 @@
 Assemble an IDL file into its schema. This schema can then be passed to
 `Protocol.forSchema` to instantiate the corresponding `Protocol` object.
 
-### `parseProtocolSchema(spec, [opts])`
+## `parseProtocolSchema(spec, [opts])`
 
 + `spec` {String} Protocol IDL specification.
 + `opts` {Object} Options:
@@ -152,7 +150,7 @@ Assemble an IDL file into its schema. This schema can then be passed to
 Synchronous version of `assembleProtocolSchema`. Note that it doesn't support
 imports.
 
-### `parseTypeSchema(spec)`
+## `parseTypeSchema(spec)`
 
 + `spec` {String} _Type_ IDL specification.
 
@@ -165,13 +163,11 @@ const type = Type.forSchema(schema);
 type.isValid({id: 123, name: 'abc'}); // true.
 ```
 
-# Type generation and usage
+## Class `Type`
 
 "Abstract" base Avro type class; all implementations inherit from it. It
 shouldn't be instantiate directly, but rather through one of the following
 factory methods described below.
-
-## Class `Type`
 
 ### `Type.forSchema(schema, [opts])`
 
