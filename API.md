@@ -31,32 +31,32 @@
     - [`type.equals(other)`](#typeequalsother)
   - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
     - [`type.getItemsType()`](#typegetitemstype)
-  - [Class `EnumType(attrs, [opts])`](#class-enumtypeattrs-opts)
+  - [Class `EnumType(schema, [opts])`](#class-enumtypeattrs-opts)
     - [`type.getAliases()`](#typegetaliases)
     - [`type.getSymbols()`](#typegetsymbols)
-  - [Class `FixedType(attrs, [opts])`](#class-fixedtypeattrs-opts)
+  - [Class `FixedType(schema, [opts])`](#class-fixedtypeattrs-opts)
     - [`type.getAliases()`](#typegetaliases-1)
     - [`type.getSize()`](#typegetsize)
-  - [Class `LogicalType(attrs, [opts])`](#class-logicaltypeattrs-opts)
+  - [Class `LogicalType(schema, [opts])`](#class-logicaltypeattrs-opts)
     - [`type.getUnderlyingType()`](#typegetunderlyingtype)
     - [`type._fromValue(val)`](#type_fromvalueval)
     - [`type._toValue(any)`](#type_tovalueany)
     - [`type._resolve(type)`](#type_resolvetype)
-    - [`type._export(attrs)`](#type_exportattrs)
-  - [Class `LongType(attrs, [opts])`](#class-longtypeattrs-opts)
+    - [`type._export(schema)`](#type_exportattrs)
+  - [Class `LongType(schema, [opts])`](#class-longtypeattrs-opts)
     - [`LongType.__with(methods, [noUnpack])`](#longtype__withmethods-nounpack)
-  - [Class `MapType(attrs, [opts])`](#class-maptypeattrs-opts)
+  - [Class `MapType(schema, [opts])`](#class-maptypeattrs-opts)
     - [`type.getValuesType()`](#typegetvaluestype)
-  - [Class `RecordType(attrs, [opts])`](#class-recordtypeattrs-opts)
+  - [Class `RecordType(schema, [opts])`](#class-recordtypeattrs-opts)
     - [`type.getAliases()`](#typegetaliases-2)
     - [`type.getField(name)`](#typegetfieldname)
     - [`type.getFields()`](#typegetfields)
     - [`type.getRecordConstructor()`](#typegetrecordconstructor)
     - [Class `Record(...)`](#class-record)
       - [`Record.getType()`](#recordgettype)
-  - [Class `UnwrappedUnionType(attrs, [opts])`](#class-unwrappeduniontypeattrs-opts)
+  - [Class `UnwrappedUnionType(schema, [opts])`](#class-unwrappeduniontypeattrs-opts)
     - [`type.getTypes()`](#typegettypes)
-  - [Class `WrappedUnionType(attrs, [opts])`](#class-wrappeduniontypeattrs-opts)
+  - [Class `WrappedUnionType(schema, [opts])`](#class-wrappeduniontypeattrs-opts)
     - [`type.getTypes()`](#typegettypes-1)
 - [Files and streams](#files-and-streams)
   - [`createBlobDecoder(blob, [opts])`](#createblobdecoderblob-opts)
@@ -191,7 +191,7 @@ factory methods described below.
   + `registry` {Object} Registry of predefined type names. This can for example
     be used to override the types used for primitives or to split a schema
     declaration over multiple files.
-  + `typeHook(attrs, opts)` {Function} Function called before each type
+  + `typeHook(schema, opts)` {Function} Function called before each type
     declaration or reference is parsed. The relevant decoded schema is
     available as first argument and the parsing options as second. This
     function can optionally return a type which will then be used in place of
@@ -476,9 +476,9 @@ Check whether two types are equal (i.e. have the same canonical schema).
 The type of the array's items.
 
 
-## Class `EnumType(attrs, [opts])`
+## Class `EnumType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ### `type.getAliases()`
@@ -491,9 +491,9 @@ Returns a copy of the type's symbols (an array of strings representing the
 `enum`'s valid values).
 
 
-## Class `FixedType(attrs, [opts])`
+## Class `FixedType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ### `type.getAliases()`
@@ -504,9 +504,9 @@ Optional type aliases. These are used when adapting a schema from another type.
 
 The size in bytes of instances of this type.
 
-## Class `LogicalType(attrs, [opts])`
+## Class `LogicalType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 "Abstract class" used to implement custom types. To implement a new logical
@@ -564,20 +564,20 @@ This method should return:
 
 *This method is abstract and should be implemented but not called directly.*
 
-### `type._export(attrs)`
+### `type._export(schema)`
 
-+ `attrs` {Object} The type's raw exported attributes, containing `type` and
++ `schema` {Object} The type's raw exported attributes, containing `type` and
   `logicalType` keys.
 
-This method should add attributes to be exported to the `attrs` object. These
+This method should add attributes to be exported to the `schema` object. These
 will then be included into any [`type.getSchema`](#typegetschema-opts) calls
 with `exportAttrs` set. *A default implementation exporting nothing is
 provided.*
 
 
-## Class `LongType(attrs, [opts])`
+## Class `LongType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ### `LongType.__with(methods, [noUnpack])`
@@ -636,9 +636,9 @@ so requires implementing the following methods (a few examples are available
   See [`Type.compare`](#typecompareval1-val2).
 
 
-## Class `MapType(attrs, [opts])`
+## Class `MapType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ### `type.getValuesType()`
@@ -646,9 +646,9 @@ so requires implementing the following methods (a few examples are available
 The type of the map's values (keys are always strings).
 
 
-## Class `RecordType(attrs, [opts])`
+## Class `RecordType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ### `type.getAliases()`
@@ -686,23 +686,36 @@ Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type. In particular, it will correctly
 initialize all the missing record's fields with their default values.
 
+The `Record` prototype also exposes a few convenience methods described below
+(available on each decoded `record` value).
+
 #### `Record.getType()`
 
 Convenience class method to get the record's type.
 
-The `Record` prototype also exposes the following methods (available on each
-decoded `record` value):
+#### `record.clone([opts])`
 
-+ `record.clone([opts])`
-+ `record.compare(val)`
-+ `record.isValid([opts])`
-+ `record.toBuffer()`
-+ `record.toString()`
+Convenience function to clone the current record.
 
+#### `record.compare(val)`
 
-## Class `UnwrappedUnionType(attrs, [opts])`
+Convenience function to compare the current record to another.
 
-+ `attrs` {Object} Decoded type attributes.
+#### `record.isValid([opts])`
+
+Convenience function to validate the current record.
+
+#### `record.toBuffer()`
+
+Convenience function to serialize the current record.
+
+#### `record.toString()`
+
+Convenience function to serialize the current record using JSON encoding.
+
+## Class `UnwrappedUnionType(schema, [opts])`
+
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 This class is the default used to represent unions. Its values are decoded
@@ -736,9 +749,9 @@ themselves).
 The possible types that this union can take.
 
 
-## Class `WrappedUnionType(attrs, [opts])`
+## Class `WrappedUnionType(schema, [opts])`
 
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 This class is the representation using for unions for types generated with
@@ -824,7 +837,7 @@ returned. *Not available in the browser.*
     uncompressedData)` on completion. The default contains handlers for the
     `'null'` and `'deflate'` codecs.
   + `noDecode` {Boolean} Do not decode records before returning them.
-  + `parseHook(attrs)` {Function} Function called to generate the type from the
+  + `parseHook(schema)` {Function} Function called to generate the type from the
     schema contained in the file. This can be used to pass in addtional options
     when parsing the schema (e.g. logical type information). See below for an
     example.
@@ -854,7 +867,7 @@ instantiate a type with the `wrapUnions` option set:
 
 ```javascript
 const decoder = new avro.streams.BlockDecoder({
-  parseHook: (attrs) => { return avro.parse(attrs, {wrapUnions: true}); }
+  parseHook: (schema) => { return avro.parse(schema, {wrapUnions: true}); }
 });
 ```
 
@@ -1004,16 +1017,16 @@ Returns the protocol's fully qualified name.
 
 Returns `protocol`'s canonical schema.
 
-### `protocol.getTypes()`
-
-Returns a frozen list of the named types declared in this protocol.
-
 ### `protocol.getType(name)`
 
 + `name` {String} A type's fully qualified name.
 
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
+
+### `protocol.getTypes()`
+
+Returns a frozen list of the named types declared in this protocol.
 
 ## Class `Client`
 
@@ -1139,6 +1152,10 @@ listener can be used to respond to messages emitted from compatible protocols.
 ### `server.getListeners()`
 
 Returns a frozen copy of the server's active listeners.
+
+### `server.getProtocol()`
+
+Returns the server's protocol.
 
 ### `server.onMessage(name, handler)`
 
