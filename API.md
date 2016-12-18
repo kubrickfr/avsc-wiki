@@ -515,10 +515,6 @@ The type of the array's items.
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
-
 ### `type.getSymbols()`
 
 Returns a copy of the type's symbols (an array of strings representing the
@@ -529,10 +525,6 @@ Returns a copy of the type's symbols (an array of strings representing the
 
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
-
-### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
 
 ### `type.getSize()`
 
@@ -681,10 +673,6 @@ The type of the map's values (keys are always strings).
 
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
-
-### `type.getAliases()`
-
-Optional type aliases. These are used when adapting a schema from another type.
 
 ### `type.getField(name)`
 

@@ -1,18 +1,12 @@
-+ [Type inference](#type-inference)
-+ [Schema evolution](#schema-evolution)
-+ [Logical types](#logical-types)
-+ [Custom long types](#custom-long-types)
-+ [Remote procedure calls](#remote-procedure-calls)
-
 # Type inference
 
 Avro requires a schema in order to be able to encode and decode values. Writing
 such a schema isn't always straightforward however, especially when unfamiliar
-with the syntax. [`infer`][infer-api] aims to help by auto-generating a valid
-type for any value:
+with the syntax. `Type.forValue` aims to help by auto-generating a valid type
+for any value:
 
 ```javascript
-const type = avro.infer([1, 4.5, 8]);
+const type = avro.Type.forValue([1, 4.5, 8]);
 // We can now encode or any array of floats using this type:
 const buf = type.toBuffer([4, 6.1]);
 const val = type.fromBuffer(buf); // [4, 6.1]
@@ -35,7 +29,7 @@ decoding fields, we can significantly increase throughput.
 As a motivating example, consider the following event:
 
 ```javascript
-const heavyType = avro.parse({
+const heavyType = avro.Type.forSchema({
   name: 'Event',
   type: 'record',
   fields: [
@@ -53,7 +47,7 @@ by using the following reader's schema, and creating the corresponding
 resolver:
 
 ```javascript
-const lightType = avro.parse({
+const lightType = avro.Type.forSchema({
   name: 'LightEvent',
   aliases: ['Event'],
   type: 'record',
@@ -109,14 +103,17 @@ using Avro's *logical types*, with the following two steps:
 + Adding a `logicalType` attribute to the type's definition (e.g.
   `'timestamp-millis'` above).
 + Implementing a corresponding [`LogicalType`][logical-type-api] and adding it
-  to [`parse`][parse-api]'s `logicalTypes`.
+  to [`Type.forSchema`][parse-api]'s `logicalTypes`.
 
 For example, we can use this [`DateType`
 ](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js) to
 transparently deserialize/serialize native `Date` objects:
 
 ```javascript
-const type = avro.parse(schema, {logicalTypes: {'timestamp-millis': DateType}});
+const type = avro.Type.forSchema(
+  schema,
+  {logicalTypes: {'timestamp-millis': DateType}}
+);
 
 // We create a new transaction.
 const transaction = {
@@ -138,7 +135,7 @@ example, the above `DateType` can read dates which were serialized as strings:
 
 ```javascript
 const str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
-const stringType = avro.parse('string');
+const stringType = avro.Type.forSchema('string');
 const buf = stringType.toBuffer(str); // `str` encoded as an Avro string.
 
 const dateType = type.getField('time').getType();
@@ -237,7 +234,7 @@ the `registry` when parsing a schema:
 ```javascript
 // Our schema here is very simple, but this would work for arbitrarily complex
 // ones (applying to all longs inside of it).
-const type = avro.parse('long', {registry: {'long': longType}});
+const type = avro.Type.forSchema('long', {registry: {'long': longType}});
 
 // Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
 // rounded when represented as a double):
@@ -270,7 +267,7 @@ example, consider the following simple protocol which supports two calls
 (defined using Avro [IDL notation][idl] and saved as `./math.avdl`):
 
 ```java
-protocol Math {
+protocol MathProtocol {
   // One to multiply numbers.
   double multiply(array<double> numbers);
   // And another to add numbers, with an optional delay.
@@ -283,30 +280,32 @@ Servers and clients then share the same protocol and respectively:
 + Implement interface calls (servers):
 
   ```javascript
-  avro.assemble('math.avdl', (err, attrs) => {
-    const protocol = avro.parse(attrs)
-      .on('add', (req, ee, cb) => {
-        const sum = req.numbers.reduce((agg, el) => { return agg + el; }, 0);
-        setTimeout(() => { cb(null, sum); }, 1000 * req.delay);
+  avro.assembleProtocolSchema('MathProtocol.avdl', (err, schema) => {
+    const server = avro.Protocol.forSchema(schema)
+      .createServer()
+      .onAdd((numbers, delay, cb) => {
+        const sum = numbers.reduce((agg, el) => { return agg + el; }, 0);
+        setTimeout(() => { cb(null, sum); }, 1000 * delay);
       })
-      .on('multiply', (req, ee, cb) => {
-        const prod = req.numbers.reduce((agg, el) => { return agg * el; }, 1);
+      .onMultiply((numbers, cb) => {
+        const prod = numbers.reduce((agg, el) => { return agg * el; }, 1);
         cb(null, prod);
       });
+    // See below for options to add listener to this server.
   });
   ```
 
 + Call the interface (clients):
 
   ```javascript
-  avro.assemble('math.avdl', (err, attrs) => {
-    const protocol = avro.parse(attrs);
-    const ee; // Message emitter, see below for various instantiation examples.
-    protocol.emit('add', {numbers: [1, 3, 5], delay: 2}, ee, (err, res) => {
-      console.log(res); // 9!
+  avro.assembleProtocolSchema('MathProtocol.avdl', (err, schema) => {
+    const client = avro.Protocol.forSchema(schema).createClient();
+    // Add client emitter here... (See below for options.)
+    client.add([1, 3, 5], 2, (err, num) => {
+      console.log(num); // 9!
     });
-    protocol.emit('multiply', {numbers: [4, 2]}, ee, (err, res) => {
-      console.log(res); // 8!
+    client.multiply([4, 2], (err, num) => {
+      console.log(num); // 8!
     });
   });
   ```
@@ -321,18 +320,14 @@ E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
 ### Client
 
 ```javascript
-const net = require('net');
-
-const ee = protocol.createEmitter(net.createConnection({port: 8000}));
+client.createEmitter(require('net').createConnection({port: 8000}));
 ```
 
 ### Server
 
 ```javascript
-const net = require('net');
-
-net.createServer()
-  .on('connection', (con) => { protocol.createListener(con); })
+require('net').createServer()
+  .on('connection', (con) => { server.createListener(con); })
   .listen(8000);
 ```
 
@@ -342,11 +337,11 @@ For example HTTP requests/responses.
 
 ### Client
 
-```javascript
-const http = require('http');
+Using the built-in `http` module:
 
-const ee = protocol.createEmitter((cb) => {
-  return http.request({
+```javascript
+client.createEmitter((cb) => {
+  return require('http').request({
     port: 3000,
     headers: {'content-type': 'avro/binary'},
     method: 'POST'
@@ -356,16 +351,17 @@ const ee = protocol.createEmitter((cb) => {
 
 ### Server
 
-Using [express][] for example:
+Using [express][]:
 
 ```javascript
-const app = require('express')();
-
-app.post('/', (req, res) => {
-  protocol.createListener((cb) => { cb(null, res); return req; });
-});
-
-app.listen(3000);
+require('express')()
+  .post('/', (req, res) => {
+    server.createListener((cb) => {
+      cb(null, res);
+      return req;
+    });
+  })
+  .listen(3000);
 ```
 
 

@@ -1,12 +1,3 @@
-Various benchmarks are available:
-
-+ [JavaScript serialization libraries](#javascript-serialization-libraries)
-  + [Node.js throughputs](#nodejs-throughputs)
-  + [Browser throughputs](#browser-throughputs)
-  + [Encoding sizes](#encoding-sizes)
-+ [Avro implementations](#avro-implementations)
-
-
 # JavaScript serialization libraries
 
 Libraries compared:

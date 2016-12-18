@@ -1,11 +1,3 @@
-This page is meant to provide a brief overview of the API:
-
-+ [What is a `Type`?](#what-is-a-type)
-+ [How do I get a `Type`?](#how-do-i-get-a-type)
-+ [What about Avro files?](#what-about-avro-files)
-+ [Next steps](#next-steps)
-
-
 # What is a `Type`?
 
 Each Avro type maps to a corresponding JavaScript [`Type`](API#class-type):

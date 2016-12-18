@@ -1,6 +1,3 @@
-+ [Overview](#overview)
-+ [Browser support](#browser-support)
-
 # Overview
 
 `avsc` is a pure JavaScript implementation of the [Avro
