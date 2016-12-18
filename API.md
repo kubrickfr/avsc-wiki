@@ -20,6 +20,8 @@
     - [`type.encode(val, buf, [pos])`](#typeencodeval-buf-pos)
     - [`type.fromBuffer(buf, [resolver,] [noCheck])`](#typefrombufferbuf-resolver-nocheck)
     - [`type.fromString(str)`](#typefromstringstr)
+    - [`type.getAliases()`](#typegetaliases)
+    - [`type.getDocumentation()`](#typegetdocumentation)
     - [`type.getFingerprint([algorithm])`](#typegetfingerprintalgorithm)
     - [`type.getName([asBranch])`](#typegetnameasbranch)
     - [`type.getSchema([opts])`](#typegetschemaopts)
@@ -32,10 +34,10 @@
   - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
     - [`type.getItemsType()`](#typegetitemstype)
   - [Class `EnumType(schema, [opts])`](#class-enumtypeschema-opts)
-    - [`type.getAliases()`](#typegetaliases)
+    - [`type.getAliases()`](#typegetaliases-1)
     - [`type.getSymbols()`](#typegetsymbols)
   - [Class `FixedType(schema, [opts])`](#class-fixedtypeschema-opts)
-    - [`type.getAliases()`](#typegetaliases-1)
+    - [`type.getAliases()`](#typegetaliases-2)
     - [`type.getSize()`](#typegetsize)
   - [Class `LogicalType(schema, [opts])`](#class-logicaltypeschema-opts)
     - [`type.getUnderlyingType()`](#typegetunderlyingtype)
@@ -48,7 +50,7 @@
   - [Class `MapType(schema, [opts])`](#class-maptypeschema-opts)
     - [`type.getValuesType()`](#typegetvaluestype)
   - [Class `RecordType(schema, [opts])`](#class-recordtypeschema-opts)
-    - [`type.getAliases()`](#typegetaliases-2)
+    - [`type.getAliases()`](#typegetaliases-3)
     - [`type.getField(name)`](#typegetfieldname)
       - [`class Field`](#class-field)
         - [`field.getAliases()`](#fieldgetaliases)
@@ -417,6 +419,17 @@ Deserialize a buffer into its corresponding value.
 + `str` {String} String representing a JSON-serialized object.
 
 Deserialize a JSON-encoded object of `type`.
+
+### `type.getAliases()`
+
+Returns a list of aliases for named types and `undefined` for others. Note that
+it is possible to modify this list to add and remove aliases after the type is
+created (altering which types can be resolved via `type.createResolver`).
+
+### `type.getDocumentation()`
+
+Return the type's documentation (`doc` attribute in schema and docstring in IDL
+spec).
 
 ### `type.getFingerprint([algorithm])`
 
