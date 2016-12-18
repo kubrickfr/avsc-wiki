@@ -28,7 +28,7 @@
     - [`type.random()`](#typerandom)
     - [`type.toBuffer(val)`](#typetobufferval)
     - [`type.toString([val])`](#typetostringval)
-    - [`type.equals(other)`](#typeequalsother)
+    - [`type.equals(any)`](#typeequalsany)
   - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
     - [`type.getItemsType()`](#typegetitemstype)
   - [Class `EnumType(schema, [opts])`](#class-enumtypeschema-opts)
@@ -91,17 +91,17 @@
     - [`Protocol.forSchema(schema, [opts])`](#protocolforschemaschema-opts)
     - [`protocol.createClient([opts])`](#protocolcreateclientopts)
     - [`protocol.createServer([opts])`](#protocolcreateserveropts)
-    - [`protocol.equals(other)`](#protocolequalsother)
+    - [`protocol.equals(any)`](#protocolequalsany)
     - [`protocol.getDocumentation()`](#protocolgetdocumentation)
     - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
     - [`protocol.getMessage(name)`](#protocolgetmessagename)
       - [`class Message`](#class-message)
-        - ['message.getDocumentation()`](#messagegetdocumentation)
-        - ['message.getErrorType()`](#messagegeterrortype)
-        - ['message.getName()`](#messagegetname)
-        - ['message.getRequestType()`](#messagegetrequesttype)
-        - ['message.getResponseType()`](#messagegetresponsetype)
-        - ['message.isOneWay()`](#messageisoneway)
+        - [`message.getDocumentation()`](#messagegetdocumentation)
+        - [`message.getErrorType()`](#messagegeterrortype)
+        - [`message.getName()`](#messagegetname)
+        - [`message.getRequestType()`](#messagegetrequesttype)
+        - [`message.getResponseType()`](#messagegetresponsetype)
+        - [`message.isOneWay()`](#messageisoneway)
     - [`protocol.getMessages()`](#protocolgetmessages)
     - [`protocol.getName()`](#protocolgetname)
     - [`protocol.getSchema([opts])`](#protocolgetschemaopts)
@@ -481,9 +481,9 @@ Returns a `Buffer` containing the Avro serialization of `val`.
 
 Serialize an object into a JSON-encoded string.
 
-### `type.equals(other)`
+### `type.equals(any)`
 
-+ `other` {...} Any object.
++ `any` {...} Any object.
 
 Check whether two types are equal (i.e. have the same canonical schema).
 
@@ -1027,9 +1027,9 @@ send messages to a remote server for a compatible protocol.
 Generate a server corresponding to this protocol. This server can be used to
 respond to messages from compatible protocols' clients.
 
-### `protocol.equals(other)`
+### `protocol.equals(any)`
 
-+ `other` {...} Any object.
++ `any` {...} Any object.
 
 Check whether the argument is equal to `protocol` (w.r.t canonical
 representations).
@@ -1053,17 +1053,17 @@ Get a single message from this protocol.
 
 #### `class Message`
 
-##### 'message.getDocumentation()`
+##### `message.getDocumentation()`
 
-##### 'message.getErrorType()`
+##### `message.getErrorType()`
 
-##### 'message.getName()`
+##### `message.getName()`
 
-##### 'message.getRequestType()`
+##### `message.getRequestType()`
 
-##### 'message.getResponseType()`
+##### `message.getResponseType()`
 
-##### 'message.isOneWay()`
+##### `message.isOneWay()`
 
 ### `protocol.getMessages()`
 
