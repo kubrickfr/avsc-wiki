@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Type inference](#type-inference)
+- [Schema evolution](#schema-evolution)
+- [Logical types](#logical-types)
+- [Custom long types](#custom-long-types)
+- [Remote procedure calls](#remote-procedure-calls)
+  - [Persistent streams](#persistent-streams)
+    - [Client](#client)
+    - [Server](#server)
+  - [Transient streams](#transient-streams)
+    - [Client](#client-1)
+    - [Server](#server-1)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Type inference
 
 Avro requires a schema in order to be able to encode and decode values. Writing
@@ -281,8 +299,7 @@ Servers and clients then share the same protocol and respectively:
 
   ```javascript
   avro.assembleProtocolSchema('MathProtocol.avdl', (err, schema) => {
-    const server = avro.Protocol.forSchema(schema)
-      .createServer()
+    const server = avro.Protocol.forSchema(schema).createServer()
       .onAdd((numbers, delay, cb) => {
         const sum = numbers.reduce((agg, el) => { return agg + el; }, 0);
         setTimeout(() => { cb(null, sum); }, 1000 * delay);

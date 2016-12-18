@@ -1,3 +1,14 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [What is a `Type`?](#what-is-a-type)
+- [How do I get a `Type`?](#how-do-i-get-a-type)
+- [What about Avro files?](#what-about-avro-files)
+- [Next steps](#next-steps)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # What is a `Type`?
 
 Each Avro type maps to a corresponding JavaScript [`Type`](API#class-type):

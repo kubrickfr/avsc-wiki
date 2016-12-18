@@ -1,3 +1,16 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Overview](#overview)
+  - [What is Avro?](#what-is-avro)
+  - [Why JavaScript?](#why-javascript)
+- [Browser support](#browser-support)
+  - [Compatibility table](#compatibility-table)
+  - [Distributions](#distributions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Overview
 
 `avsc` is a pure JavaScript implementation of the [Avro
