@@ -39,10 +39,10 @@
     - [`type.getSize()`](#typegetsize)
   - [Class `LogicalType(schema, [opts])`](#class-logicaltypeschema-opts)
     - [`type.getUnderlyingType()`](#typegetunderlyingtype)
-    - [`type._fromValue(val)`](#type_fromvalueval)
-    - [`type._toValue(any)`](#type_tovalueany)
-    - [`type._resolve(type)`](#type_resolvetype)
     - [`type._export(schema)`](#type_exportschema)
+    - [`type._fromValue(val)`](#type_fromvalueval)
+    - [`type._resolve(type)`](#type_resolvetype)
+    - [`type._toValue(any)`](#type_tovalueany)
   - [Class `LongType(schema, [opts])`](#class-longtypeschema-opts)
     - [`LongType.__with(methods, [noUnpack])`](#longtype__withmethods-nounpack)
   - [Class `MapType(schema, [opts])`](#class-maptypeschema-opts)
@@ -50,6 +50,12 @@
   - [Class `RecordType(schema, [opts])`](#class-recordtypeschema-opts)
     - [`type.getAliases()`](#typegetaliases-2)
     - [`type.getField(name)`](#typegetfieldname)
+      - [`class Field`](#class-field)
+        - [`field.getAliases()`](#fieldgetaliases)
+        - [`field.getDefault()`](#fieldgetdefault)
+        - [`field.getName()`](#fieldgetname)
+        - [`field.getOrder()`](#fieldgetorder)
+        - [`field.getType()`](#fieldgettype)
     - [`type.getFields()`](#typegetfields)
     - [`type.getRecordConstructor()`](#typegetrecordconstructor)
     - [Class `Record(...)`](#class-record)
@@ -528,10 +534,10 @@ type, the steps are:
 + Override the following methods (prefixed with an underscore because they are
   internal to the class that defines them and should only be called by the
   internal `LogicalType` methods):
-  + `_fromValue`
-  + `_toValue`
-  + `_resolve` (optional)
   + `_export` (optional)
+  + `_fromValue`
+  + `_resolve` (optional)
+  + `_toValue`
 
 See [here][logical-types] for more information. A couple sample implementations
 are available as well:
@@ -544,21 +550,22 @@ are available as well:
 Use this method to get the underlying Avro type. This can be useful when a
 logical type can support different underlying types.
 
+### `type._export(schema)`
+
++ `schema` {Object} The type's raw exported attributes, containing `type` and
+  `logicalType` keys.
+
+This method should add attributes to be exported to the `schema` object. These
+will then be included into any [`type.getSchema`](#typegetschema-opts) calls
+with `exportAttrs` set. *A default implementation exporting nothing is
+provided.*
+
 ### `type._fromValue(val)`
 
 + `val` {...} A value deserialized by the underlying type.
 
 This method should return the converted value. *This method is abstract and
 should be implemented but not called directly.*
-
-### `type._toValue(any)`
-
-+ `any` {...} A derived value.
-
-This method should return a value which can be serialized by the underlying
-type. If `any` isn't a valid value for this logical type, you can either return
-`undefined` or throw an exception (slower). *This method is abstract and should
-be implemented but not called directly.*
 
 ### `type._resolve(type)`
 
@@ -572,16 +579,14 @@ This method should return:
 
 *This method is abstract and should be implemented but not called directly.*
 
-### `type._export(schema)`
+### `type._toValue(any)`
 
-+ `schema` {Object} The type's raw exported attributes, containing `type` and
-  `logicalType` keys.
++ `any` {...} A derived value.
 
-This method should add attributes to be exported to the `schema` object. These
-will then be included into any [`type.getSchema`](#typegetschema-opts) calls
-with `exportAttrs` set. *A default implementation exporting nothing is
-provided.*
-
+This method should return a value which can be serialized by the underlying
+type. If `any` isn't a valid value for this logical type, you can either return
+`undefined` or throw an exception (slower). *This method is abstract and should
+be implemented but not called directly.*
 
 ## Class `LongType(schema, [opts])`
 
@@ -600,6 +605,14 @@ This function provides a way to support arbitrary long representations. Doing
 so requires implementing the following methods (a few examples are available
 [here][custom-long]):
 
++ `compare(val1, val2)`
+
+  See [`Type.compare`](#typecompareval1-val2).
+
++ `isValid(val, [opts])`
+
+  See [`Type.isValid`](#typeisvalidval-opts).
+
 + `fromBuffer(buf)`
 
   + `buf` {Buffer} Encoded long. If `noUnpack` is off (the default), `buf` will
@@ -608,14 +621,6 @@ so requires implementing the following methods (a few examples are available
     packed representation.
 
   This method should return the corresponding decoded long.
-
-+ `toBuffer(val)`
-
-  + `val` {...} Decoded long.
-
-  If `noUnpack` is off (the default), this method should return an 8-byte
-  buffer with the `long`'s unpacked representation. Otherwise, `toBuffer`
-  should return an already packed buffer (of variable length).
 
 + `fromJSON(any)`
 
@@ -629,20 +634,19 @@ so requires implementing the following methods (a few examples are available
   of the long implementation's `toJSON` method) to enable serializing large
   numbers without loss of precision (at the cost of violating the Avro spec).
 
++ `toBuffer(val)`
+
+  + `val` {...} Decoded long.
+
+  If `noUnpack` is off (the default), this method should return an 8-byte
+  buffer with the `long`'s unpacked representation. Otherwise, `toBuffer`
+  should return an already packed buffer (of variable length).
+
 + `toJSON(val)`
 
   + `val` {...} Decoded long.
 
   This method should return the `long`'s JSON representation.
-
-+ `isValid(val, [opts])`
-
-  See [`Type.isValid`](#typeisvalidval-opts).
-
-+ `compare(val1, val2)`
-
-  See [`Type.compare`](#typecompareval1-val2).
-
 
 ## Class `MapType(schema, [opts])`
 
@@ -652,7 +656,6 @@ so requires implementing the following methods (a few examples are available
 ### `type.getValuesType()`
 
 The type of the map's values (keys are always strings).
-
 
 ## Class `RecordType(schema, [opts])`
 
@@ -670,11 +673,17 @@ Optional type aliases. These are used when adapting a schema from another type.
 Convenience method to retrieve a field by name. A field is an object with the
 following methods:
 
-+ `getAliases()`
-+ `getDefault()`
-+ `getName()`
-+ `getOrder()`
-+ `getType()`
+#### `class Field`
+
+##### `field.getAliases()`
+
+##### `field.getDefault()`
+
+##### `field.getName()`
+
+##### `field.getOrder()`
+
+##### `field.getType()`
 
 ### `type.getFields()`
 
@@ -997,8 +1006,6 @@ send messages to a remote server for a compatible protocol.
 ### `protocol.createServer([opts])`
 
 + `opts` {Object} Options:
-  + `emitterPolicy(emitters)` {Function} Load-balancing function. Should return
-    one of the passed in emitters.
   + `errorFormatter(err)` {Function} Function called to serialize errors before
     sending them over the wire. The default will use an error's `rpcCode`
     attribute if it exists, otherwise the `'INTERNAL_SERVER_ERROR'` string.
