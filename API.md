@@ -1,99 +1,14 @@
-+ Types:
-  + [`Type`](#class-type)
-    + [`Type.forSchema(schema, [opts])`](#)
-    + [`Type.forTypes(types, [opts])`](#)
-    + [`Type.forValue(val, [opts])`](#)
-    + [`Type.__reset(size)`](#)
-    + [`type.clone(val, [opts])`](#)
-    + [`type.compareBuffers(buf1, buf2)`](#)
-    + [`type.createResolver(type)`](#)
-    + [`type.decode(buf, pos, [resolver])`](#)
-    + [`type.encode(val, buf, [pos])`](#)
-    + [`type.equals(any)`](#)
-    + [`type.fromBuffer(buf, [resolver, noCheck])`](#)
-    + [`type.fromString([val])`](#)
-    + [`type.getAliases()`](#)
-    + [`type.getFingerprint([algorithm])`](#)
-    + [`type.getName()`](#)
-    + [`type.getSchema()`](#)
-    + [`type.isValid(val, [opts])`](#)
-    + [`type.random()`](#)
-    + [`type.toBuffer(val)`](#)
-    + [`type.toString([val])`](#)
-  + Built-in types:
-    + [`ArrayType`](#class-arraytypeattrs-opts)
-      + [`type.getItemsType()`](#)
-    + `BooleanType`
-    + `BytesType`
-    + `DoubleType`
-    + [`EnumType`](#class-enumtypeattrs-opts)
-      + [`type.getSymbols()`](#)
-    + [`FixedType`](#class-fixedtypeattrs-opts)
-      + [`type.getSize()`](#)
-    + `FloatType`
-    + `IntType`
-    + [`LogicalType`](#class-logicaltypeattrs-opts-types)
-      + [`type.getUnderlyingType()`](#)
-    + [`LongType`](#class-longtypeattrs-opts)
-      + [`LongType.__with(methods, [noUnpack])`](#)
-    + [`MapType`](#class-maptypeattrs-opts)
-      + [`type.getValuesType()`](#)
-    + `NullType`
-    + [`RecordType`](#class-recordtypeattrs-opts)
-      + [`type.getField(name)`](#)
-      + [`type.getFields()`](#)
-      + [`type.getRecordConstructor()`](#)
-    + `StringType`
-    + [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts)
-      + [`type.getTypes()`](#)
-    + [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts)
-      + [`type.getTypes()`](#)
-+ Containers:
-  + [`createFileDecoder(fpath, [opts])`](#createfiledecoderpath-opts)
-  + [`createFileEncoder(fpath, schema, [opts])`](#createfileencoderpath-schema-opts)
-  + [`extractFileHeader(fpath, [opts])`](#extractfileheaderpath-opts)
-  + Built-in streams:
-    + [`BlockDecoder`](#class-blockdecoderopts)
-    + [`BlockEncoder`](#class-blockencoderschema-opts)
-    + [`RawDecoder`](#class-rawdecoderschema-opts)
-    + [`RawEncoder`](#class-rawencoderschema-opts)
-+ IDL specifications:
-  + [`assembleProtocolSchema(path, [opts,] cb)`](#)
-  + [`parseProtocolSchema(str, [opts])`](#)
-  + [`parseTypeSchema(str)`](#)
-+ ICP & RPC:
-  + [`Protocol`](#class-protocol)
-    + [`Protocol.forSchema(schema, opts)`](#)
-    + [`protocol.createEmitter()`](#)
-    + [`protocol.createListener()`](#)
-    + [`protocol.emit()`](#)
-    + [`protocol.equals(any)`](#)
-    + [`protocol.getFingerprint()`](#)
-    + [`protocol.getHandler()`](#)
-    + [`protocol.getMessage(name)`](#)
-    + [`protocol.getMessages()`](#)
-    + [`protocol.getName()`](#)
-    + [`protocol.getSchema()`](#)
-    + [`protocol.getType(name)`](#)
-    + [`protocol.on()`](#)
-    + [`protocol.subprotocol()`](#)
-  + [`MessageEmitter`](#class-messageemitter)
-    + [`emitter.destroy(noWait)`](#)
-    + [`emitter.isDestroyed()`](#)
-    + [`emitter.emitMessage(env)`](#)
-    + [`emitter.getCache()`](#)
-    + [`emitter.getPending()`](#)
-  + [`MessageListener`](#class-messagelistener)
-    + [`listener.destroy(noWait)`](#)
-    + [`listener.isDestroyed()`](#)
-    + [`listener.emitMessage(env)`](#)
-    + [`listener.getCache()`](#)
-    + [`listener.getPending()`](#)
-
+## Contents
 
 ## Types
 
-### `assembleProtocolSchema(path, [opts,] cb)`
+This section covers functionality related to instantiating and using Avro
+types. For example:
+
++ Parsing schemas and IDL files.
++ Serializing and validating data.
+
+#### `assembleProtocolSchema(path, [opts,] cb)`
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
@@ -105,20 +20,47 @@
     via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
     depending on the kind of import requested. *In the browser, no default
     is provided.*
-+ `cb(err, attrs)` {Function} Callback. If an error occurred, its `path`
++ `cb(err, schema)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
-Assemble an IDL file into its attributes. These can then be passed to
-[`parse`](#parseschema-opts) to create the corresponding protocol.
+Assemble an IDL file into its schema. This schema can then be passed to
+`Protocol.forSchema` to instantiate the corresponding `Protocol` object.
 
-### `parse(schema, [opts])`
+#### `parseProtocolSchema(spec, [opts])`
 
-+ `schema` {Object|String} An Avro protocol or type schema, represented by one
-  of:
-  + A decoded schema object (e.g. `{type: 'array', items: 'int'}`).
-  + A string containing a JSON-stringified schema (e.g. `'["null", "int"]'`).
-  + A path to a file containing a JSON-stringified schema (e.g.
-    `'./Schema.avsc'`). *This last option is not supported in the browser.*
++ `spec` {String} Protocol IDL specification.
++ `opts` {Object} Options:
+  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
+    mark the corresponding message as one-way. When this option is set, `void`
+    becomes equivalent to `null`.
+
+Synchronous version of `assembleProtocolSchema`. Note that it doesn't support
+imports.
+
+#### `parseTypeSchema(spec)`
+
++ `spec` {String} _Type_ IDL specification.
+
+Convenience method to generate a schema from a standalone type's IDL
+specification. The spec must contain a single type definition, for example:
+
+```javascript
+const schema = parseTypeSchema(`record Header { long id; string name; }`);
+const type = Type.forSchema(schema);
+type.isValid({id: 123, name: 'abc'}); // true.
+```
+
+### Class `Type`
+
+"Abstract" base Avro type class; all implementations inherit from it. It
+shouldn't be instantiate directly, but rather through one of the following
+factory methods described below.
+
+#### `Type.forSchema(schema, [opts])`
+
++ `schema` {Object|String} Decoded schema. This schema can be a string if it is
+  a reference to a primitive type (e.g. `'int'`, ), or a reference to a type in
+  the registry (see `opts` below).
 + `opts` {Object} Parsing options. The following keys are currently supported:
   + `assertLogicalTypes` {Boolean} The Avro specification mandates that we fall
     through to the underlying type if a logical type is invalid. When set, this
@@ -150,14 +92,13 @@ Assemble an IDL file into its attributes. These can then be passed to
     [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts) instead of the
     default [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts).
 
-Parse a schema and return an instance of the corresponding
-[`Type`](#class-type) or [`Protocol`](#class-protocol).
+Instantiate a type for its schema.
 
-### `combine(types, [opts])`
+#### `Type.forTypes(types, [opts])`
 
 + `types` {Array} Array of types to combine.
-+ `opts` {Object} All the options of [`parse`](#parseschema-opts) are
-  available, as well as:
++ `opts` {Object} All the options of `Type.forSchema` are available, as well
+  as:
   + `strictDefaults` {Boolean} When combining records with missing fields, the
     default behavior is to make such fields optional (wrapping their type
     inside a nullable union and setting their default to `null`). Activating
@@ -166,24 +107,41 @@ Parse a schema and return an instance of the corresponding
 Merge multiple types into one. The resulting type will support all the input
 types' values.
 
-### `infer(val, [opts])`
+#### `Type.forValue(val, [opts])`
 
-+ `val` {...} The value used to infer the type.
-+ `opts` {Object} Options. All the options of [`combine`](#combinetypes-opts)
-  (and therefore also of [`parse`](#parseschema-opts)) are supported, along
-  with:
++ `val` {Any} Value to generate the type for.
++ `opts` {Object} All of `Type.forTypes`' options are supported, along with:
+  + `emptyArrayType` {Type} Temporary type used when an empty array is
+    encountered. It will be discarded as soon as the array's type can be
+    inferred. Defaults to `null`'s type.
   + `valueHook(val, opts)` Function called each time a type needs to be
     inferred from a value. This function should either return an alternate type
     to use, or `undefined` to proceed with the default inference logic.
 
-Generate a type from a value.
+Infer a type from a value.
 
+#### `Type.isType(any, [prefix,] ...)`
 
-### Class `Type`
++ `any` {...} Any object.
++ `prefix` {String} If specified, this function will only return `true` if
+  the type's type name starts with at least one of these prefixes. For example,
+  `Type.isType(type, 'union', 'int')` will return `true` if and only if `type`
+  is either a union type or integer type.
 
-"Abstract" base Avro type class; all implementations inherit from it.
+Check whether `any` is an instance of `Type`. This is similar to `any
+instanceof Type` but will work across contexts (e.g. `iframe`s).
 
-##### `type.decode(buf, [pos,] [resolver])`
+#### `Type.__reset(size)`
+
++ `size` {Number} New buffer size in bytes.
+
+This method resizes the internal buffer used to encode all types. You can call
+this method if you are encoding very large values and need to reclaim memory.
+In some cases, it can also be beneficial to call this method at startup with a
+sufficiently large buffer size to allow the JavaScript engine to better
+optimize encoding.
+
+#### `type.decode(buf, [pos,] [resolver])`
 
 + `buf` {Buffer} Buffer to read from.
 + `pos` {Number} Offset to start reading from.
@@ -195,7 +153,7 @@ Returns `{value: value, offset: offset}` if `buf` contains a valid encoding of
 `type` (`value` being the decoded value, and `offset` the new offset in the
 buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
 
-##### `type.encode(val, buf, [pos])`
+#### `type.encode(val, buf, [pos])`
 
 + `val` {...} The value to encode. An error will be raised if this isn't a
   valid `type` value.
@@ -206,7 +164,7 @@ Encode a value into an existing buffer. If enough space was available in `buf`,
 returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
 (positive) number of bytes by which the buffer was short.
 
-##### `type.fromBuffer(buf, [resolver,] [noCheck])`
+#### `type.fromBuffer(buf, [resolver,] [noCheck])`
 
 + `buf` {Buffer} Bytes containing a serialized value of `type`.
 + `resolver` {Resolver} To decode values serialized from another schema. See
@@ -219,26 +177,26 @@ returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
 
 Deserialize a buffer into its corresponding value.
 
-##### `type.toBuffer(val)`
+#### `type.toBuffer(val)`
 
 + `val` {...} The value to encode. It must be a valid `type` value.
 
 Returns a `Buffer` containing the Avro serialization of `val`.
 
-##### `type.fromString(str)`
+#### `type.fromString(str)`
 
 + `str` {String} String representing a JSON-serialized object.
 
 Deserialize a JSON-encoded object of `type`.
 
-##### `type.toString([val])`
+#### `type.toString([val])`
 
 + `val` {...} The value to serialize. If not specified, this method will return
   a human-friendly description of `type`.
 
 Serialize an object into a JSON-encoded string.
 
-##### `type.isValid(val, [opts])`
+#### `type.isValid(val, [opts])`
 
 + `val` {...} The value to validate.
 + `opts` {Object} Options:
@@ -255,7 +213,7 @@ Serialize an object into a JSON-encoded string.
 
 Check whether `val` is a valid `type` value.
 
-##### `type.clone(val, [opts])`
+#### `type.clone(val, [opts])`
 
 + `val` {...} The object to copy.
 + `opts` {Object} Options:
@@ -276,7 +234,7 @@ Check whether `val` is a valid `type` value.
 
 Deep copy a value of `type`.
 
-##### `type.compare(val1, val2)`
+#### `type.compare(val1, val2)`
 
 + `val1` {...} Value of `type`.
 + `val2` {...} Value of `type`.
@@ -285,7 +243,7 @@ Returns `0` if both values are equal according to their [sort
 order][sort-order], `-1` if the first is smaller than the second , and `1`
 otherwise. Comparing invalid values is undefined behavior.
 
-##### `type.compareBuffers(buf1, buf2)`
+#### `type.compareBuffers(buf1, buf2)`
 
 + `buf1` {Buffer} `type` value bytes.
 + `buf2` {Buffer} `type` value bytes.
@@ -293,7 +251,7 @@ otherwise. Comparing invalid values is undefined behavior.
 Similar to [`compare`](#typecompareval1-val2), but doesn't require decoding
 values.
 
-##### `type.createResolver(writerType)`
+#### `type.createResolver(writerType)`
 
 + `writerType` {Type} Writer type.
 
@@ -356,11 +314,11 @@ const obj = v2.fromBuffer(buf, resolver); // === {name: {string: 'Ann'}, phone: 
 See the [advanced usage page](Advanced-usage) for more details on how schema
 evolution can be used to significantly speed up decoding.
 
-##### `type.random()`
+#### `type.random()`
 
 Returns a random value of `type`.
 
-##### `type.getName([asBranch])`
+#### `type.getName([asBranch])`
 
 + `asBranch` {Boolean} If `type` doesn't have a name, return its "type name"
   instead of `undefined`. (This method then returns the type's branch name when
@@ -368,58 +326,37 @@ Returns a random value of `type`.
 
 Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
 
-##### `type.getTypeName()`
+#### `type.getTypeName()`
 
 Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
-##### `type.getSchema([opts])`
+#### `type.getSchema([opts])`
 
 + `opts` {Object} Options:
   + `exportAttrs` {Boolean} Include aliases, field defaults, order, and logical
     type attributes in the returned schema.
   + `noDeref` {Boolean} Do not dereference any type names.
 
-Returns `type`'s [canonical schema][canonical-schema] (as a string). This can
-be used to compare schemas for equality.
+Returns `type`'s [canonical schema][canonical-schema]. This can be used to
+compare schemas for equality.
 
-##### `type.getFingerprint([algorithm])`
+#### `type.getFingerprint([algorithm])`
 
 + `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
   *Only `'md5'` is supported in the browser.*
 
 Return a buffer identifying `type`.
 
-##### `type.equals(other)`
+#### `type.equals(other)`
 
 + `other` {...} Any object.
 
 Check whether two types are equal (i.e. have the same canonical schema).
 
-##### `Type.isType(any, [prefix,] ...)`
 
-+ `any` {...} Any object.
-+ `prefix` {String} If specified, this function will only return `true` if
-  the type's type name starts with at least one of these prefixes. For example,
-  `Type.isType(type, 'union', 'int')` will return `true` if and only if `type`
-  is either a union type or integer type.
+#### Class `ArrayType(schema, [opts])`
 
-Check whether `any` is an instance of `Type`. This is similar to `any
-instanceof Type` but will work across contexts (e.g. `iframe`s).
-
-##### `Type.__reset(size)`
-
-+ `size` {Number} New buffer size in bytes.
-
-This method resizes the internal buffer used to encode all types. You can call
-this method if you are encoding very large values and need to reclaim memory.
-In some cases, it can also be beneficial to call this method at startup with a
-sufficiently large buffer size to allow the JavaScript engine to better
-optimize encoding.
-
-
-#### Class `ArrayType(attrs, [opts])`
-
-+ `attrs` {Object} Decoded type attributes.
++ `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
 ##### `type.getItemsType()`
@@ -454,7 +391,6 @@ Optional type aliases. These are used when adapting a schema from another type.
 ##### `type.getSize()`
 
 The size in bytes of instances of this type.
-
 
 #### Class `LogicalType(attrs, [opts,] [Types])`
 
@@ -624,7 +560,7 @@ following methods:
 
 ##### `type.getFields()`
 
-Returns a copy of the array of fields contained in this record.
+Returns a frozen copy of the array of fields contained in this record.
 
 ##### `type.getRecordConstructor()`
 
@@ -715,7 +651,7 @@ const branchType = val.constructor.getBranchType() // == <LongType>
 ```
 
 
-## Files and streams
+# Files and streams
 
 The following convenience functions are available for common operations on
 container files:
@@ -899,61 +835,80 @@ The encoding equivalent of `RawDecoder`.
 
 # IPC & RPC
 
-Avro also defines a way of executing remote procedure calls. We expose this via
-an API modeled after node.js' core [`EventEmitter`][event-emitter].
+Avro also defines a way of executing remote procedure calls.
 
-#### Class `Protocol`
+### Class `Protocol`
 
-`Protocol` instances are obtained by [`parse`](#parseschema-opts)-ing a
-[protocol declaration][protocol-declaration] and provide a way of sending
+`Protocol` instances are generated from a [protocol
+declaration][protocol-declaration] and define an API that can be used to send
 remote messages (for example to another machine, or another process on the same
-machine). For this reason, instances of this class are very similar to
-`EventEmitter`s, exposing both [`emit`](#protocolemitname-req-emitter) and
-[`on`](#protocolonname-handler) methods.
+machine).
 
-Being able to send remote messages (and to do so efficiently) introduces a few
-differences however:
+### `Protocol.forSchema(schema, [opts])`
 
-+ The types used in each event (for both the emitted message and its response)
-  must be defined upfront in the protocol's declaration.
-+ The arguments emitted with each event must match the ones defined in the
-  protocol. Similarly, handlers are guaranteed to be called only with these
-  matching arguments.
-+ Events are one-to-one: they have exactly one response (unless they are
-  declared as one-way, in which case they have none).
++ `schema` {Object}
++ `opts` {Object}
 
-##### `protocol.emit(name, req, emitter, cb)`
+#### `protocol.equals(other)`
 
-+ `name` {String} Name of the message to emit. If this message is sent to a
-  `Protocol` instance with no handler defined for this name, an "unsupported
-  message" error will be returned.
-+ `req` {Object} Request value, must correspond to the message's declared
-  request type.
-+ `emitter` {MessageEmitter} Emitter used to send the message. See
-  [`createEmitter`](#protocolcreateemittertransport-opts) for how to obtain
-  one.
-+ `cb(err, res)` {Function} Function called with the remote call's response
-  (and eventual error) when available. If not specified and an error occurs,
-  the error will be emitted on `emitter` instead.
++ `other` {...} Any object.
 
-Send a message. This is always done asynchronously. This method is a simpler
-version of [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb),
-providing convenience functionality such as converting string errors to `Error`
-objects.
+Check whether the argument is equal to `protocol` (w.r.t canonical
+representations).
 
-##### `protocol.on(name, handler)`
+#### `protocol.getDocumentation()`
 
-+ `name` {String} Message name to add the handler for. An error will be thrown
-  if this name isn't defined in the protocol. At most one handler can exist for
-  a given name (any previously defined handler will be overwritten).
-+ `handler(req, listener, cb)` {Function} Handler, called each time a message
-  with matching name is received. The `listener` argument will be the
-  corresponding `MessageListener` instance. The final callback argument
-  `cb(err, res)` should be called to send the response back to the emitter.
+Get the protocol's docstring.
 
-Add a handler for a given message.
+##### `protocol.getFingerprint([algorithm])`
 
-##### `protocol.createEmitter(transport, [opts])`
++ `algorithm` {String} Algorithm used to generate the protocol's fingerprint.
+  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
+
+Returns a buffer containing the protocol's [fingerprint][].
+
+#### `protocol.getMessage(name)`
+
++ `name` {String} Message name.
+
+Get a single message from this protocol.
+
+#### `protocol.getMessages()`
+
+Retrieve all the messages defined in the protocol. Each message is an object
+with the following methods:
+
++ `getDocumentation()`
++ `getErrorType()`
++ `getName()`
++ `getRequestType()`
++ `getResponseType()`
++ `isOneWay()`
+
+#### `protocol.getName()`
+
+Returns the protocol's fully qualified name.
+
+#### `protocol.getSchema([opts])`
+
++ `opts` {Object} Same options as [`Type.getSchema`](#).
+
+Returns `protocol`'s canonical schema.
+
+#### `protocol.getTypes()`
+
+Returns a frozen list of the named types declared in this protocol.
+
+#### `protocol.getType(name)`
+
++ `name` {String} A type's fully qualified name.
+
+Convenience function to retrieve a type defined inside this protocol. Returns
+`undefined` if no type exists for the given name.
+
+### Class `Client`
+
+#### `client.createEmitter(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
@@ -986,7 +941,7 @@ Add a handler for a given message.
     [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb) function.
     Specify `0` for no timeout. Defaults to `10000`.
 
-Generate a [`MessageEmitter`](#class-messageemitter) for this protocol. This
+Generate a [`MessageEmitter`](#class-messageemitter) for this client. This
 emitter can then be used to communicate with a remote server of compatible
 protocol.
 
@@ -999,7 +954,51 @@ There are two major types of transports:
 + Stateless: stream factory `fn(cb)` which should return a writable stream and
   call its callback argument with a readable stream (when available).
 
-##### `protocol.createListener(transport, [opts])`
+#### `client.destroyEmitters([opts])`
+
++ `opts` {Object} Options:
+  + `noWait` {Boolean} Wait for pending requests.
+
+#### `client.emitMessage(name, req, [opts,] [cb])`
+
++ `name` {String} Name of the message to emit. If this message is sent to a
+  `Protocol` instance with no handler defined for this name, an "unsupported
+  message" error will be returned.
++ `req` {Object} Request value, must correspond to the message's declared
+  request type.
++ `emitter` {MessageEmitter} Emitter used to send the message. See
+  [`createEmitter`](#protocolcreateemittertransport-opts) for how to obtain
+  one.
++ `cb(err, res)` {Function} Function called with the remote call's response
+  (and eventual error) when available. If not specified and an error occurs,
+  the error will be emitted on `emitter` instead.
+
+Send a message. This is always done asynchronously. This method is a simpler
+version of [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb),
+providing convenience functionality such as converting string errors to `Error`
+objects.
+
+#### `client.getEmitters()`
+
+Returns a frozen list of the client's active emitters.
+
+#### `client.getProtocol()`
+
+Returns the client's protocol.
+
+#### `client.getRemoteProtocols()`
+
+Returns a frozen copy of the client's cached protocols.
+
+#### `client.use(middleware)`
+
++ `middleware(wreq, wres, next)` {Function} Middleware handler.
+
+Install a middleware function.
+
+### Class `Server`
+
+#### `server.createListener(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} Similar to
   [`createEmitter`](#protocolcreateemittertransport-opts-cb)'s corresponding
@@ -1028,168 +1027,109 @@ There are two major types of transports:
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
 
-##### `protocol.getHandler(name)`
+#### `server.getListeners()`
 
-+ `name` {String} Message name.
+Returns a frozen copy of the server's active listeners.
 
-Get the function called each time a message is received for this protocol, or
-`undefined` if no handler was set for this message.
+#### `server.onMessage(name, handler)`
 
-##### `protocol.subprotocol()`
++ `name` {String} Message name to add the handler for. An error will be thrown
+  if this name isn't defined in the protocol. At most one handler can exist for
+  a given name (any previously defined handler will be overwritten).
++ `handler(req, listener, cb)` {Function} Handler, called each time a message
+  with matching name is received. The `listener` argument will be the
+  corresponding `MessageListener` instance. The final callback argument
+  `cb(err, res)` should be called to send the response back to the emitter.
 
-Returns a copy of the original protocol, which inherits all its handlers.
-Adding new handlers to a subprotocol won't affect the parent protocol.
+Add a handler for a given message.
 
-##### `protocol.getMessage(name)`
+#### `server.use(middleware)`
 
-+ `name` {String} Message name.
++ `middleware(wreq, wres, next)` {Function} Middleware handler.
 
-Get a single message from this protocol.
+Install a middleware function.
 
-##### `protocol.getMessages()`
-
-Retrieve all the messages defined in the protocol. Each message is an object
-with the following methods:
-
-+ `getName()`
-+ `getRequestType()`
-+ `getResponseType()`
-+ `getErrorType()`
-+ `isOneWay()`
-
-##### `protocol.getName()`
-
-Returns the protocol's fully qualified name.
-
-##### `protocol.getType(name)`
-
-+ `name` {String} A type's fully qualified name.
-
-Convenience function to retrieve a type defined inside this protocol. Returns
-`undefined` if no type exists for the given name.
-
-##### `protocol.getSchema([opts])`
-
-+ `opts` {Object} Same options as [`Type.getSchema`](#).
-
-Returns `protocol`'s canonical schema.
-
-##### `protocol.getFingerprint([algorithm])`
-
-+ `algorithm` {String} Algorithm used to generate the protocol's fingerprint.
-  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
-
-Returns a buffer containing the protocol's [fingerprint][].
-
-##### `protocol.equals(other)`
-
-+ `other` {...} Any object.
-
-Check whether the argument is equal to `protocol` (w.r.t canonical
-representations).
-
-
-#### Class `MessageEmitter`
+### Class `MessageEmitter`
 
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
 events:
 
-##### Event `'handshake'`
+#### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted when the server's handshake response is received.
 
-##### Event `'eot'`
+#### Event `'eot'`
 
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
 
-##### `emitter.emitMessage(name, envelope, [opts,] cb)`
-
-+ `name` {String} Message name.
-+ `envelope` {Object} Message contents `{header, request}`.
-+ `opts` {Object} Call options, currently the following are supported:
-  + `timeout` {Number}
-+ `cb(err, envelope, meta)` {Function} Callback.
-
-Send a message. This function provides a lower level API than
-[`protocol.emit`](#protocolemitname-req-emitter-cb); for example it exposes
-message headers and the timeout parameter.
-
-##### `emitter.getCache()`
-
-Get the emitter's cache of remote protocols. This cache can be reused to
-instantiate new emitters and avoid having to perform additional handshakes.
-
-##### `emitter.getPending()`
-
-Get the number of pending calls (i.e. the number of messages emittes which
-haven't yet had a response).
-
-##### `emitter.getProtocol()`
-
-Get the emitter's underlying protoocl.
-
-##### `emitter.getTimeout()`
-
-Get the emitter's default timeout.
-
-##### `emitter.isDestroyed()`
-
-Check whether the listener was destroyed.
-
-##### `emitter.destroy([noWait])`
+#### `emitter.destroy([noWait])`
 
 + `noWait` {Boolean} Cancel any pending requests. By default pending requests
   will still be honored.
 
 Disable the emitter.
 
+#### `emitter.getClient()`
 
-#### Class `MessageListener`
+Get the emitter's client.
+
+#### `emitter.getContext()`
+
+Get the context used when creating the emitter.
+
+##### `emitter.getPending()`
+
+Get the number of pending calls (i.e. the number of messages emittes which
+haven't yet had a response).
+
+#### `emitter.getTimeout()`
+
+Get the emitter's default timeout.
+
+#### `emitter.isDestroyed()`
+
+Check whether the listener was destroyed.
+
+### Class `MessageListener`
 
 Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
 [`EventEmitter`s][event-emitter], with the following events:
 
-##### Event `'handshake'`
+#### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted right before the server sends a handshake response.
 
-##### Event `'eot'`
+#### Event `'eot'`
 
 End of transmission event, emitted after the listener is destroyed and there are
 no more responses to send.
 
-##### `listener.getCache()`
+#### `listener.destroy([noWait])`
 
-Get the listener's cache of remote protocols. This cache can be reused to
-instantiate new listeners and avoid having to perform additional handshakes.
++ `noWait` {Boolean} Cancel any pending requests. By default pending requests
+  will still be honored.
 
-##### `listener.getPending()`
+Disable the listener.
 
-Get the number of pending calls (i.e. the number of handler calls which haven't
-yet returned).
+#### `listener.getServer()`
 
-##### `listener.getProtocol()`
+Get the listener's server.
 
-Get the listener's underlying protoocl.
+#### `listener.getPending()`
 
-##### `listener.isDestroyed()`
+Get the number of pending calls (i.e. the number of messages emittes which
+haven't yet had a response).
+
+#### `listener.isDestroyed()`
 
 Check whether the listener was destroyed.
-
-##### `listener.onMessage(fn)`
-
-+ `fn(name, envelope, meta, cb)` {Function} Handler. The callback `cb` should
-  be called as: `cb(err, envelope)` where `err` is an eventual error and
-  `envelope` an object `{header, error, response}`.
-
-Add a handler to be called each time a message arrives in this listener.
 
 ##### `listener.destroy([noWait])`
 
