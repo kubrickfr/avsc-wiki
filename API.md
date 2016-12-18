@@ -83,6 +83,8 @@
 - [IPC & RPC](#ipc--rpc)
   - [Class `Protocol`](#class-protocol)
     - [`Protocol.forSchema(schema, [opts])`](#protocolforschemaschema-opts)
+    - [`protocol.createClient([opts])`](#protocolcreateclientopts)
+    - [`protocol.createServer([opts])`](#protocolcreateserveropts)
     - [`protocol.equals(other)`](#protocolequalsother)
     - [`protocol.getDocumentation()`](#protocolgetdocumentation)
     - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
