@@ -282,7 +282,7 @@ disable this behavior by setting `LongType.__with`'s `noUnpack` argument to
 node processes via [`Protocol`s](Api#class-protocol). To enable this, we first
 declare the types involved inside an [Avro protocol][protocol-declaration]. For
 example, consider the following simple protocol which supports two calls
-(defined using Avro [IDL notation][idl] and saved as `./math.avdl`):
+(defined using Avro [IDL notation][idl] and saved as `./MathProtocol.avdl`):
 
 ```java
 protocol MathProtocol {
