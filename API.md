@@ -508,12 +508,10 @@ Optional type aliases. These are used when adapting a schema from another type.
 
 The size in bytes of instances of this type.
 
-## Class `LogicalType(attrs, [opts,] [Types])`
+## Class `LogicalType(attrs, [opts])`
 
 + `attrs` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
-+ `Types` {Array} Optional of type classes. If specified, only these will be
-  accepted as underlying type.
 
 "Abstract class" used to implement custom types. To implement a new logical
 type, the steps are:
@@ -771,7 +769,45 @@ const branchType = val.constructor.getBranchType() // == <LongType>
 The following convenience functions are available for common operations on
 container files:
 
-#### `extractFileHeader(path, [opts])`
+## `createBlobDecoder(blob, [opts])`
+
++ `blob` {Blob} Binary blob.
++ `opts` {Object} Decoding options, passed to
+  [`BlockDecoder`](#class-blockdecoderopts).
+
+Returns a readable stream of decoded objects from an Avro container blob. *Only
+available in the browser when using the full distribution.*
+
+## `createBlobEncoder(schema, [opts])`
+
++ `schema` {Object|String|Type} Type used to serialize.
++ `opts` {Object} Encoding options, passed to
+  [`BlockEncoder`](#class-blockencoderschema-opts).
+
+Returns a duplex stream of objects. Written values will end up serialized into
+an Avro container blob which will be output as the stream's only readable
+value. *Only available in the browser when using the full distribution.*
+
+## `createFileDecoder(path, [opts])`
+
++ `path` {String} Path to Avro container file.
++ `opts` {Object} Decoding options, passed to
+  [`BlockDecoder`](#class-blockdecoderopts).
+
+Returns a readable stream of decoded objects from an Avro container file. *Not
+available in the browser.*
+
+## `createFileEncoder(path, schema, [opts])`
+
++ `path` {String} Destination path.
++ `schema` {Object|String|Type} Type used to serialize.
++ `opts` {Object} Encoding options, passed to
+  [`BlockEncoder`](#class-blockencoderschema-opts).
+
+Returns a writable stream of objects. These will end up serialized into an Avro
+container file. *Not available in the browser.*
+
+## `extractFileHeader(path, [opts])`
 
 + `path` {String} Path to Avro container file.
 + `opts` {Object} Options:
@@ -782,46 +818,8 @@ Extract header from an Avro container file synchronously. If no header is
 present (i.e. the path doesn't point to a valid Avro container file), `null` is
 returned. *Not available in the browser.*
 
-#### `createFileDecoder(path, [opts])`
 
-+ `path` {String} Path to Avro container file.
-+ `opts` {Object} Decoding options, passed to
-  [`BlockDecoder`](#class-blockdecoderopts).
-
-Returns a readable stream of decoded objects from an Avro container file. *Not
-available in the browser.*
-
-#### `createFileEncoder(path, schema, [opts])`
-
-+ `path` {String} Destination path.
-+ `schema` {Object|String|Type} Type used to serialize.
-+ `opts` {Object} Encoding options, passed to
-  [`BlockEncoder`](#class-blockencoderschema-opts).
-
-Returns a writable stream of objects. These will end up serialized into an Avro
-container file. *Not available in the browser.*
-
-#### `createBlobDecoder(blob, [opts])`
-
-+ `blob` {Blob} Binary blob.
-+ `opts` {Object} Decoding options, passed to
-  [`BlockDecoder`](#class-blockdecoderopts).
-
-Returns a readable stream of decoded objects from an Avro container blob. *Only
-available in the browser when using the full distribution.*
-
-#### `createBlobEncoder(schema, [opts])`
-
-+ `schema` {Object|String|Type} Type used to serialize.
-+ `opts` {Object} Encoding options, passed to
-  [`BlockEncoder`](#class-blockencoderschema-opts).
-
-Returns a duplex stream of objects. Written values will end up serialized into
-an Avro container blob which will be output as the stream's only readable
-value. *Only available in the browser when using the full distribution.*
-
-
-#### Class `BlockDecoder([opts])`
+## Class `BlockDecoder([opts])`
 
 + `opts` {Object} Decoding options. Available keys:
   + `codecs` {Object} Dictionary of decompression functions, keyed by codec
@@ -865,7 +863,7 @@ const decoder = new avro.streams.BlockDecoder({
 ```
 
 
-##### Event `'metadata'`
+### Event `'metadata'`
 
 + `type` {Type} The type used to write the file.
 + `codec` {String} The codec's name.
@@ -874,16 +872,16 @@ const decoder = new avro.streams.BlockDecoder({
 
 This event is guaranteed to be emitted before the first `'data'` event.
 
-##### Event `'data'`
+### Event `'data'`
 
 + `data` {...} Decoded element or raw bytes.
 
-##### `BlockDecoder.getDefaultCodecs()`
+### `BlockDecoder.getDefaultCodecs()`
 
 Get built-in decompression functions (currently `null` and `deflate`).
 
 
-#### Class `BlockEncoder(schema, [opts])`
+## Class `BlockEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
   logic is the same as for [`parse`](#parseschema-opts).
@@ -905,16 +903,16 @@ Get built-in decompression functions (currently `null` and `deflate`).
 
 A duplex stream to create Avro container object files.
 
-##### Event `'data'`
+### Event `'data'`
 
 + `data` {Buffer} Serialized bytes.
 
-##### `BlockEncoder.getDefaultCodecs()`
+### `BlockEncoder.getDefaultCodecs()`
 
 Get built-in compression functions (currently `null` and `deflate`).
 
 
-#### Class `RawDecoder(schema, [opts])`
+## Class `RawDecoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Writer schema. Required since the input doesn't
   contain a header. Argument parsing logic is the same as for
@@ -926,12 +924,12 @@ Get built-in compression functions (currently `null` and `deflate`).
 A duplex stream which can be used to decode a stream of serialized Avro objects
 with no headers or blocks.
 
-##### Event `'data'`
+### Event `'data'`
 
 + `data` {...} Decoded element or raw bytes.
 
 
-#### Class `RawEncoder(schema, [opts])`
+## Class `RawEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
   logic is the same as for [`parse`](#parseschema-opts).
@@ -943,7 +941,7 @@ with no headers or blocks.
 
 The encoding equivalent of `RawDecoder`.
 
-##### Event `'data'`
+### Event `'data'`
 
 + `data` {Buffer} Serialized bytes.
 
@@ -952,7 +950,7 @@ The encoding equivalent of `RawDecoder`.
 
 Avro also defines a way of executing remote procedure calls.
 
-### Class `Protocol`
+## Class `Protocol`
 
 `Protocol` instances are generated from a [protocol
 declaration][protocol-declaration] and define an API that can be used to send
@@ -964,31 +962,31 @@ machine).
 + `schema` {Object}
 + `opts` {Object}
 
-#### `protocol.equals(other)`
+### `protocol.equals(other)`
 
 + `other` {...} Any object.
 
 Check whether the argument is equal to `protocol` (w.r.t canonical
 representations).
 
-#### `protocol.getDocumentation()`
+### `protocol.getDocumentation()`
 
 Get the protocol's docstring.
 
-##### `protocol.getFingerprint([algorithm])`
+### `protocol.getFingerprint([algorithm])`
 
 + `algorithm` {String} Algorithm used to generate the protocol's fingerprint.
   Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
 
 Returns a buffer containing the protocol's [fingerprint][].
 
-#### `protocol.getMessage(name)`
+### `protocol.getMessage(name)`
 
 + `name` {String} Message name.
 
 Get a single message from this protocol.
 
-#### `protocol.getMessages()`
+### `protocol.getMessages()`
 
 Retrieve all the messages defined in the protocol. Each message is an object
 with the following methods:
@@ -1000,30 +998,30 @@ with the following methods:
 + `getResponseType()`
 + `isOneWay()`
 
-#### `protocol.getName()`
+### `protocol.getName()`
 
 Returns the protocol's fully qualified name.
 
-#### `protocol.getSchema([opts])`
+### `protocol.getSchema([opts])`
 
 + `opts` {Object} Same options as [`Type.getSchema`](#).
 
 Returns `protocol`'s canonical schema.
 
-#### `protocol.getTypes()`
+### `protocol.getTypes()`
 
 Returns a frozen list of the named types declared in this protocol.
 
-#### `protocol.getType(name)`
+### `protocol.getType(name)`
 
 + `name` {String} A type's fully qualified name.
 
 Convenience function to retrieve a type defined inside this protocol. Returns
 `undefined` if no type exists for the given name.
 
-### Class `Client`
+## Class `Client`
 
-#### `client.createEmitter(transport, [opts])`
+### `client.createEmitter(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
@@ -1069,12 +1067,12 @@ There are two major types of transports:
 + Stateless: stream factory `fn(cb)` which should return a writable stream and
   call its callback argument with a readable stream (when available).
 
-#### `client.destroyEmitters([opts])`
+### `client.destroyEmitters([opts])`
 
 + `opts` {Object} Options:
   + `noWait` {Boolean} Wait for pending requests.
 
-#### `client.emitMessage(name, req, [opts,] [cb])`
+### `client.emitMessage(name, req, [opts,] [cb])`
 
 + `name` {String} Name of the message to emit. If this message is sent to a
   `Protocol` instance with no handler defined for this name, an "unsupported
@@ -1093,27 +1091,27 @@ version of [`emitter.emitMessage`](#emitteremitmessagename-envelope-opts-cb),
 providing convenience functionality such as converting string errors to `Error`
 objects.
 
-#### `client.getEmitters()`
+### `client.getEmitters()`
 
 Returns a frozen list of the client's active emitters.
 
-#### `client.getProtocol()`
+### `client.getProtocol()`
 
 Returns the client's protocol.
 
-#### `client.getRemoteProtocols()`
+### `client.getRemoteProtocols()`
 
 Returns a frozen copy of the client's cached protocols.
 
-#### `client.use(middleware)`
+### `client.use(middleware)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
 Install a middleware function.
 
-### Class `Server`
+## Class `Server`
 
-#### `server.createListener(transport, [opts])`
+### `server.createListener(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} Similar to
   [`createEmitter`](#protocolcreateemittertransport-opts-cb)'s corresponding
@@ -1142,11 +1140,11 @@ Install a middleware function.
 Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
 listener can be used to respond to messages emitted from compatible protocols.
 
-#### `server.getListeners()`
+### `server.getListeners()`
 
 Returns a frozen copy of the server's active listeners.
 
-#### `server.onMessage(name, handler)`
+### `server.onMessage(name, handler)`
 
 + `name` {String} Message name to add the handler for. An error will be thrown
   if this name isn't defined in the protocol. At most one handler can exist for
@@ -1158,95 +1156,75 @@ Returns a frozen copy of the server's active listeners.
 
 Add a handler for a given message.
 
-#### `server.use(middleware)`
+### `server.use(middleware)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
 Install a middleware function.
 
-### Class `MessageEmitter`
+## Class `MessageEmitter`
 
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
 events:
 
-#### Event `'handshake'`
+### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted when the server's handshake response is received.
 
-#### Event `'eot'`
+### Event `'eot'`
 
 End of transmission event, emitted after the client is destroyed and there are
 no more pending requests.
 
-#### `emitter.destroy([noWait])`
+### `emitter.destroy([noWait])`
 
 + `noWait` {Boolean} Cancel any pending requests. By default pending requests
   will still be honored.
 
 Disable the emitter.
 
-#### `emitter.getClient()`
+### `emitter.getClient()`
 
 Get the emitter's client.
 
-#### `emitter.getContext()`
+### `emitter.getContext()`
 
 Get the context used when creating the emitter.
 
-##### `emitter.getPending()`
+### `emitter.getPending()`
 
 Get the number of pending calls (i.e. the number of messages emittes which
 haven't yet had a response).
 
-#### `emitter.getTimeout()`
+### `emitter.getTimeout()`
 
 Get the emitter's default timeout.
 
-#### `emitter.isDestroyed()`
+### `emitter.isDestroyed()`
 
 Check whether the listener was destroyed.
 
-### Class `MessageListener`
+## Class `MessageListener`
 
 Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
 [`EventEmitter`s][event-emitter], with the following events:
 
-#### Event `'handshake'`
+### Event `'handshake'`
 
 + `request` {Object} Handshake request.
 + `response` {Object} Handshake response.
 
 Emitted right before the server sends a handshake response.
 
-#### Event `'eot'`
+### Event `'eot'`
 
 End of transmission event, emitted after the listener is destroyed and there are
 no more responses to send.
 
-#### `listener.destroy([noWait])`
-
-+ `noWait` {Boolean} Cancel any pending requests. By default pending requests
-  will still be honored.
-
-Disable the listener.
-
-#### `listener.getServer()`
-
-Get the listener's server.
-
-#### `listener.getPending()`
-
-Get the number of pending calls (i.e. the number of messages emittes which
-haven't yet had a response).
-
-#### `listener.isDestroyed()`
-
-Check whether the listener was destroyed.
-
-##### `listener.destroy([noWait])`
+### `listener.destroy([noWait])`
 
 + `noWait` {Boolean} Don't wait for all pending responses to have been sent.
 
@@ -1254,6 +1232,19 @@ Disable this listener and release underlying streams. In general you shouldn't
 need to call this: stateless listeners will be destroyed automatically when a
 response is sent, and stateful listeners are best destroyed from the client's
 side.
+
+### `listener.getServer()`
+
+Get the listener's server.
+
+### `listener.getPending()`
+
+Get the number of pending calls (i.e. the number of messages emittes which
+haven't yet had a response).
+
+### `listener.isDestroyed()`
+
+Check whether the listener was destroyed.
 
 
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
