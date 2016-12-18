@@ -128,14 +128,14 @@
     - [`emitter.getClient()`](#emittergetclient)
     - [`emitter.getContext()`](#emittergetcontext)
     - [`emitter.getPending()`](#emittergetpending)
-    - [`emitter.getTimeout()`](#emittergettimeout)
     - [`emitter.isDestroyed()`](#emitterisdestroyed)
   - [Class `MessageListener`](#class-messagelistener)
     - [Event `'eot'`](#event-eot-1)
     - [Event `'handshake'`](#event-handshake-1)
     - [`listener.destroy([noWait])`](#listenerdestroynowait)
-    - [`listener.getServer()`](#listenergetserver)
+    - [`listener.getContext()`](#listenergetcontext)
     - [`listener.getPending()`](#listenergetpending)
+    - [`listener.getServer()`](#listenergetserver)
     - [`listener.isDestroyed()`](#listenerisdestroyed)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -1152,6 +1152,8 @@ There are two major types of transports:
 + `opts` {Object} Options:
   + `noWait` {Boolean} Wait for pending requests.
 
+Destroy all the client's currently active emitters.
+
 ### `client.emitMessage(name, req, [opts,] [cb])`
 
 + `name` {String} Name of the message to emit.
@@ -1191,6 +1193,8 @@ Install a middleware function.
   corresponding argument, except that readable and writable roles are reversed
   for stateless transports.
 + `opts` {Object} Options.
+  + `context` {...} Context object. Useful to pass information to middleware.
+    It can be retrieved via `server.getContext()`.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed (for
     stateful transports) or when a response is sent (for stateless transports).
@@ -1268,10 +1272,6 @@ Get the context used when creating the emitter.
 Get the number of pending calls (i.e. the number of messages emittes which
 haven't yet had a response).
 
-### `emitter.getTimeout()`
-
-Get the emitter's default timeout.
-
 ### `emitter.isDestroyed()`
 
 Check whether the listener was destroyed.
@@ -1302,14 +1302,18 @@ need to call this: stateless listeners will be destroyed automatically when a
 response is sent, and stateful listeners are best destroyed from the client's
 side.
 
-### `listener.getServer()`
+### `listener.getContext()`
 
-Get the listener's server.
+Get the context used when creating the listener.
 
 ### `listener.getPending()`
 
-Get the number of pending calls (i.e. the number of messages emittes which
-haven't yet had a response).
+Get the number of pending calls (i.e. the number of messages received which
+haven't yet had their response sent).
+
+### `listener.getServer()`
+
+Get the listener's server.
 
 ### `listener.isDestroyed()`
 
