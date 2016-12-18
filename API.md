@@ -58,13 +58,13 @@
         - [`field.getType()`](#fieldgettype)
     - [`type.getFields()`](#typegetfields)
     - [`type.getRecordConstructor()`](#typegetrecordconstructor)
-    - [Class `Record(...)`](#class-record)
-      - [`Record.getType()`](#recordgettype)
-      - [`record.clone([opts])`](#recordcloneopts)
-      - [`record.compare(val)`](#recordcompareval)
-      - [`record.isValid([opts])`](#recordisvalidopts)
-      - [`record.toBuffer()`](#recordtobuffer)
-      - [`record.toString()`](#recordtostring)
+      - [Class `Record(...)`](#class-record)
+        - [`Record.getType()`](#recordgettype)
+        - [`record.clone([opts])`](#recordcloneopts)
+        - [`record.compare(val)`](#recordcompareval)
+        - [`record.isValid([opts])`](#recordisvalidopts)
+        - [`record.toBuffer()`](#recordtobuffer)
+        - [`record.toString()`](#recordtostring)
   - [Class `UnwrappedUnionType(schema, [opts])`](#class-unwrappeduniontypeschema-opts)
     - [`type.getTypes()`](#typegettypes)
   - [Class `WrappedUnionType(schema, [opts])`](#class-wrappeduniontypeschema-opts)
@@ -95,6 +95,13 @@
     - [`protocol.getDocumentation()`](#protocolgetdocumentation)
     - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
     - [`protocol.getMessage(name)`](#protocolgetmessagename)
+      - [`class Message`](#class-message)
+        - ['message.getDocumentation()`](#messagegetdocumentation)
+        - ['message.getErrorType()`](#messagegeterrortype)
+        - ['message.getName()`](#messagegetname)
+        - ['message.getRequestType()`](#messagegetrequesttype)
+        - ['message.getResponseType()`](#messagegetresponsetype)
+        - ['message.isOneWay()`](#messageisoneway)
     - [`protocol.getMessages()`](#protocolgetmessages)
     - [`protocol.getName()`](#protocolgetname)
     - [`protocol.getSchema([opts])`](#protocolgetschemaopts)
@@ -697,7 +704,7 @@ each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
 encoding records more efficient. This also lets us provide helpful methods on
 decoded values (see below).
 
-### Class `Record(...)`
+#### Class `Record(...)`
 
 Calling the constructor directly can sometimes be a convenient shortcut to
 instantiate new records of a given type. In particular, it will correctly
@@ -706,27 +713,27 @@ initialize all the missing record's fields with their default values.
 The `Record` prototype also exposes a few convenience methods described below
 (available on each decoded `record` value).
 
-#### `Record.getType()`
+##### `Record.getType()`
 
 Convenience class method to get the record's type.
 
-#### `record.clone([opts])`
+##### `record.clone([opts])`
 
 Convenience function to clone the current record.
 
-#### `record.compare(val)`
+##### `record.compare(val)`
 
 Convenience function to compare the current record to another.
 
-#### `record.isValid([opts])`
+##### `record.isValid([opts])`
 
 Convenience function to validate the current record.
 
-#### `record.toBuffer()`
+##### `record.toBuffer()`
 
 Convenience function to serialize the current record.
 
-#### `record.toString()`
+##### `record.toString()`
 
 Convenience function to serialize the current record using JSON encoding.
 
@@ -1044,17 +1051,24 @@ Returns a buffer containing the protocol's [fingerprint][].
 
 Get a single message from this protocol.
 
+#### `class Message`
+
+##### 'message.getDocumentation()`
+
+##### 'message.getErrorType()`
+
+##### 'message.getName()`
+
+##### 'message.getRequestType()`
+
+##### 'message.getResponseType()`
+
+##### 'message.isOneWay()`
+
 ### `protocol.getMessages()`
 
 Retrieve all the messages defined in the protocol. Each message is an object
 with the following methods:
-
-+ `getDocumentation()`
-+ `getErrorType()`
-+ `getName()`
-+ `getRequestType()`
-+ `getResponseType()`
-+ `isOneWay()`
 
 ### `protocol.getName()`
 
