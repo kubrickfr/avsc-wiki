@@ -178,18 +178,19 @@ Using Avro's RPC interface, we can implement portable and "type-safe" APIs:
 + Clients and servers can be implemented once and reused for many different
   communication protocols (in-memory, TCP, HTTP, etc.).
 + All data that flows through the API is automatically validated using its
-  corresponding schema.
+  corresponding schema. Function arguments and return values are therefore
+  guaranteed to match the type specified in the API.
 
 In this section, we'll walk through an example of building a simple link
 management service similar to [bitly][].
 
-## Defining a service
+## Defining the `Service`
 
-The first step to creating a service is to define its API or _protocol_: the
-available calls and their signature. There are a couple ways of defining
-protocols; we can write JSON definitions directly, or we can define them using
-Avro's IDL (which can then be compiled to JSON definitions). The latter is
-typically more convenient so we will use this here.
+The first step to creating a service is to define its _protocol_, describing
+the available API calls and their signature. There are a couple ways of doing
+so; we can write JSON definitions directly, or we can use Avro's IDL syntax
+(which can then be compiled to JSON definitions). The latter is typically more
+convenient so we will use this here.
 
 ```java
 /** A simple service to shorten URLs. */
@@ -207,8 +208,9 @@ With the above spec saved to a file, say `LinkService.avdl`, we can instantiate
 the corresponding service as follows:
 
 ```javascript
+// We first compile the IDL specification into a JSON protocol.
 avro.assembleProtocol('./LinkService.avdl', function (err, protocol) {
-  // This step compiles the IDL specification into a JSON protocol.
+  // From which we can create our service.
   const service = avro.Service.fromProtocol(protocol);
 });
 ```
@@ -218,8 +220,11 @@ described in the following sections.
 
 ## Server implementation
 
+So far, we haven't said anything about how API responses will be computed. This
+is where servers come in: server provide the logic powering our API.
+
 ```javascript
-const urlCache = new Map(); // We'll use an in-memory map in this example.
+const urlCache = new Map(); // We'll use an in-memory map to store links.
 
 // We instantiate a server corresponding to our API and implement both calls.
 const server = service.createServer()
@@ -235,6 +240,11 @@ const server = service.createServer()
     cb(null, urlCache.get(alias));
   });
 ```
+
+Notice that no part of the above implementation is coupled to a particular
+communication scheme (e.g. HTTP, TCP, AMQP): the code we wrote is
+_transport-agnostic_. The following section shows how to instantiate two
+different clients.
 
 ## Calling our service
 
