@@ -3,9 +3,9 @@
 
 
 - [Types and schemas](#types-and-schemas)
-  - [`assembleProtocolSchema(path, [opts,] cb)`](#assembleprotocolschemapath-opts-cb)
-  - [`parseProtocolSchema(spec, [opts])`](#parseprotocolschemaspec-opts)
-  - [`parseTypeSchema(spec)`](#parsetypeschemaspec)
+  - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
+  - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
+  - [`readSchema(spec)`](#readschemaspec)
   - [Class `Type`](#class-type)
     - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
     - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
@@ -86,63 +86,69 @@
   - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
     - [Event `'data'`](#event-data-3)
 - [IPC & RPC](#ipc--rpc)
-  - [`discoverProtocolSchema(transport, [opts,] cb)`](#discoverprotocolschematransport-opts-cb)
-  - [Class `Protocol`](#class-protocol)
-    - [`Protocol.forSchema(schema, [opts])`](#protocolforschemaschema-opts)
-    - [`protocol.createClient([opts])`](#protocolcreateclientopts)
-    - [`protocol.createServer([opts])`](#protocolcreateserveropts)
-    - [`protocol.equals(any)`](#protocolequalsany)
-    - [`protocol.getDocumentation()`](#protocolgetdocumentation)
-    - [`protocol.getFingerprint([algorithm])`](#protocolgetfingerprintalgorithm)
-    - [`protocol.getMessage(name)`](#protocolgetmessagename)
+  - [`discoverProtocol(transport, [opts,] cb)`](#discoverprotocoltransport-opts-cb)
+  - [Class `Service`](#class-service)
+    - [`Service.forProtocol(protocol, [opts])`](#serviceforprotocolprotocol-opts)
+    - [`service.createClient([opts])`](#servicecreateclientopts)
+    - [`service.createServer([opts])`](#servicecreateserveropts)
+    - [`service.doc`](#servicedoc)
+    - [`service.hash`](#servicehash)
+    - [`service.message(name)`](#servicemessagename)
       - [`class Message`](#class-message)
-        - [`message.getDocumentation()`](#messagegetdocumentation)
-        - [`message.getErrorType()`](#messagegeterrortype)
-        - [`message.getName()`](#messagegetname)
-        - [`message.getRequestType()`](#messagegetrequesttype)
-        - [`message.getResponseType()`](#messagegetresponsetype)
-        - [`message.isOneWay()`](#messageisoneway)
-    - [`protocol.getMessages()`](#protocolgetmessages)
-    - [`protocol.getName()`](#protocolgetname)
-    - [`protocol.getSchema([opts])`](#protocolgetschemaopts)
-    - [`protocol.getType(name)`](#protocolgettypename)
-    - [`protocol.getTypes()`](#protocolgettypes)
+        - [`message.doc`](#messagedoc)
+        - [`message.errorType`](#messageerrortype)
+        - [`message.name`](#messagename)
+        - [`message.requestType`](#messagerequesttype)
+        - [`message.responseType`](#messageresponsetype)
+        - [`message.oneWay`](#messageoneway)
+        - [`message.schema([opts])`](#messageschemaopts)
+    - [`service.messages`](#servicemessages)
+    - [`service.name`](#servicename)
+    - [`service.protocol`](#serviceprotocol)
+    - [`service.type(name)`](#servicetypename)
+    - [`service.types`](#servicetypes)
   - [Class `Client`](#class-client)
-    - [`client.createEmitter(transport, [opts])`](#clientcreateemittertransport-opts)
-    - [`client.destroyEmitters([opts])`](#clientdestroyemittersopts)
+    - [`client.activeChannels()`](#clientactivechannels)
+    - [`client.createChannel(transport, [opts])`](#clientcreatechanneltransport-opts)
+    - [`client.destroyChannels([opts])`](#clientdestroychannelsopts)
     - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
-    - [`client.getEmitters()`](#clientgetemitters)
-    - [`client.getProtocol()`](#clientgetprotocol)
-    - [`client.getRemoteProtocols()`](#clientgetremoteprotocols)
-    - [`client.use(middleware)`](#clientusemiddleware)
+    - [`client.service`](#clientservice)
+    - [`client.remoteProtocols()`](#clientremoteprotocols)
+    - [`client.use(middleware ...)`](#clientusemiddleware-)
   - [Class `Server`](#class-server)
-    - [`server.createListener(transport, [opts])`](#servercreatelistenertransport-opts)
-    - [`server.getListeners()`](#servergetlisteners)
-    - [`server.getProtocol()`](#servergetprotocol)
+    - [Even `'channel'`](#even-channel)
+    - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
+    - [`server.activeChannels()`](#serveractivechannels)
+    - [`server.service`](#serverservice)
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
-    - [`server.use(middleware)`](#serverusemiddleware)
-  - [Class `MessageEmitter`](#class-messageemitter)
+    - [`server.remoteProtocols()`](#serverremoteprotocols)
+    - [`server.use(middleware ...)`](#serverusemiddleware-)
+  - [Class `ClientChannel`](#class-clientchannel)
     - [Event `'eot'`](#event-eot)
     - [Event `'handshake'`](#event-handshake)
-    - [`emitter.destroy([noWait])`](#emitterdestroynowait)
-    - [`emitter.getClient()`](#emittergetclient)
-    - [`emitter.getContext()`](#emittergetcontext)
-    - [`emitter.getPending()`](#emittergetpending)
-    - [`emitter.isDestroyed()`](#emitterisdestroyed)
-  - [Class `MessageListener`](#class-messagelistener)
+    - [Event `'outgoingCall'`](#event-outgoingcall)
+    - [`channel.destroy([noWait])`](#channeldestroynowait)
+    - [`channel.client`](#channelclient)
+    - [`channel.pending`](#channelpending)
+    - [`channel.destroyed`](#channeldestroyed)
+    - [`channel.draining`](#channeldraining)
+    - [`channel.ping([timeout,] [cb])`](#channelpingtimeout-cb)
+    - [`channel.timeout`](#channeltimeout)
+  - [Class `ServerChannel`](#class-serverchannel)
     - [Event `'eot'`](#event-eot-1)
     - [Event `'handshake'`](#event-handshake-1)
-    - [`listener.destroy([noWait])`](#listenerdestroynowait)
-    - [`listener.getContext()`](#listenergetcontext)
-    - [`listener.getPending()`](#listenergetpending)
-    - [`listener.getServer()`](#listenergetserver)
-    - [`listener.isDestroyed()`](#listenerisdestroyed)
+    - [Event `'incomingCall'`](#event-incomingcall)
+    - [`channel.destroy([noWait])`](#channeldestroynowait-1)
+    - [`channel.pending`](#channelpending-1)
+    - [`channel.server`](#channelserver)
+    - [`channel.destroyed`](#channeldestroyed-1)
+    - [`channel.draining`](#channeldraining-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Types and schemas
 
-## `assembleProtocolSchema(path, [opts,] cb)`
+## `assembleProtocol(path, [opts,] cb)`
 
 + `path` {String} Path to Avro IDL file.
 + `opts` {Object} Options:
@@ -160,7 +166,7 @@
 Assemble an IDL file into its schema. This schema can then be passed to
 `Protocol.forSchema` to instantiate the corresponding `Protocol` object.
 
-## `parseProtocolSchema(spec, [opts])`
+## `readProtocol(spec, [opts])`
 
 + `spec` {String} Protocol IDL specification.
 + `opts` {Object} Options:
@@ -168,10 +174,10 @@ Assemble an IDL file into its schema. This schema can then be passed to
     mark the corresponding message as one-way. When this option is set, `void`
     becomes equivalent to `null`.
 
-Synchronous version of `assembleProtocolSchema`. Note that it doesn't support
+Synchronous version of `assembleProtocol`. Note that it doesn't support
 imports.
 
-## `parseTypeSchema(spec)`
+## `readSchema(spec)`
 
 + `spec` {String} _Type_ IDL specification.
 
@@ -328,7 +334,7 @@ For example, assume we have the following two versions of a type:
 
 ```javascript
 // A schema's first version.
-const v1 = avro.parse({
+const v1 = avro.Type.forSchema({
   name: 'Person',
   type: 'record',
   fields: [
@@ -338,7 +344,7 @@ const v1 = avro.parse({
 });
 
 // The updated version.
-const v2 = avro.parse({
+const v2 = avro.Type.forSchema({
   type: 'record',
   name: 'Person',
   fields: [
@@ -778,9 +784,9 @@ The possible types that this union can take.
 + `opts` {Object} Parsing options.
 
 This class is the representation using for unions for types generated with
-`parse`'s `wrapUnions` option set. It uses Avro's JSON encoding and is able to
-correctly represent all unions: branch type information is never lost since it
-is included in the decoded value.
+`forSchema`'s `wrapUnions` option set. It uses Avro's JSON encoding and is able
+to correctly represent all unions: branch type information is never lost since
+it is included in the decoded value.
 
 ### `type.getTypes()`
 
@@ -890,10 +896,11 @@ instantiate a type with the `wrapUnions` option set:
 
 ```javascript
 const decoder = new avro.streams.BlockDecoder({
-  parseHook: (schema) => { return avro.parse(schema, {wrapUnions: true}); }
+  parseHook: (schema) => {
+    return avro.Type.forSchema(schema, {wrapUnions: true});
+  }
 });
 ```
-
 
 ### Event `'metadata'`
 
@@ -982,139 +989,162 @@ The encoding equivalent of `RawDecoder`.
 
 Avro also defines a way of executing remote procedure calls.
 
-## `discoverProtocolSchema(transport, [opts,] cb)`
+## `discoverProtocol(transport, [opts,] cb)`
 
 + `transport` {Transport} See below.
 + `opts` {Object} Options:
   + `scope` {String} Remove server scope.
   + `timeout` {Number} Maximum delay to wait for a response, `0` for no limit.
     Defaults to `10000`.
-+ `cb(err, schema)` {Function} Callback.
++ `cb(err, protocol)` {Function} Callback.
 
-Discover a remote server's protocol schema. This can be useful to emit requests
-to another server without having a local copy of the protocol.
+Discover a remote server's protocol. This can be useful to emit requests to
+another server without having a local copy of the protocol.
 
-## Class `Protocol`
 
-`Protocol` instances are generated from a [protocol
+## Class `Service`
+
+`Service` instances are generated from a [protocol
 declaration][protocol-declaration] and define an API that can be used to send
 remote messages (for example to another machine, or another process on the same
 machine).
 
-### `Protocol.forSchema(schema, [opts])`
+### `Service.forProtocol(protocol, [opts])`
 
-+ `schema` {Object}
-+ `opts` {Object}
++ `protocol` {Object} A valid Avro protocol.
++ `opts` {Object} All of `Type.forSchema`'s options are accepted.
 
-### `protocol.createClient([opts])`
+Construct a service from a protocol.
+
+### `service.createClient([opts])`
 
 + `opts` {Object} Options:
-  + `defaultTimeout` {Number} Default timeout in milliseconds used when
-    emitting requests, specify `0` for no timeout (note that this may cause
-    memory leaks in the presence of communication errors). Defaults to `10000`.
-    Note that it can be overridden on a per-request basis.
-  + `emitterPolicy(emitters)` {Function} Load-balancing function. Should return
-    one of the passed in emitters.
-  + `remoteProtocols` {Array} Array of protocols to cache locally. Useful to
-    avoid performing handshakes.
+  + `timeout` {Number} Default timeout in milliseconds used when emitting
+    requests, specify `0` for no timeout (note that this may cause memory leaks
+    in the presence of communication errors). Defaults to `10000`. Note that it
+    can be overridden on a per-request basis.
+  + `channelPolicy(channels)` {Function} Function to load balance between
+    active channels. Should return one of the passed in channels. The default
+    selects a channel at random.
+  + `remoteProtocols` {Object} Map of remote protocols, keyed by hash, to cache
+    locally. This will save a handshake with clients connecting using one of
+    these protocols.
+  + `server` {Server} Convenience function to connect the client to an existing
+    server using an efficient in-memory channel.
   + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
     objects.
   + `transport` {Transport} Convenience option to add a transport to the newly
     created client.
 
-Generate a client corresponding to this protocol. This client can be used to
-send messages to a remote server for a compatible protocol.
+Generate a client corresponding to this service. This client can be used to
+send messages to a server for a compatible service.
 
-### `protocol.createServer([opts])`
+### `service.createServer([opts])`
 
 + `opts` {Object} Options:
   + `errorFormatter(err)` {Function} Function called to serialize errors before
     sending them over the wire. The default will use an error's `rpcCode`
     attribute if it exists, otherwise the `'INTERNAL_SERVER_ERROR'` string.
-  + `remoteProtocols` {Array} Array of protocols to cache locally. Useful to
-    avoid performing handshakes.
+  + `noCapitalize` {Boolean} By default, handler setters will be generated on
+    the server using the convention `on<CapitalizedMessageName>` (e.g. message
+    `resolveUrl` would correspond to `onResolveUrl`). Use this option to use
+    the raw name instead.
+  + `remoteProtocols` {Object} Map of remote protocols, keyed by hash, to cache
+    locally. This will save a handshake with clients connecting using one of
+    these protocols.
   + `silent` {Boolean} Suppress default behavior of outputting handler errors
     to stderr.
     objects.
   + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
     strings. When set, handlers' returned error parameters must either be a
     valid union branch or `undefined`.
+  + `systemErrorFormatter(err)` {Function} Function called to format system
+    errors before sending them to the calling client. It should return a
+    string.
 
-Generate a server corresponding to this protocol. This server can be used to
+Generate a server corresponding to this service. This server can be used to
 respond to messages from compatible protocols' clients.
 
-### `protocol.equals(any)`
+### `service.doc`
 
-+ `any` {...} Any object.
+Get the service's docstring.
 
-Check whether the argument is equal to `protocol` (w.r.t canonical
-representations).
+### `service.hash`
 
-### `protocol.getDocumentation()`
+Returns a buffer containing the service's protocol's hash.
 
-Get the protocol's docstring.
-
-### `protocol.getFingerprint([algorithm])`
-
-+ `algorithm` {String} Algorithm used to generate the protocol's fingerprint.
-  Defaults to `'md5'`. *Only `'md5'` is supported in the browser.*
-
-Returns a buffer containing the protocol's [fingerprint][].
-
-### `protocol.getMessage(name)`
+### `service.message(name)`
 
 + `name` {String} Message name.
 
-Get a single message from this protocol.
+Get a single message from this service.
 
 #### `class Message`
 
-##### `message.getDocumentation()`
+##### `message.doc`
 
-##### `message.getErrorType()`
+The message's documentation (`doc` field).
 
-##### `message.getName()`
+##### `message.errorType`
 
-##### `message.getRequestType()`
+The message's error type (always a union, with a string as first branch).
 
-##### `message.getResponseType()`
+##### `message.name`
 
-##### `message.isOneWay()`
+The message's name.
 
-### `protocol.getMessages()`
+##### `message.requestType`
 
-Retrieve all the messages defined in the protocol.
+The type of this message's requests (always a record).
 
-### `protocol.getName()`
+##### `message.responseType`
 
-Returns the protocol's fully qualified name.
+The type of this message's responses.
 
-### `protocol.getSchema([opts])`
+##### `message.oneWay`
 
-+ `opts` {Object} Same options as [`Type.getSchema`](#).
+Whether the message expects a response.
 
-Returns `protocol`'s canonical schema.
+##### `message.schema([opts])`
 
-### `protocol.getType(name)`
+Return this message's schema.
+
+### `service.messages`
+
+Retrieve a list of all the messages defined in the service.
+
+### `service.name`
+
+Returns the service's fully qualified name.
+
+### `service.protocol`
+
+Returns the service's protocol.
+
+### `service.type(name)`
 
 + `name` {String} A type's fully qualified name.
 
-Convenience function to retrieve a type defined inside this protocol. Returns
+Convenience function to retrieve a type defined inside this service. Returns
 `undefined` if no type exists for the given name.
 
-### `protocol.getTypes()`
+### `service.types`
 
-Returns a frozen list of the named types declared in this protocol.
+Returns a list of the types declared in this service.
+
 
 ## Class `Client`
 
-### `client.createEmitter(transport, [opts])`
+### `client.activeChannels()`
+
+Returns a list of this client's currently active channels (i.e. neither
+draining nor destroyed).
+
+### `client.createChannel(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} The transport used to communicate with
   the remote listener. Multiple argument types are supported, see below.
 + `opts` {Object} Options.
-  + `context` {...} Context object. Useful to pass information to middleware.
-    It can be retrieved via `client.getContext()`.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed (for
     stateful transports) or when a request is sent (for stateless transports).
@@ -1126,16 +1156,16 @@ Returns a frozen list of the named types declared in this protocol.
   + `objectMode` {Boolean} Expect a transport in object mode. Instead of
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
-  + `remoteProtocol` {Protocol} Remote protocol to use for the initial
-    handshake. If unspecified, the client's protocol will be used.
   + `scope` {String} Scope used to multiplex messages across a shared
     connection. There should be at most one emitter or listener per scope on a
     single stateful transport. Matching emitter/listener pairs should have
     matching scopes. Scoping isn't supported on stateless transports.
+  + `serverHash` {Buffer} Hash of remote protocol to use for the initial
+    handshake. If unspecified or the corresponding hash isn't found in the
+    client's cache, the client's protocol will be used instead.
 
-Generate a [`MessageEmitter`](#class-messageemitter) for this client. This
-emitter can then be used to communicate with a remote server of compatible
-protocol.
+Generate a channel for this client. This channel can then be used to
+communicate with a remote server of compatible protocol.
 
 There are two major types of transports:
 
@@ -1147,54 +1177,60 @@ There are two major types of transports:
   call its callback argument with an eventual error and readable stream (if
   available).
 
-### `client.destroyEmitters([opts])`
+### `client.destroyChannels([opts])`
 
 + `opts` {Object} Options:
-  + `noWait` {Boolean} Wait for pending requests.
+  + `noWait` {Boolean} Don't wait for pending requests to drain before
+    destroying the channels.
 
-Destroy all the client's currently active emitters.
+Destroy all the client's currently active channels.
 
 ### `client.emitMessage(name, req, [opts,] [cb])`
 
 + `name` {String} Name of the message to emit.
 + `req` {Object} Request value, must correspond to the message's declared
   request type.
-+ `opts` {Object} Options:
++ `opts` {Object} Options. These options will be available as second argument
+  to the chosen channel's `'outgoingCall'` event.
   + `timeout` {Number} Request specific timeout.
 + `cb(err, res)` {Function} Function called with the remote call's response
   (and eventual error) when available. If not specified and an error occurs,
-  the error will be emitted on `emitter` instead.
+  the error will be emitted on the client instead.
 
 Send a message. This is always done asynchronously.
 
-### `client.getEmitters()`
+### `client.service`
 
-Returns a frozen list of the client's active emitters.
+The client's service.
 
-### `client.getProtocol()`
+### `client.remoteProtocols()`
 
-Returns the client's protocol.
+Returns the client's cached protocols.
 
-### `client.getRemoteProtocols()`
-
-Returns a frozen copy of the client's cached protocols.
-
-### `client.use(middleware)`
+### `client.use(middleware ...)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
 Install a middleware function.
 
+
 ## Class `Server`
 
-### `server.createListener(transport, [opts])`
+### Even `'channel'`
+
++ `channel` {ServerChannel} The newly created channel.
+
+Event emitted each time a channel is created.
+
+### `server.createChannel(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} Similar to `client.createEmitter`'s
   corresponding argument, except that readable and writable roles are reversed
   for stateless transports.
 + `opts` {Object} Options.
-  + `context` {...} Context object. Useful to pass information to middleware.
-    It can be retrieved via `server.getContext()`.
+  + `defaultHandler(wreq, wres, prev)` {Function} Function called when no
+    handler has been installed for a given message. The default sends back a
+    "not implemented" error response.
   + `endWritable` {Boolean} Set this to `false` to prevent the transport's
     writable stream from being `end`ed when the emitter is destroyed (for
     stateful transports) or when a response is sent (for stateless transports).
@@ -1207,16 +1243,16 @@ Install a middleware function.
     single stateful transport. Matching emitter/listener pairs should have
     matching scopes. Scoping isn't supported on stateless transports.
 
-Generate a [`MessageListener`](#class-messagelistener) for this protocol. This
-listener can be used to respond to messages emitted from compatible protocols.
+Generate a channel for this server. This channel can be used to respond to
+messages emitted from compatible clients.
 
-### `server.getListeners()`
+### `server.activeChannels()`
 
-Returns a frozen copy of the server's active listeners.
+Returns a copy of the server's active listeners.
 
-### `server.getProtocol()`
+### `server.service`
 
-Returns the server's protocol.
+Returns the server's service.
 
 ### `server.onMessage(name, handler)`
 
@@ -1229,13 +1265,18 @@ Returns the server's protocol.
 
 Add a handler for a given message.
 
-### `server.use(middleware)`
+### `server.remoteProtocols()`
+
+Returns the server's cached protocols.
+
+### `server.use(middleware ...)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
 Install a middleware function.
 
-## Class `MessageEmitter`
+
+## Class `ClientChannel`
 
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
 events:
@@ -1247,77 +1288,97 @@ no more pending requests.
 
 ### Event `'handshake'`
 
-+ `request` {Object} Handshake request.
-+ `response` {Object} Handshake response.
++ `hreq` {Object} Handshake request.
++ `hres` {Object} Handshake response.
 
 Emitted when the server's handshake response is received.
 
-### `emitter.destroy([noWait])`
+### Event `'outgoingCall'`
+
++ `ctx` {CallContext} The call's context.
++ `opts` {Object} The options used when emitting the message.
+
+Emitted when a message was just emitted using this channel.
+
+### `channel.destroy([noWait])`
 
 + `noWait` {Boolean} Cancel any pending requests. By default pending requests
   will still be honored.
 
-Disable the emitter.
+Disable the channel.
 
-### `emitter.getClient()`
+### `channel.client`
 
-Get the emitter's client.
+The channel's client.
 
-### `emitter.getContext()`
+### `channel.pending`
 
-Get the context used when creating the emitter.
+The number of pending calls on this channel (i.e. the number of messages
+emitted on this channel which haven't yet had a response).
 
-### `emitter.getPending()`
+### `channel.destroyed`
 
-Get the number of pending calls (i.e. the number of messages emittes which
-haven't yet had a response).
+Whether the channel was destroyed.
 
-### `emitter.isDestroyed()`
+### `channel.draining`
 
-Check whether the listener was destroyed.
+Whether the channel is still accepting new requests.
 
-## Class `MessageListener`
+### `channel.ping([timeout,] [cb])`
 
-Listeners are the receiving-side equivalent of `MessageEmitter`s and are also
-[`EventEmitter`s][event-emitter], with the following events:
++ `timeout` {Number} The ping request's timeout.
++ `cb(err)` {Function} Function called when the request's response is received.
+  If not specified and an error occurs, the channel will be destroyed.
+
+### `channel.timeout`
+
+The channel's default timeout.
+
+
+## Class `ServerChannel`
 
 ### Event `'eot'`
 
-End of transmission event, emitted after the listener is destroyed and there are
+End of transmission event, emitted after the channel is destroyed and there are
 no more responses to send.
 
 ### Event `'handshake'`
 
-+ `request` {Object} Handshake request.
-+ `response` {Object} Handshake response.
++ `hreq` {Object} Handshake request.
++ `hres` {Object} Handshake response.
 
 Emitted right before the server sends a handshake response.
 
-### `listener.destroy([noWait])`
+### Event `'incomingCall'`
+
++ `context` {CallContext} The call's context.
++ `opts` {Object} The options used when emitting the message.
+
+Emitted when a message was just received on this channel.
+
+### `channel.destroy([noWait])`
 
 + `noWait` {Boolean} Don't wait for all pending responses to have been sent.
 
-Disable this listener and release underlying streams. In general you shouldn't
-need to call this: stateless listeners will be destroyed automatically when a
-response is sent, and stateful listeners are best destroyed from the client's
-side.
+Disable this channel and release underlying streams. In general you shouldn't
+need to call this: channels are best destroyed from the client side.
 
-### `listener.getContext()`
+### `channel.pending`
 
-Get the context used when creating the listener.
+The number of pending calls (i.e. the number of messages received which haven't
+yet had their response sent).
 
-### `listener.getPending()`
+### `channel.server`
 
-Get the number of pending calls (i.e. the number of messages received which
-haven't yet had their response sent).
+Get the channel's server.
 
-### `listener.getServer()`
+### `channel.destroyed`
 
-Get the listener's server.
+Check whether the channel was destroyed.
 
-### `listener.isDestroyed()`
+### `channel.draining`
 
-Check whether the listener was destroyed.
+Whether the channel is still accepting requests.
 
 
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
