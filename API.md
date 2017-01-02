@@ -3,14 +3,13 @@
 
 
 - [Types and schemas](#types-and-schemas)
-  - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
   - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
   - [`readSchema(spec)`](#readschemaspec)
   - [Class `Type`](#class-type)
     - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
     - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
     - [`Type.forValue(val, [opts])`](#typeforvalueval-opts)
-    - [`Type.isType(any, [prefix,] ...)`](#typeistypeany-prefix-)
+    - [`Type.isType(any, [prefix...])`](#typeistypeany-prefix)
     - [`Type.__reset(size)`](#type__resetsize)
     - [`type.clone(val, [opts])`](#typecloneval-opts)
     - [`type.compare(val1, val2)`](#typecompareval1-val2)
@@ -86,6 +85,7 @@
   - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
     - [Event `'data'`](#event-data-3)
 - [IPC & RPC](#ipc--rpc)
+  - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
   - [`discoverProtocol(transport, [opts,] cb)`](#discoverprotocoltransport-opts-cb)
   - [Class `Service`](#class-service)
     - [`Service.forProtocol(protocol, [opts])`](#serviceforprotocolprotocol-opts)
@@ -98,9 +98,9 @@
         - [`message.doc`](#messagedoc)
         - [`message.errorType`](#messageerrortype)
         - [`message.name`](#messagename)
+        - [`message.oneWay`](#messageoneway)
         - [`message.requestType`](#messagerequesttype)
         - [`message.responseType`](#messageresponsetype)
-        - [`message.oneWay`](#messageoneway)
         - [`message.schema([opts])`](#messageschemaopts)
     - [`service.messages`](#servicemessages)
     - [`service.name`](#servicename)
@@ -108,21 +108,33 @@
     - [`service.type(name)`](#servicetypename)
     - [`service.types`](#servicetypes)
   - [Class `Client`](#class-client)
+    - [Event `'channel'`](#event-channel)
     - [`client.activeChannels()`](#clientactivechannels)
     - [`client.createChannel(transport, [opts])`](#clientcreatechanneltransport-opts)
     - [`client.destroyChannels([opts])`](#clientdestroychannelsopts)
     - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
     - [`client.service`](#clientservice)
     - [`client.remoteProtocols()`](#clientremoteprotocols)
-    - [`client.use(middleware ...)`](#clientusemiddleware-)
+    - [`client.use(middleware...)`](#clientusemiddleware)
+      - [Class `WrappedRequest`](#class-wrappedrequest)
+        - [`headers`](#headers)
+        - [`request`](#request)
+      - [Class `WrappedResponse`](#class-wrappedresponse)
+        - [`headers`](#headers-1)
+        - [`response`](#response)
+        - [`error`](#error)
+      - [Class `CallContext`](#class-callcontext)
+        - [`channel`](#channel)
+        - [`locals`](#locals)
+        - [`message`](#message)
   - [Class `Server`](#class-server)
-    - [Even `'channel'`](#even-channel)
+    - [Event `'channel'`](#event-channel-1)
     - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
     - [`server.activeChannels()`](#serveractivechannels)
     - [`server.service`](#serverservice)
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
     - [`server.remoteProtocols()`](#serverremoteprotocols)
-    - [`server.use(middleware ...)`](#serverusemiddleware-)
+    - [`server.use(middleware...)`](#serverusemiddleware)
   - [Class `ClientChannel`](#class-clientchannel)
     - [Event `'eot'`](#event-eot)
     - [Event `'handshake'`](#event-handshake)
@@ -147,24 +159,6 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Types and schemas
-
-## `assembleProtocol(path, [opts,] cb)`
-
-+ `path` {String} Path to Avro IDL file.
-+ `opts` {Object} Options:
-  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
-    mark the corresponding message as one-way. When this option is set, `void`
-    becomes equivalent to `null`.
-  + `importHook(path, kind, cb)` {Function} Function called to load each file.
-    The default will look up the files in the local file-system and load them
-    via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
-    depending on the kind of import requested. *In the browser, no default
-    is provided.*
-+ `cb(err, schema)` {Function} Callback. If an error occurred, its `path`
-  property will contain the path to the file which caused it.
-
-Assemble an IDL file into its schema. This schema can then be passed to
-`Protocol.forSchema` to instantiate the corresponding `Protocol` object.
 
 ## `readProtocol(spec, [opts])`
 
@@ -260,7 +254,7 @@ types' values.
 
 Infer a type from a value.
 
-### `Type.isType(any, [prefix,] ...)`
+### `Type.isType(any, [prefix...])`
 
 + `any` {...} Any object.
 + `prefix` {String} If specified, this function will only return `true` if
@@ -989,6 +983,24 @@ The encoding equivalent of `RawDecoder`.
 
 Avro also defines a way of executing remote procedure calls.
 
+## `assembleProtocol(path, [opts,] cb)`
+
++ `path` {String} Path to Avro IDL file.
++ `opts` {Object} Options:
+  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
+    mark the corresponding message as one-way. When this option is set, `void`
+    becomes equivalent to `null`.
+  + `importHook(path, kind, cb)` {Function} Function called to load each file.
+    The default will look up the files in the local file-system and load them
+    via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
+    depending on the kind of import requested. *In the browser, no default
+    is provided.*
++ `cb(err, schema)` {Function} Callback. If an error occurred, its `path`
+  property will contain the path to the file which caused it.
+
+Assemble an IDL file into its schema. This schema can then be passed to
+`Protocol.forSchema` to instantiate the corresponding `Protocol` object.
+
 ## `discoverProtocol(transport, [opts,] cb)`
 
 + `transport` {Transport} See below.
@@ -1093,6 +1105,10 @@ The message's error type (always a union, with a string as first branch).
 
 The message's name.
 
+##### `message.oneWay`
+
+Whether the message expects a response.
+
 ##### `message.requestType`
 
 The type of this message's requests (always a record).
@@ -1100,10 +1116,6 @@ The type of this message's requests (always a record).
 ##### `message.responseType`
 
 The type of this message's responses.
-
-##### `message.oneWay`
-
-Whether the message expects a response.
 
 ##### `message.schema([opts])`
 
@@ -1134,6 +1146,12 @@ Returns a list of the types declared in this service.
 
 
 ## Class `Client`
+
+### Event `'channel'`
+
++ `channel` {ClientChannel} The newly created channel.
+
+Event emitted each time a channel is created.
 
 ### `client.activeChannels()`
 
@@ -1207,16 +1225,60 @@ The client's service.
 
 Returns the client's cached protocols.
 
-### `client.use(middleware ...)`
+### `client.use(middleware...)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
 Install a middleware function.
 
 
+#### Class `WrappedRequest`
+
+##### `headers`
+
+Map of bytes.
+
+##### `request`
+
+The decoded request.
+
+
+#### Class `WrappedResponse`
+
+##### `headers`
+
+Map of bytes.
+
+##### `response`
+
+Decoded response.
+
+##### `error`
+
+Decoded error. If `error` is anything but `undefined`, the `response` field
+will be ignored and the error will be sent instead.
+
+
+#### Class `CallContext`
+
+##### `channel`
+
+The channel used to emit or receive this message (either a `ClientChannel` or
+`ServerChannel`).
+
+##### `locals`
+
+An object useful to store call-local information to pass between middlewares
+and handlers.
+
+##### `message`
+
+The message being processed.
+
+
 ## Class `Server`
 
-### Even `'channel'`
+### Event `'channel'`
 
 + `channel` {ServerChannel} The newly created channel.
 
@@ -1269,7 +1331,7 @@ Add a handler for a given message.
 
 Returns the server's cached protocols.
 
-### `server.use(middleware ...)`
+### `server.use(middleware...)`
 
 + `middleware(wreq, wres, next)` {Function} Middleware handler.
 
