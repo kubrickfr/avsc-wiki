@@ -3,7 +3,6 @@
 
 
 - [Types and schemas](#types-and-schemas)
-  - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
   - [`readSchema(spec)`](#readschemaspec)
   - [Class `Type`](#class-type)
     - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
@@ -87,6 +86,7 @@
 - [IPC & RPC](#ipc--rpc)
   - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
   - [`discoverProtocol(transport, [opts,] cb)`](#discoverprotocoltransport-opts-cb)
+  - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
   - [Class `Service`](#class-service)
     - [`Service.forProtocol(protocol, [opts])`](#serviceforprotocolprotocol-opts)
     - [`service.createClient([opts])`](#servicecreateclientopts)
@@ -131,9 +131,9 @@
     - [Event `'channel'`](#event-channel-1)
     - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
     - [`server.activeChannels()`](#serveractivechannels)
-    - [`server.service`](#serverservice)
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
     - [`server.remoteProtocols()`](#serverremoteprotocols)
+    - [`server.service`](#serverservice)
     - [`server.use(middleware...)`](#serverusemiddleware)
   - [Class `ClientChannel`](#class-clientchannel)
     - [Event `'eot'`](#event-eot)
@@ -141,9 +141,9 @@
     - [Event `'outgoingCall'`](#event-outgoingcall)
     - [`channel.destroy([noWait])`](#channeldestroynowait)
     - [`channel.client`](#channelclient)
-    - [`channel.pending`](#channelpending)
     - [`channel.destroyed`](#channeldestroyed)
     - [`channel.draining`](#channeldraining)
+    - [`channel.pending`](#channelpending)
     - [`channel.ping([timeout,] [cb])`](#channelpingtimeout-cb)
     - [`channel.timeout`](#channeltimeout)
   - [Class `ServerChannel`](#class-serverchannel)
@@ -151,25 +151,14 @@
     - [Event `'handshake'`](#event-handshake-1)
     - [Event `'incomingCall'`](#event-incomingcall)
     - [`channel.destroy([noWait])`](#channeldestroynowait-1)
-    - [`channel.pending`](#channelpending-1)
-    - [`channel.server`](#channelserver)
     - [`channel.destroyed`](#channeldestroyed-1)
     - [`channel.draining`](#channeldraining-1)
+    - [`channel.pending`](#channelpending-1)
+    - [`channel.server`](#channelserver)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Types and schemas
-
-## `readProtocol(spec, [opts])`
-
-+ `spec` {String} Protocol IDL specification.
-+ `opts` {Object} Options:
-  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
-    mark the corresponding message as one-way. When this option is set, `void`
-    becomes equivalent to `null`.
-
-Synchronous version of `assembleProtocol`. Note that it doesn't support
-imports.
 
 ## `readSchema(spec)`
 
@@ -1013,6 +1002,17 @@ Assemble an IDL file into its schema. This schema can then be passed to
 Discover a remote server's protocol. This can be useful to emit requests to
 another server without having a local copy of the protocol.
 
+## `readProtocol(spec, [opts])`
+
++ `spec` {String} Protocol IDL specification.
++ `opts` {Object} Options:
+  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
+    mark the corresponding message as one-way. When this option is set, `void`
+    becomes equivalent to `null`.
+
+Synchronous version of `assembleProtocol`. Note that it doesn't support
+imports.
+
 
 ## Class `Service`
 
@@ -1286,7 +1286,7 @@ Event emitted each time a channel is created.
 
 ### `server.createChannel(transport, [opts])`
 
-+ `transport` {Duplex|Object|Function} Similar to `client.createEmitter`'s
++ `transport` {Duplex|Object|Function} Similar to `client.createChannel`'s
   corresponding argument, except that readable and writable roles are reversed
   for stateless transports.
 + `opts` {Object} Options.
@@ -1301,8 +1301,8 @@ Event emitted each time a channel is created.
     exchanging buffers, objects `{id, payload}` will be written and expected.
     This can be used to implement custom transport encodings.
   + `scope` {String} Scope used to multiplex messages accross a shared
-    connection. There should be at most one emitter or listener per scope on a
-    single stateful transport. Matching emitter/listener pairs should have
+    connection. There should be at most one channel per scope on a single
+    stateful transport. Matching channel pairs (client and server) should have
     matching scopes. Scoping isn't supported on stateless transports.
 
 Generate a channel for this server. This channel can be used to respond to
@@ -1310,11 +1310,7 @@ messages emitted from compatible clients.
 
 ### `server.activeChannels()`
 
-Returns a copy of the server's active listeners.
-
-### `server.service`
-
-Returns the server's service.
+Returns a copy of the server's active channels.
 
 ### `server.onMessage(name, handler)`
 
@@ -1330,6 +1326,10 @@ Add a handler for a given message.
 ### `server.remoteProtocols()`
 
 Returns the server's cached protocols.
+
+### `server.service`
+
+Returns the server's service.
 
 ### `server.use(middleware...)`
 
@@ -1373,11 +1373,6 @@ Disable the channel.
 
 The channel's client.
 
-### `channel.pending`
-
-The number of pending calls on this channel (i.e. the number of messages
-emitted on this channel which haven't yet had a response).
-
 ### `channel.destroyed`
 
 Whether the channel was destroyed.
@@ -1385,6 +1380,11 @@ Whether the channel was destroyed.
 ### `channel.draining`
 
 Whether the channel is still accepting new requests.
+
+### `channel.pending`
+
+The number of pending calls on this channel (i.e. the number of messages
+emitted on this channel which haven't yet had a response).
 
 ### `channel.ping([timeout,] [cb])`
 
@@ -1425,6 +1425,14 @@ Emitted when a message was just received on this channel.
 Disable this channel and release underlying streams. In general you shouldn't
 need to call this: channels are best destroyed from the client side.
 
+### `channel.destroyed`
+
+Check whether the channel was destroyed.
+
+### `channel.draining`
+
+Whether the channel is still accepting requests.
+
 ### `channel.pending`
 
 The number of pending calls (i.e. the number of messages received which haven't
@@ -1433,14 +1441,6 @@ yet had their response sent).
 ### `channel.server`
 
 Get the channel's server.
-
-### `channel.destroyed`
-
-Check whether the channel was destroyed.
-
-### `channel.draining`
-
-Whether the channel is still accepting requests.
 
 
 [canonical-schema]: https://avro.apache.org/docs/current/spec.html#Parsing+Canonical+Form+for+Schemas
