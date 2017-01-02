@@ -185,7 +185,7 @@ management service similar to [bitly][].
 
 ## Defining a service
 
-The first step to creating a service is to define its API or "protocol": the
+The first step to creating a service is to define its API or _protocol_: the
 available calls and their signature. There are a couple ways of defining
 protocols; we can write JSON definitions directly, or we can define them using
 Avro's IDL (which can then be compiled to JSON definitions). The latter is
@@ -195,44 +195,78 @@ typically more convenient so we will use this here.
 /** A simple service to shorten URLs. */
 protocol LinkService {
 
-  /** Map a URL to an alias, returns true if successful. */
-  boolean createAlias(string alias, string url);
+  /** Map a URL to an alias. */
+  null createAlias(string alias, string url);
 
   /** Expand an alias, returning null if the alias doesn't exist. */
   union { null, string } expandAlias(string alias);
 }
 ```
 
+With the above spec saved to a file, say `LinkService.avdl`, we can instantiate
+the corresponding service as follows:
+
+```javascript
+avro.assembleProtocol('./LinkService.avdl', function (err, protocol) {
+  // This step compiles the IDL specification into a JSON protocol.
+  const service = avro.Service.fromProtocol(protocol);
+});
+```
+
+The `service` object can then be used generate clients and servers, as
+described in the following sections.
+
 ## Server implementation
 
 ```javascript
-// The protocol generated from the above declaration (see the sample code for
-// the complete snippet).
-let protocol;
+const urlCache = new Map(); // We'll use an in-memory map in this example.
 
-// In this example, we'll use a simple map as URL cache.
-const cache = new Map();
-
-// We now instantiate a server corresponding to our API and implement both
-// calls.
-const server = avro.Service.forProtocol(protocol)
-  .createServer()
+// We instantiate a server corresponding to our API and implement both calls.
+const server = service.createServer()
   .onCreateAlias(function (alias, url, cb) {
-    if (cache.has(alias)) {
-      cb(null, false); // The alias already exists, return false.
+    if (urlCache.has(alias)) {
+      cb(new Error('alias already exists'));
     } else {
-      cache.set(alias, url); // Add the alias to the cache.
-      cb(null, true);
+      urlCache.set(alias, url); // Add the alias to the cache.
+      cb();
     }
   })
   .onExpandAlias(function (alias, cb) {
-    cb(null, cache.get(alias) || null);
+    cb(null, urlCache.get(alias));
   });
 ```
 
-## Calling our service.
+## Calling our service
 
-TODO
+The simplest way to call our service is use an in-memory client, passing in our
+`server` above as option to `service.createClient`:
+
+```javascript
+const client = service.createClient({server});
+
+// We first send a request to create an alias.
+client.createAlias('hn', 'https://news.ycombinator.com/', function (err) {
+  // Which we can now expand.
+  client.expandAlias('hn', function (err, url) {
+    console.log(`hn is currently aliased to ${url}`);
+  });
+});
+```
+
+We can also use the same server and client to communicate over any binary
+streams, for example TCP sockets:
+
+```javascript
+const net = require('net');
+
+// Set up the server to listen to incoming connections on port 24950.
+net.createServer()
+  .on('connection', function (con) { server.createChannel(con); })
+  .listen(24950);
+
+// And create a matching client:
+const client = service.createClient({transport: net.connect(24950)});
+```
 
 
 [bitly]: https://bitly.com/
