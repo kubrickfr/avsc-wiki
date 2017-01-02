@@ -2,10 +2,15 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [What is a `Type`?](#what-is-a-type)
-- [How do I get a `Type`?](#how-do-i-get-a-type)
-- [What about Avro files?](#what-about-avro-files)
-- [Next steps](#next-steps)
+- [Types](#types)
+  - [What is a `Type`?](#what-is-a-type)
+  - [How do I get a `Type`?](#how-do-i-get-a-type)
+  - [What about Avro files?](#what-about-avro-files)
+  - [Next steps](#next-steps)
+- [Services](#services)
+  - [Defining a service](#defining-a-service)
+  - [Server implementation](#server-implementation)
+  - [Calling our service.](#calling-our-service)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
