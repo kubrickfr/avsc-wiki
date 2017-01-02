@@ -29,7 +29,7 @@ const type = avro.Type.forValue([1, 4.5, 8]);
 const buf = type.toBuffer([4, 6.1]);
 const val = type.fromBuffer(buf); // [4, 6.1]
 // We can also access the auto-generated schema:
-const schema = type.getSchema();
+const schema = type.schema();
 ```
 
 For most use-cases, the resulting type should be sufficient; and in cases where
@@ -156,7 +156,7 @@ const str = 'Thu Nov 05 2015 11:38:05 GMT-0800 (PST)';
 const stringType = avro.Type.forSchema('string');
 const buf = stringType.toBuffer(str); // `str` encoded as an Avro string.
 
-const dateType = type.getField('time').getType();
+const dateType = type.field('time').type;
 const resolver = dateType.createResolver(stringType);
 const date = dateType.fromBuffer(buf, resolver); // Date corresponding to `str`.
 ```
@@ -282,14 +282,15 @@ disable this behavior by setting `LongType.__with`'s `noUnpack` argument to
 node processes via [`Protocol`s](Api#class-protocol). To enable this, we first
 declare the types involved inside an [Avro protocol][protocol-declaration]. For
 example, consider the following simple protocol which supports two calls
-(defined using Avro [IDL notation][idl] and saved as `./MathProtocol.avdl`):
+(defined using Avro [IDL notation][idl] and saved as `./MathService.avdl`):
 
 ```java
-protocol MathProtocol {
-  // One to multiply numbers.
-  double multiply(array<double> numbers);
-  // And another to add numbers, with an optional delay.
+/** A simple service exposing two calls. */
+protocol MathService {
+  /* Add integers, optionally delaying the computation. */
   int add(array<int> numbers, float delay = 0);
+  /* Multiply numbers in an array. */
+  double multiply(array<double> numbers);
 }
 ```
 
@@ -298,25 +299,31 @@ Servers and clients then share the same protocol and respectively:
 + Implement interface calls (servers):
 
   ```javascript
-  avro.assembleProtocolSchema('MathProtocol.avdl', (err, schema) => {
-    const server = avro.Protocol.forSchema(schema).createServer()
+  avro.assembleProtocol('MathService.avdl', (err, protocol) => {
+    const server = avro.Service.forProtocol(protocol).createServer()
       .onAdd((numbers, delay, cb) => {
-        const sum = numbers.reduce((agg, el) => { return agg + el; }, 0);
+        let sum = 0;
+        for (const num of numbers) {
+          sum += num;
+        }
         setTimeout(() => { cb(null, sum); }, 1000 * delay);
       })
       .onMultiply((numbers, cb) => {
-        const prod = numbers.reduce((agg, el) => { return agg * el; }, 1);
+        let prod = 1.0;
+        for (const num of nums) {
+          prod *= num;
+        }
         cb(null, prod);
       });
-    // See below for options to add listener to this server.
+    // See below for options to add channels to this server.
   });
   ```
 
 + Call the interface (clients):
 
   ```javascript
-  avro.assembleProtocolSchema('MathProtocol.avdl', (err, schema) => {
-    const client = avro.Protocol.forSchema(schema).createClient();
+  avro.assembleProtocol('MathService.avdl', (err, protocol) => {
+    const client = avro.Service.forProtocol(protocol).createClient();
     // Add client emitter here... (See below for options.)
     client.add([1, 3, 5], 2, (err, num) => {
       console.log(num); // 9!
@@ -334,37 +341,23 @@ binary streams. See below for a few different common use-cases.
 
 E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
 
-### Client
-
-```javascript
-client.createEmitter(require('net').createConnection({port: 8000}));
-```
-
 ### Server
 
 ```javascript
 require('net').createServer()
-  .on('connection', (con) => { server.createListener(con); })
-  .listen(8000);
+  .on('connection', (con) => { server.createChannel(con); })
+  .listen(24950);
+```
+
+### Client
+
+```javascript
+client.createChannel(require('net').createConnection({port: 24950}));
 ```
 
 ## Transient streams
 
 For example HTTP requests/responses.
-
-### Client
-
-Using the built-in `http` module:
-
-```javascript
-client.createEmitter((cb) => {
-  return require('http').request({
-    port: 3000,
-    headers: {'content-type': 'avro/binary'},
-    method: 'POST'
-  }).on('response', (res) => { cb(null, res); });
-});
-```
 
 ### Server
 
@@ -378,7 +371,21 @@ require('express')()
       return req;
     });
   })
-  .listen(3000);
+  .listen(8080);
+```
+
+### Client
+
+Using the built-in `http` module:
+
+```javascript
+client.createChannel((cb) => {
+  return require('http').request({
+    port: 8080,
+    headers: {'content-type': 'avro/binary'},
+    method: 'POST'
+  }).on('response', (res) => { cb(null, res); });
+});
 ```
 
 

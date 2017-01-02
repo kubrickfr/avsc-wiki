@@ -9,7 +9,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# What is a `Type`?
+# Types
+
+## What is a `Type`?
 
 Each Avro type maps to a corresponding JavaScript [`Type`](API#class-type):
 
@@ -19,8 +21,8 @@ Each Avro type maps to a corresponding JavaScript [`Type`](API#class-type):
 + etc.
 
 An instance of a `Type` knows how to [`decode`](Api#typedecodebuf-pos-resolver)
-and [`encode`](Api#typeencodeval-buf-pos) and its corresponding objects. For
-example the `StringType` knows how to handle JavaScript strings:
+and [`encode`](Api#typeencodeval-buf-pos) its corresponding values. For example
+the `StringType` knows how to handle JavaScript strings:
 
 ```javascript
 const stringType = new avro.types.StringType();
@@ -33,8 +35,8 @@ The [`toBuffer`](API#typetobufferval) and
 convenience functions which encode and decode a single object into/from a
 standalone buffer.
 
-Each `type` also provides other methods which can be useful. Here are a few
-(refer to the [API documentation](API#avro-types) for the full list):
+Each `type` also provides a variety of other methods. Here are a few (refer to
+the [API documentation](API#avro-types) for the full list):
 
 + JSON-encoding:
 
@@ -57,7 +59,7 @@ Each `type` also provides other methods which can be useful. Here are a few
   ```
 
 
-# How do I get a `Type`?
+## How do I get a `Type`?
 
 It is possible to instantiate types directly by calling their constructors
 (available in the `avro.types` namespace; this is what we used earlier), but in
@@ -69,7 +71,7 @@ generate a type from its Avro schema definition:
 
 ```javascript
 // Equivalent to what we did earlier.
-const stringType = avro.Type.forSchema({type: 'string'});
+const stringType = avro.Type.forSchema('string');
 
 // A slightly more complex type.
 const mapType = avro.Type.forSchema({type: 'map', values: 'long'});
@@ -113,7 +115,7 @@ For advanced use-cases, `Type.forSchema` also has a few options which are
 detailed the API documentation.
 
 
-# What about Avro files?
+## What about Avro files?
 
 Avro files (meaning [Avro object container files][object-container]) hold
 serialized Avro records along with their schema. Reading them is as simple as
@@ -127,7 +129,7 @@ const personStream = avro.createFileDecoder('./persons.avro');
 for example use as follows:
 
 ```javascript
-personStream.on('data', (person) => {
+personStream.on('data', function (person) {
   if (person.address.city === 'San Francisco') {
     doSomethingWith(person);
   }
@@ -138,7 +140,7 @@ In case we need the records' `type` or the file's codec, they are available by
 listening to the `'metadata'` event:
 
 ```javascript
-personStream.on('metadata', (type, codec) => { /* Something useful. */ });
+personStream.on('metadata', function (type, codec) { /* Something useful. */ });
 ```
 
 To access a file's header synchronously, there also exists an
@@ -156,7 +158,7 @@ const encoder = avro.createFileEncoder('./processed.avro', type);
 ```
 
 
-# Next steps
+## Next steps
 
 The [API documentation](Api) provides a comprehensive list of available
 functions and their options. The [Advanced usage section](Advanced-usage) goes
@@ -164,6 +166,70 @@ through a few examples to show how the API can be used, including remote
 procedure calls.
 
 
+# Services
+
+Using Avro's RPC interface, we can implement portable and "type-safe" APIs:
+
++ Clients and servers can be implemented once and reused for many different
+  communication protocols (in-memory, TCP, HTTP, etc.).
++ All data that flows through the API is automatically validated using its
+  corresponding schema.
+
+In this section, we'll walk through an example of building a simple link
+management service similar to [bitly][].
+
+## Defining a service
+
+The first step to creating a service is to define its API or "protocol": the
+available calls and their signature. There are a couple ways of defining
+protocols; we can write JSON definitions directly, or we can define them using
+Avro's IDL (which can then be compiled to JSON definitions). The latter is
+typically more convenient so we will use this here.
+
+```java
+/** A simple service to shorten URLs. */
+protocol LinkService {
+
+  /** Map a URL to an alias, returns true if successful. */
+  boolean createAlias(string alias, string url);
+
+  /** Expand an alias, returning null if the alias doesn't exist. */
+  union { null, string } expandAlias(string alias);
+}
+```
+
+## Server implementation
+
+```javascript
+// The protocol generated from the above declaration (see the sample code for
+// the complete snippet).
+let protocol;
+
+// In this example, we'll use a simple map as URL cache.
+const cache = new Map();
+
+// We now instantiate a server corresponding to our API and implement both
+// calls.
+const server = avro.Service.forProtocol(protocol)
+  .createServer()
+  .onCreateAlias(function (alias, url, cb) {
+    if (cache.has(alias)) {
+      cb(null, false); // The alias already exists, return false.
+    } else {
+      cache.set(alias, url); // Add the alias to the cache.
+      cb(null, true);
+    }
+  })
+  .onExpandAlias(function (alias, cb) {
+    cb(null, cache.get(alias) || null);
+  });
+```
+
+## Calling our service.
+
+TODO
+
+
+[bitly]: https://bitly.com/
 [object-container]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
 [rstream]: https://nodejs.org/api/stream.html#stream_class_stream_readable
-[express]: https://github.com/strongloop/express

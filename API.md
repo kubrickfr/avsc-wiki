@@ -3,12 +3,14 @@
 
 
 - [Types and schemas](#types-and-schemas)
+  - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
+  - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
   - [`readSchema(spec)`](#readschemaspec)
   - [Class `Type`](#class-type)
     - [`Type.forSchema(schema, [opts])`](#typeforschemaschema-opts)
     - [`Type.forTypes(types, [opts])`](#typefortypestypes-opts)
     - [`Type.forValue(val, [opts])`](#typeforvalueval-opts)
-    - [`Type.isType(any, [prefix...])`](#typeistypeany-prefix)
+    - [`Type.isType(any, [prefix,] ...)`](#typeistypeany-prefix-)
     - [`Type.__reset(size)`](#type__resetsize)
     - [`type.clone(val, [opts])`](#typecloneval-opts)
     - [`type.compare(val1, val2)`](#typecompareval1-val2)
@@ -84,9 +86,7 @@
   - [Class `RawEncoder(schema, [opts])`](#class-rawencoderschema-opts)
     - [Event `'data'`](#event-data-3)
 - [IPC & RPC](#ipc--rpc)
-  - [`assembleProtocol(path, [opts,] cb)`](#assembleprotocolpath-opts-cb)
   - [`discoverProtocol(transport, [opts,] cb)`](#discoverprotocoltransport-opts-cb)
-  - [`readProtocol(spec, [opts])`](#readprotocolspec-opts)
   - [Class `Service`](#class-service)
     - [`Service.forProtocol(protocol, [opts])`](#serviceforprotocolprotocol-opts)
     - [`service.createClient([opts])`](#servicecreateclientopts)
@@ -98,9 +98,9 @@
         - [`message.doc`](#messagedoc)
         - [`message.errorType`](#messageerrortype)
         - [`message.name`](#messagename)
-        - [`message.oneWay`](#messageoneway)
         - [`message.requestType`](#messagerequesttype)
         - [`message.responseType`](#messageresponsetype)
+        - [`message.oneWay`](#messageoneway)
         - [`message.schema([opts])`](#messageschemaopts)
     - [`service.messages`](#servicemessages)
     - [`service.name`](#servicename)
@@ -115,35 +115,24 @@
     - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
     - [`client.service`](#clientservice)
     - [`client.remoteProtocols()`](#clientremoteprotocols)
-    - [`client.use(middleware...)`](#clientusemiddleware)
-      - [Class `WrappedRequest`](#class-wrappedrequest)
-        - [`headers`](#headers)
-        - [`request`](#request)
-      - [Class `WrappedResponse`](#class-wrappedresponse)
-        - [`headers`](#headers-1)
-        - [`response`](#response)
-        - [`error`](#error)
-      - [Class `CallContext`](#class-callcontext)
-        - [`channel`](#channel)
-        - [`locals`](#locals)
-        - [`message`](#message)
+    - [`client.use(middleware ...)`](#clientusemiddleware-)
   - [Class `Server`](#class-server)
-    - [Event `'channel'`](#event-channel-1)
+    - [Even `'channel'`](#even-channel)
     - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
     - [`server.activeChannels()`](#serveractivechannels)
+    - [`server.service`](#serverservice)
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
     - [`server.remoteProtocols()`](#serverremoteprotocols)
-    - [`server.service`](#serverservice)
-    - [`server.use(middleware...)`](#serverusemiddleware)
+    - [`server.use(middleware ...)`](#serverusemiddleware-)
   - [Class `ClientChannel`](#class-clientchannel)
     - [Event `'eot'`](#event-eot)
     - [Event `'handshake'`](#event-handshake)
     - [Event `'outgoingCall'`](#event-outgoingcall)
     - [`channel.destroy([noWait])`](#channeldestroynowait)
     - [`channel.client`](#channelclient)
+    - [`channel.pending`](#channelpending)
     - [`channel.destroyed`](#channeldestroyed)
     - [`channel.draining`](#channeldraining)
-    - [`channel.pending`](#channelpending)
     - [`channel.ping([timeout,] [cb])`](#channelpingtimeout-cb)
     - [`channel.timeout`](#channeltimeout)
   - [Class `ServerChannel`](#class-serverchannel)
@@ -151,10 +140,10 @@
     - [Event `'handshake'`](#event-handshake-1)
     - [Event `'incomingCall'`](#event-incomingcall)
     - [`channel.destroy([noWait])`](#channeldestroynowait-1)
-    - [`channel.destroyed`](#channeldestroyed-1)
-    - [`channel.draining`](#channeldraining-1)
     - [`channel.pending`](#channelpending-1)
     - [`channel.server`](#channelserver)
+    - [`channel.destroyed`](#channeldestroyed-1)
+    - [`channel.draining`](#channeldraining-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -987,8 +976,8 @@ Avro also defines a way of executing remote procedure calls.
 + `cb(err, schema)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
-Assemble an IDL file into its schema. This schema can then be passed to
-`Protocol.forSchema` to instantiate the corresponding `Protocol` object.
+Assemble IDL files into a protocol. This protocol can then be passed to
+`Service.forProtocol` to instantiate the corresponding service.
 
 ## `discoverProtocol(transport, [opts,] cb)`
 
@@ -1018,7 +1007,7 @@ imports.
 
 `Service` instances are generated from a [protocol
 declaration][protocol-declaration] and define an API that can be used to send
-remote messages (for example to another machine, or another process on the same
+remote messages (for example to another machine or another process on the same
 machine).
 
 ### `Service.forProtocol(protocol, [opts])`
@@ -1038,6 +1027,10 @@ Construct a service from a protocol.
   + `channelPolicy(channels)` {Function} Function to load balance between
     active channels. Should return one of the passed in channels. The default
     selects a channel at random.
+  + `noBuffering` {Boolean} By default messages emitted while no channels are
+    active will be buffered until a channel becomes available. Setting this
+    option will instead cause emitting a message to fail if no channels are
+    active at the time.
   + `remoteProtocols` {Object} Map of remote protocols, keyed by hash, to cache
     locally. This will save a handshake with clients connecting using one of
     these protocols.
