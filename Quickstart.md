@@ -6,11 +6,11 @@
   - [What is a `Type`?](#what-is-a-type)
   - [How do I get a `Type`?](#how-do-i-get-a-type)
   - [What about Avro files?](#what-about-avro-files)
-  - [Next steps](#next-steps)
 - [Services](#services)
   - [Defining a `Service`](#defining-a-service)
   - [Server implementation](#server-implementation)
   - [Calling our service](#calling-our-service)
+- [Next steps](#next-steps)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -163,14 +163,6 @@ const encoder = avro.createFileEncoder('./processed.avro', type);
 ```
 
 
-## Next steps
-
-The [API documentation](Api) provides a comprehensive list of available
-functions and their options. The [Advanced usage section](Advanced-usage) goes
-through a few examples to show how the API can be used, including remote
-procedure calls.
-
-
 # Services
 
 Using Avro services, we can implement portable and "type-safe" APIs:
@@ -310,6 +302,13 @@ const client = service.createClient({transport: function (cb) {
     .on('error', cb);
 }});
 ```
+
+
+# Next steps
+
+The [API documentation](Api) provides a comprehensive list of available
+functions and their options. The [Advanced usage section](Advanced-usage) goes
+through a few more examples of advanced functionality.
 
 
 [bitly]: https://bitly.com/
