@@ -8,9 +8,9 @@
   - [What about Avro files?](#what-about-avro-files)
   - [Next steps](#next-steps)
 - [Services](#services)
-  - [Defining a service](#defining-a-service)
+  - [Defining the `Service`](#defining-the-service)
   - [Server implementation](#server-implementation)
-  - [Calling our service.](#calling-our-service)
+  - [Calling our service](#calling-our-service)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
