@@ -221,7 +221,7 @@ described in the following sections.
 ## Server implementation
 
 So far, we haven't said anything about how API responses will be computed. This
-is where servers come in: server provide the logic powering our API.
+is where servers come in: servers provide the logic powering our API.
 
 ```javascript
 const urlCache = new Map(); // We'll use an in-memory map to store links.
@@ -262,15 +262,14 @@ client.createAlias('hn', 'https://news.ycombinator.com/', function (err) {
 });
 ```
 
-We can also communicate with our server over any binary streams, for example
-TCP sockets:
+The above is handy for local testing or quick debugging. More interesting
+perhaps is the ability to communicate with our server over any binary streams,
+for example TCP sockets:
 
 ```javascript
 const net = require('net');
 
-// Set up the server to listen to incoming connections on port 24950. (Each
-// connection can be used to exchange multiple messages, making it very
-// efficient.)
+// Set up the server to listen to incoming connections on port 24950.
 net.createServer()
   .on('connection', function (con) { server.createChannel(con); })
   .listen(24950);
@@ -279,7 +278,16 @@ net.createServer()
 const client = service.createClient({transport: net.connect(24950)});
 ```
 
-Or HTTP:
+Note that RPC calls messages are always sent asynchronously and in parallel:
+requests do not block each other. Furthermore, responses are available as soon
+as they are received from the server; the client keeps track of which calls are
+pending and triggers the right callbacks as responses come back.
+
+Both above transports (in-memory and TCP) have the additional property of being
+[_stateful_][transports]: each connection can be used to exchange multiple
+messages, making them particularly efficient (avoiding the overhead of
+handshakes). These aren't the only kind though, it is possible to exchange
+messages over stateless connections, for example HTTP:
 
 ```javascript
 const http = require('http');
@@ -287,10 +295,7 @@ const http = require('http');
 // Each HTTP request/response will correspond to a single API call.
 http.createServer()
   .on('request', function (req, res) {
-    if (req.method === 'POST') {
-      // Avro communication is traditionally done using POST requests.
-      server.createChannel(function (cb) { cb(null, res); return req; });
-    }
+    server.createChannel(function (cb) { cb(null, res); return req; });
   })
   .listen(8080);
 
@@ -305,6 +310,7 @@ const client = service.createClient({transport: function (cb) {
 
 [bitly]: https://bitly.com/
 [json-protocol]: https://avro.apache.org/docs/1.8.0/spec.html#Protocol+Declaration
+[transports]: https://avro.apache.org/docs/1.8.0/spec.html#Message+Transport
 [idl]: https://avro.apache.org/docs/1.8.0/idl.html
 [object-container]: https://avro.apache.org/docs/current/spec.html#Object+Container+Files
 [rstream]: https://nodejs.org/api/stream.html#stream_class_stream_readable
