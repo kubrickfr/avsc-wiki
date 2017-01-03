@@ -173,13 +173,12 @@ procedure calls.
 
 # Services
 
-Using Avro RPC services, we can implement portable and "type-safe" APIs:
+Using Avro services, we can implement portable and "type-safe" APIs:
 
-+ Clients and servers can be implemented once and reused for many different
-  communication protocols (in-memory, TCP, HTTP, etc.).
-+ All data flowing through the API is automatically validated using its
-  corresponding schema: function arguments and return values are therefore
-  guaranteed to match the type specified in the API.
++ Clients and servers can be implemented once and reused over many different
+  transports (in-memory, TCP, HTTP, etc.).
++ All data flowing through the API is automatically validated: call arguments
+  and return values are guaranteed to match the types specified in the API.
 
 In this section, we'll walk through an example of building a simple link
 management service similar to [bitly][].
@@ -196,7 +195,7 @@ typically more convenient so we will use this here.
 /** A simple service to shorten URLs. */
 protocol LinkService {
 
-  /** Map a URL to an alias. */
+  /** Map a URL to an alias, throwing an error if it already exists. */
   null createAlias(string alias, string url);
 
   /** Expand an alias, returning null if the alias doesn't exist. */
