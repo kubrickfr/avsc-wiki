@@ -6,13 +6,6 @@
 - [Schema evolution](#schema-evolution)
 - [Logical types](#logical-types)
 - [Custom long types](#custom-long-types)
-- [Remote procedure calls](#remote-procedure-calls)
-  - [Persistent streams](#persistent-streams)
-    - [Client](#client)
-    - [Server](#server)
-  - [Transient streams](#transient-streams)
-    - [Client](#client-1)
-    - [Server](#server-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -276,125 +269,9 @@ disable this behavior by setting `LongType.__with`'s `noUnpack` argument to
 `true`.
 
 
-# Remote procedure calls
-
-`avsc` provides an efficient and "type-safe" API for communicating with remote
-node processes via [`Protocol`s](Api#class-protocol). To enable this, we first
-declare the types involved inside an [Avro protocol][protocol-declaration]. For
-example, consider the following simple protocol which supports two calls
-(defined using Avro [IDL notation][idl] and saved as `./MathService.avdl`):
-
-```java
-/** A simple service exposing two calls. */
-protocol MathService {
-  /* Add integers, optionally delaying the computation. */
-  int add(array<int> numbers, float delay = 0);
-  /* Multiply numbers in an array. */
-  double multiply(array<double> numbers);
-}
-```
-
-Servers and clients then share the same protocol and respectively:
-
-+ Implement interface calls (servers):
-
-  ```javascript
-  avro.assembleProtocol('MathService.avdl', (err, protocol) => {
-    const server = avro.Service.forProtocol(protocol).createServer()
-      .onAdd((numbers, delay, cb) => {
-        let sum = 0;
-        for (const num of numbers) {
-          sum += num;
-        }
-        setTimeout(() => { cb(null, sum); }, 1000 * delay);
-      })
-      .onMultiply((numbers, cb) => {
-        let prod = 1.0;
-        for (const num of nums) {
-          prod *= num;
-        }
-        cb(null, prod);
-      });
-    // See below for options to add channels to this server.
-  });
-  ```
-
-+ Call the interface (clients):
-
-  ```javascript
-  avro.assembleProtocol('MathService.avdl', (err, protocol) => {
-    const client = avro.Service.forProtocol(protocol).createClient();
-    // Add client emitter here... (See below for options.)
-    client.add([1, 3, 5], 2, (err, num) => {
-      console.log(num); // 9!
-    });
-    client.multiply([4, 2], (err, num) => {
-      console.log(num); // 8!
-    });
-  });
-  ```
-
-`avsc` supports communication  between any two node processes connected by
-binary streams. See below for a few different common use-cases.
-
-## Persistent streams
-
-E.g. UNIX sockets, TCP sockets, WebSockets, (and even stdin/stdout).
-
-### Server
-
-```javascript
-require('net').createServer()
-  .on('connection', (con) => { server.createChannel(con); })
-  .listen(24950);
-```
-
-### Client
-
-```javascript
-client.createChannel(require('net').createConnection({port: 24950}));
-```
-
-## Transient streams
-
-For example HTTP requests/responses.
-
-### Server
-
-Using [express][]:
-
-```javascript
-require('express')()
-  .post('/', (req, res) => {
-    server.createListener((cb) => {
-      cb(null, res);
-      return req;
-    });
-  })
-  .listen(8080);
-```
-
-### Client
-
-Using the built-in `http` module:
-
-```javascript
-client.createChannel((cb) => {
-  return require('http').request({
-    port: 8080,
-    headers: {'content-type': 'avro/binary'},
-    method: 'POST'
-  }).on('response', (res) => { cb(null, res); });
-});
-```
-
-
 [infer-api]: API#inferval-opts
 [parse-api]: API#parseschema-opts
 [create-resolver-api]: API#typecreateresolverwritertype
 [logical-type-api]: API#class-logicaltypeattrs-opts-types
 [decimal-type]: https://avro.apache.org/docs/current/spec.html#Decimal
 [schema-resolution]: https://avro.apache.org/docs/current/spec.html#Schema+Resolution
-[protocol-declaration]: https://avro.apache.org/docs/current/spec.html#Protocol+Declaration
-[idl]: https://avro.apache.org/docs/current/idl.html
-[express]: http://expressjs.com/
