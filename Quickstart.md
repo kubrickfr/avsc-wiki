@@ -8,9 +8,9 @@
   - [What about Avro files?](#what-about-avro-files)
   - [Next steps](#next-steps)
 - [Services](#services)
-  - [Defining a service](#declar-a-service)
+  - [Defining a `Service`](#defining-a-service)
   - [Server implementation](#server-implementation)
-  - [Calling our service.](#calling-our-service)
+  - [Calling our service](#calling-our-service)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -222,9 +222,10 @@ described in the following sections.
 
 So far, we haven't said anything about how our API's responses will be
 computed. This is where servers come in, servers provide the logic powering our
-API. Implementation is straightforward; for each call declared in the protocol
-(`createAlias` and `expandAlias` above), servers inherit a similarly named
-handler (`onCreateAlias` and `onExpandAlias`):
+API.
+
+For each call declared in the protocol (`createAlias` and `expandAlias` above),
+servers expose a similarly named handler (`onCreateAlias` and `onExpandAlias`):
 
 ```javascript
 const urlCache = new Map(); // We'll use an in-memory map to store links.
