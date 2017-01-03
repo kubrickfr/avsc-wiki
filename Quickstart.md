@@ -173,11 +173,11 @@ procedure calls.
 
 # Services
 
-Using Avro's RPC interface, we can implement portable and "type-safe" APIs:
+Using Avro RPC services, we can implement portable and "type-safe" APIs:
 
 + Clients and servers can be implemented once and reused for many different
   communication protocols (in-memory, TCP, HTTP, etc.).
-+ All data that flows through the API is automatically validated using its
++ All data flowing through the API is automatically validated using its
   corresponding schema: function arguments and return values are therefore
   guaranteed to match the type specified in the API.
 
@@ -225,7 +225,8 @@ computed. This is where servers come in, servers provide the logic powering our
 API.
 
 For each call declared in the protocol (`createAlias` and `expandAlias` above),
-servers expose a similarly named handler (`onCreateAlias` and `onExpandAlias`):
+servers expose a similarly named handler (`onCreateAlias` and `onExpandAlias`)
+with the same signature:
 
 ```javascript
 const urlCache = new Map(); // We'll use an in-memory map to store links.
