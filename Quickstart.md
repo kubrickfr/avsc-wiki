@@ -220,8 +220,11 @@ described in the following sections.
 
 ## Server implementation
 
-So far, we haven't said anything about how API responses will be computed. This
-is where servers come in: servers provide the logic powering our API.
+So far, we haven't said anything about how our API's responses will be
+computed. This is where servers come in, servers provide the logic powering our
+API. Implementation is straightforward; for each call declared in the protocol
+(`createAlias` and `expandAlias` above), servers inherit a similarly named
+handler (`onCreateAlias` and `onExpandAlias`):
 
 ```javascript
 const urlCache = new Map(); // We'll use an in-memory map to store links.
