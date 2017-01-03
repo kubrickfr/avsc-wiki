@@ -10,33 +10,34 @@
     - [`Type.forValue(val, [opts])`](#typeforvalueval-opts)
     - [`Type.isType(any, [prefix...])`](#typeistypeany-prefix)
     - [`Type.__reset(size)`](#type__resetsize)
+    - [`type.aliases`](#typealiases)
+    - [`type.branchName`](#typebranchname)
     - [`type.clone(val, [opts])`](#typecloneval-opts)
     - [`type.compare(val1, val2)`](#typecompareval1-val2)
     - [`type.compareBuffers(buf1, buf2)`](#typecomparebuffersbuf1-buf2)
     - [`type.createResolver(writerType)`](#typecreateresolverwritertype)
     - [`type.decode(buf, [pos,] [resolver])`](#typedecodebuf-pos-resolver)
+    - [`type.doc`](#typedoc)
     - [`type.encode(val, buf, [pos])`](#typeencodeval-buf-pos)
+    - [`type.equals(any)`](#typeequalsany)
+    - [`type.fingerprint([algorithm])`](#typefingerprintalgorithm)
     - [`type.fromBuffer(buf, [resolver,] [noCheck])`](#typefrombufferbuf-resolver-nocheck)
     - [`type.fromString(str)`](#typefromstringstr)
-    - [`type.getAliases()`](#typegetaliases)
-    - [`type.getDocumentation()`](#typegetdocumentation)
-    - [`type.getFingerprint([algorithm])`](#typegetfingerprintalgorithm)
-    - [`type.getName([asBranch])`](#typegetnameasbranch)
-    - [`type.getSchema([opts])`](#typegetschemaopts)
-    - [`type.getTypeName()`](#typegettypename)
     - [`type.isValid(val, [opts])`](#typeisvalidval-opts)
+    - [`type.name`](#typename)
     - [`type.random()`](#typerandom)
+    - [`type.schema([opts])`](#typeschemaopts)
     - [`type.toBuffer(val)`](#typetobufferval)
     - [`type.toString([val])`](#typetostringval)
-    - [`type.equals(any)`](#typeequalsany)
+    - [`type.typeName`](#typetypename)
   - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
-    - [`type.getItemsType()`](#typegetitemstype)
+    - [`type.itemsType`](#typeitemstype)
   - [Class `EnumType(schema, [opts])`](#class-enumtypeschema-opts)
-    - [`type.getSymbols()`](#typegetsymbols)
+    - [`type.symbols`](#typesymbols)
   - [Class `FixedType(schema, [opts])`](#class-fixedtypeschema-opts)
-    - [`type.getSize()`](#typegetsize)
+    - [`type.size`](#typesize)
   - [Class `LogicalType(schema, [opts])`](#class-logicaltypeschema-opts)
-    - [`type.getUnderlyingType()`](#typegetunderlyingtype)
+    - [`type.underlyingType`](#typeunderlyingtype)
     - [`type._export(schema)`](#type_exportschema)
     - [`type._fromValue(val)`](#type_fromvalueval)
     - [`type._resolve(type)`](#type_resolvetype)
@@ -44,28 +45,28 @@
   - [Class `LongType(schema, [opts])`](#class-longtypeschema-opts)
     - [`LongType.__with(methods, [noUnpack])`](#longtype__withmethods-nounpack)
   - [Class `MapType(schema, [opts])`](#class-maptypeschema-opts)
-    - [`type.getValuesType()`](#typegetvaluestype)
+    - [`type.valuesType`](#typevaluestype)
   - [Class `RecordType(schema, [opts])`](#class-recordtypeschema-opts)
-    - [`type.getField(name)`](#typegetfieldname)
+    - [`type.field(name)`](#typefieldname)
       - [`class Field`](#class-field)
-        - [`field.getAliases()`](#fieldgetaliases)
-        - [`field.getDefault()`](#fieldgetdefault)
-        - [`field.getName()`](#fieldgetname)
-        - [`field.getOrder()`](#fieldgetorder)
-        - [`field.getType()`](#fieldgettype)
-    - [`type.getFields()`](#typegetfields)
-    - [`type.getRecordConstructor()`](#typegetrecordconstructor)
+        - [`field.aliases`](#fieldaliases)
+        - [`field.defaultValue()`](#fielddefaultvalue)
+        - [`field.name`](#fieldname)
+        - [`field.order`](#fieldorder)
+        - [`field.type`](#fieldtype)
+    - [`type.fields`](#typefields)
+    - [`type.valueConstructor`](#typevalueconstructor)
       - [Class `Record(...)`](#class-record)
-        - [`Record.getType()`](#recordgettype)
+        - [`Record.type`](#recordtype)
         - [`record.clone([opts])`](#recordcloneopts)
         - [`record.compare(val)`](#recordcompareval)
         - [`record.isValid([opts])`](#recordisvalidopts)
         - [`record.toBuffer()`](#recordtobuffer)
         - [`record.toString()`](#recordtostring)
   - [Class `UnwrappedUnionType(schema, [opts])`](#class-unwrappeduniontypeschema-opts)
-    - [`type.getTypes()`](#typegettypes)
+    - [`type.types`](#typetypes)
   - [Class `WrappedUnionType(schema, [opts])`](#class-wrappeduniontypeschema-opts)
-    - [`type.getTypes()`](#typegettypes-1)
+    - [`type.types`](#typetypes-1)
 - [Files and streams](#files-and-streams)
   - [`createBlobDecoder(blob, [opts])`](#createblobdecoderblob-opts)
   - [`createBlobEncoder(schema, [opts])`](#createblobencoderschema-opts)
@@ -113,24 +114,24 @@
     - [`client.createChannel(transport, [opts])`](#clientcreatechanneltransport-opts)
     - [`client.destroyChannels([opts])`](#clientdestroychannelsopts)
     - [`client.emitMessage(name, req, [opts,] [cb])`](#clientemitmessagename-req-opts-cb)
-    - [`client.service`](#clientservice)
     - [`client.remoteProtocols()`](#clientremoteprotocols)
+    - [`client.service`](#clientservice)
     - [`client.use(middleware...)`](#clientusemiddleware)
       - [Class `WrappedRequest`](#class-wrappedrequest)
         - [`headers`](#headers)
         - [`request`](#request)
       - [Class `WrappedResponse`](#class-wrappedresponse)
+        - [`error`](#error)
         - [`headers`](#headers-1)
         - [`response`](#response)
-        - [`error`](#error)
       - [Class `CallContext`](#class-callcontext)
         - [`channel`](#channel)
         - [`locals`](#locals)
         - [`message`](#message)
   - [Class `Server`](#class-server)
     - [Event `'channel'`](#event-channel-1)
-    - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
     - [`server.activeChannels()`](#serveractivechannels)
+    - [`server.createChannel(transport, [opts])`](#servercreatechanneltransport-opts)
     - [`server.onMessage(name, handler)`](#serveronmessagename-handler)
     - [`server.remoteProtocols()`](#serverremoteprotocols)
     - [`server.service`](#serverservice)
@@ -264,6 +265,17 @@ In some cases, it can also be beneficial to call this method at startup with a
 sufficiently large buffer size to allow the JavaScript engine to better
 optimize encoding.
 
+### `type.aliases`
+
+Returns a list of aliases for named types and `undefined` for others. Note that
+it is possible to modify this list to add and remove aliases after the type is
+created (altering which types can be resolved via `type.createResolver`).
+
+### `type.branchName`
+
+If `type` doesn't have a name, return its "type name" instead of `undefined`.
+(This method then returns the type's branch name when included in a union.)
+
 ### `type.clone(val, [opts])`
 
 + `val` {...} The object to copy.
@@ -377,6 +389,11 @@ Returns `{value: value, offset: offset}` if `buf` contains a valid encoding of
 `type` (`value` being the decoded value, and `offset` the new offset in the
 buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
 
+### `type.doc`
+
+Return the type's documentation (`doc` attribute in schema and docstring in IDL
+spec).
+
 ### `type.encode(val, buf, [pos])`
 
 + `val` {...} The value to encode. An error will be raised if this isn't a
@@ -387,6 +404,19 @@ buffer). Returns `{value: undefined, offset: -1}` when the buffer is too short.
 Encode a value into an existing buffer. If enough space was available in `buf`,
 returns the new (non-negative) offset, otherwise returns `-N` where `N` is the
 (positive) number of bytes by which the buffer was short.
+
+### `type.equals(any)`
+
++ `any` {...} Any object.
+
+Check whether two types are equal (i.e. have the same canonical schema).
+
+### `type.fingerprint([algorithm])`
+
++ `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
+  *Only `'md5'` is supported in the browser.*
+
+Return a buffer identifying `type`.
 
 ### `type.fromBuffer(buf, [resolver,] [noCheck])`
 
@@ -407,46 +437,6 @@ Deserialize a buffer into its corresponding value.
 
 Deserialize a JSON-encoded object of `type`.
 
-### `type.getAliases()`
-
-Returns a list of aliases for named types and `undefined` for others. Note that
-it is possible to modify this list to add and remove aliases after the type is
-created (altering which types can be resolved via `type.createResolver`).
-
-### `type.getDocumentation()`
-
-Return the type's documentation (`doc` attribute in schema and docstring in IDL
-spec).
-
-### `type.getFingerprint([algorithm])`
-
-+ `algorithm` {String} Algorithm used to compute the hash. Defaults to `'md5'`.
-  *Only `'md5'` is supported in the browser.*
-
-Return a buffer identifying `type`.
-
-### `type.getName([asBranch])`
-
-+ `asBranch` {Boolean} If `type` doesn't have a name, return its "type name"
-  instead of `undefined`. (This method then returns the type's branch name when
-  included in a union.)
-
-Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
-
-### `type.getSchema([opts])`
-
-+ `opts` {Object} Options:
-  + `exportAttrs` {Boolean} Include aliases, field defaults, order, and logical
-    type attributes in the returned schema.
-  + `noDeref` {Boolean} Do not dereference any type names.
-
-Returns `type`'s [canonical schema][canonical-schema]. This can be used to
-compare schemas for equality.
-
-### `type.getTypeName()`
-
-Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
-
 ### `type.isValid(val, [opts])`
 
 + `val` {...} The value to validate.
@@ -464,9 +454,23 @@ Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
 Check whether `val` is a valid `type` value.
 
+### `type.name`
+
+Returns `type`'s fully qualified name if it exists, `undefined` otherwise.
+
 ### `type.random()`
 
 Returns a random value of `type`.
+
+### `type.schema([opts])`
+
++ `opts` {Object} Options:
+  + `exportAttrs` {Boolean} Include aliases, field defaults, order, and logical
+    type attributes in the returned schema.
+  + `noDeref` {Boolean} Do not dereference any type names.
+
+Returns `type`'s [canonical schema][canonical-schema]. This can be used to
+compare schemas for equality.
 
 ### `type.toBuffer(val)`
 
@@ -481,18 +485,16 @@ Returns a `Buffer` containing the Avro serialization of `val`.
 
 Serialize an object into a JSON-encoded string.
 
-### `type.equals(any)`
+### `type.typeName`
 
-+ `any` {...} Any object.
-
-Check whether two types are equal (i.e. have the same canonical schema).
+Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
 
 ## Class `ArrayType(schema, [opts])`
 
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getItemsType()`
+### `type.itemsType`
 
 The type of the array's items.
 
@@ -502,10 +504,10 @@ The type of the array's items.
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getSymbols()`
+### `type.symbols`
 
-Returns a copy of the type's symbols (an array of strings representing the
-`enum`'s valid values).
+Returns the type's symbols (an array of strings representing the `enum`'s valid
+values).
 
 
 ## Class `FixedType(schema, [opts])`
@@ -513,7 +515,7 @@ Returns a copy of the type's symbols (an array of strings representing the
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getSize()`
+### `type.size`
 
 The size in bytes of instances of this type.
 
@@ -544,7 +546,7 @@ are available as well:
 + [`DateType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-date-js)
 + [`DecimalType`](https://gist.github.com/mtth/1aec40375fbcb077aee7#file-decimal-js)
 
-### `type.getUnderlyingType()`
+### `type.underlyingType`
 
 Use this method to get the underlying Avro type. This can be useful when a
 logical type can support different underlying types.
@@ -652,7 +654,7 @@ so requires implementing the following methods (a few examples are available
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getValuesType()`
+### `type.valuesType`
 
 The type of the map's values (keys are always strings).
 
@@ -661,7 +663,7 @@ The type of the map's values (keys are always strings).
 + `schema` {Object} Decoded type attributes.
 + `opts` {Object} Parsing options.
 
-### `type.getField(name)`
+### `type.field(name)`
 
 + `name` {String} Field name.
 
@@ -670,21 +672,31 @@ following methods:
 
 #### `class Field`
 
-##### `field.getAliases()`
+##### `field.aliases`
 
-##### `field.getDefault()`
+The list of aliases for this field.
 
-##### `field.getName()`
+##### `field.defaultValue()`
 
-##### `field.getOrder()`
+The field's default value if specified, `undefined` otherwise.
 
-##### `field.getType()`
+##### `field.name`
 
-### `type.getFields()`
+The field's name.
 
-Returns a frozen copy of the array of fields contained in this record.
+##### `field.order`
 
-### `type.getRecordConstructor()`
+One of `'ascending'`, `'descending'`, or `'ignored'`.
+
+##### `field.type`
+
+The field's type.
+
+### `type.fields`
+
+Returns the array of fields contained in this record.
+
+### `type.valueConstructor`
 
 The [`Record`](#class-record) constructor for instances of this type. Indeed,
 each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
@@ -701,7 +713,7 @@ initialize all the missing record's fields with their default values.
 The `Record` prototype also exposes a few convenience methods described below
 (available on each decoded `record` value).
 
-##### `Record.getType()`
+##### `Record.type`
 
 Convenience class method to get the record's type.
 
@@ -756,7 +768,7 @@ Finally, note that by using logical types, it is possible to work around the
 above requirements (by delegating the branch inference to the logical types
 themselves).
 
-### `type.getTypes()`
+### `type.types`
 
 The possible types that this union can take.
 
@@ -771,7 +783,7 @@ This class is the representation using for unions for types generated with
 to correctly represent all unions: branch type information is never lost since
 it is included in the decoded value.
 
-### `type.getTypes()`
+### `type.types`
 
 The possible types that this union can take.
 
@@ -1221,13 +1233,13 @@ Destroy all the client's currently active channels.
 
 Send a message. This is always done asynchronously.
 
-### `client.service`
-
-The client's service.
-
 ### `client.remoteProtocols()`
 
 Returns the client's cached protocols.
+
+### `client.service`
+
+The client's service.
 
 ### `client.use(middleware...)`
 
@@ -1249,6 +1261,11 @@ The decoded request.
 
 #### Class `WrappedResponse`
 
+##### `error`
+
+Decoded error. If `error` is anything but `undefined`, the `response` field
+will be ignored and the error will be sent instead.
+
 ##### `headers`
 
 Map of bytes.
@@ -1256,11 +1273,6 @@ Map of bytes.
 ##### `response`
 
 Decoded response.
-
-##### `error`
-
-Decoded error. If `error` is anything but `undefined`, the `response` field
-will be ignored and the error will be sent instead.
 
 
 #### Class `CallContext`
@@ -1288,6 +1300,10 @@ The message being processed.
 
 Event emitted each time a channel is created.
 
+### `server.activeChannels()`
+
+Returns a copy of the server's active channels.
+
 ### `server.createChannel(transport, [opts])`
 
 + `transport` {Duplex|Object|Function} Similar to `client.createChannel`'s
@@ -1311,10 +1327,6 @@ Event emitted each time a channel is created.
 
 Generate a channel for this server. This channel can be used to respond to
 messages emitted from compatible clients.
-
-### `server.activeChannels()`
-
-Returns a copy of the server's active channels.
 
 ### `server.onMessage(name, handler)`
 
