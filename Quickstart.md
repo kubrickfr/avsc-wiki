@@ -18,9 +18,9 @@
 
 One of the main features provided by [Avro][] is a way to encode (_serialize_)
 data. Once data is encoded, it can be stored in a file or a database, sent
-across the internet to be decoded on another computer (_deserialized_), etc.
+across the internet to be decoded on another computer, etc.
 
-Many different encodings exist. [JSON][] for example is very commonly used from
+Many other encodings exist. [JSON][] for example is very commonly used from
 JavaScript: it's built-in (via `JSON.parse` and `JSON.stringify`), reasonably
 fast, and produces human-readable encodings.
 
@@ -33,16 +33,19 @@ fast, and produces human-readable encodings.
 ```
 
 JSON isn't always the most adequate encoding though. It produces relatively
-large encodings since keys (`kind`, `name`, and `age` above) are repeated in
-the output. It also doesn't enforce any properties on the data, so any
+large encodings since keys are repeated in the output (`kind`, `name`, and
+`age` above). It also doesn't enforce any properties on the data, so any
 validation has to be done separately (other encodings with the same
 _schema-less_ property include [xml][], [MessagePack][message-pack]).
 
 Avro `type`s provide an alternate serialization mechanism, with a different set
 of properties:
 
-+ Schema-aware.
-+ Binary, compact, faster.
++ _Schema-aware_: each `type` is tied to a particular data structure and will
+  validate that any encoded data matches that structure.
++ _Compact_: Avro's binary encoding isn't meant to be human-readable, it is
+  instead optimized for size and speed. Depending on the data, `avsc` can be an
+  order of magnitude faster and smaller than JSON.
 
 
 ## What is a `Type`?
