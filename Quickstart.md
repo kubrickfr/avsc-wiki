@@ -16,23 +16,14 @@
 
 # Types
 
-## What is a `Type`?
+One of the main TODO... Avro defines a way to encode values. Once a value is
+encoded (also often referred to as _serialized_), it can be stored in a file or
+a database, sent across the internet to be decoded on another computer
+(_deserialized_), etc.
 
-A `Type` is an JavaScript object which knows how to
-[`decode`](Api#typedecodebuf-pos-resolver) and
-[`encode`](Api#typeencodeval-buf-pos) a "family" of values. Examples of
-supported families include:
-
-+ All strings.
-+ All arrays of numbers.
-+ All `Buffer`s of length 4.
-+ All objects with an integer `id` property and string `name` property.
-
-Once a value is encoded (also often referred to as _serialized_), it can be
-stored in a database, sent over the wire and decoded (_deserialized_) on a
-remote computer, etc. Many types of encodings exist. For example, JSON is very
-commonly used in JavaScript: it's built-in (via `JSON.parse` and
-`JSON.stringify`) and produces human-readable encodings.
+Many encodings exist. For example, JSON is very commonly used from JavaScript:
+it's built-in (via `JSON.parse` and `JSON.stringify`), reasonably fast, and
+produces human-readable encodings.
 
 ```javascript
 > pet = {kind: 'DOG', name: 'Beethoven', age: 4};
@@ -49,11 +40,24 @@ JSON isn't always the most adequate serialization for a given use-case though:
 + It doesn't enforce any properties on the data, so any validation has to be
   done separately.
 
-Avro types provide another serialization mechanism, with a different set of
+Avro `type`s provide another serialization mechanism, with a different set of
 properties:
 
 + Schema-aware.
-+ Binary, compact.
++ Binary, compact, faster.
+
+
+## What is a `Type`?
+
+A `type` is an JavaScript object which knows how to
+[`decode`](Api#typedecodebuf-pos-resolver) and
+[`encode`](Api#typeencodeval-buf-pos) a "family" of values. Examples of
+supported families include:
+
++ All strings.
++ All arrays of numbers.
++ All `Buffer`s of length 4.
++ All objects with an integer `id` property and string `name` property.
 
 Writing a schema can be daunting...
 
@@ -109,7 +113,9 @@ true // But dog was.
 
 # Services
 
-Using Avro services, we can implement portable and "type-safe" APIs:
+As well as defining an encoding, Avro defines a standard way of executing
+remote procedure calls (_RPCs_), exposed via _services_. By leveraging these
+services, we can implement portable and "type-safe" APIs:
 
 + Clients and servers can be implemented once and reused over many different
   transports (in-memory, TCP, HTTP, etc.).
