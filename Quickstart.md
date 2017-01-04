@@ -32,12 +32,11 @@ fast, and produces human-readable encodings.
 41 // Number of bytes in the encoding.
 ```
 
-JSON isn't always the most adequate encoding though:
-
-+ It produces relatively large encodings since the keys (`kind`, `name`, and
-  `age` above) are repeated in the output.
-+ It doesn't enforce any properties on the data, so any validation has to be
-  done separately.
+JSON isn't always the most adequate encoding though. It produces relatively
+large encodings since keys (`kind`, `name`, and `age` above) are repeated in
+the output. It also doesn't enforce any properties on the data, so any
+validation has to be done separately (other encodings with the same
+_schema-less_ property include [xml][], [MessagePack][message-pack]).
 
 Avro `type`s provide an alternate serialization mechanism, with a different set
 of properties:
@@ -262,6 +261,8 @@ through a few more examples of advanced functionality.
 
 [avro]: https://avro.apache.org/docs/1.8.0/index.html
 [json]: http://www.json.org/
+[xml]: https://www.w3.org/XML/
+[message-pack]: http://msgpack.org/index.html
 [bitly]: https://bitly.com/
 [json-protocol]: https://avro.apache.org/docs/1.8.0/spec.html#Protocol+Declaration
 [transports]: https://avro.apache.org/docs/1.8.0/spec.html#Message+Transport
