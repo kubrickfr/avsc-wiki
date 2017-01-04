@@ -16,32 +16,31 @@
 
 # Types
 
-One of the main TODO... Avro defines a way to encode values. Once a value is
-encoded (also often referred to as _serialized_), it can be stored in a file or
-a database, sent across the internet to be decoded on another computer
-(_deserialized_), etc.
+One of the main features provided by [Avro][] is a way to encode (_serialize_)
+data. Once data is encoded, it can be stored in a file or a database, sent
+across the internet to be decoded on another computer (_deserialized_), etc.
 
-Many encodings exist. For example, JSON is very commonly used from JavaScript:
-it's built-in (via `JSON.parse` and `JSON.stringify`), reasonably fast, and
-produces human-readable encodings.
+Many different encodings exist. [JSON][] for example is very commonly used from
+JavaScript: it's built-in (via `JSON.parse` and `JSON.stringify`), reasonably
+fast, and produces human-readable encodings.
 
 ```javascript
 > pet = {kind: 'DOG', name: 'Beethoven', age: 4};
 > str = JSON.stringify(pet);
-'{"kind":"DOG","name":"Beethoven","age":4}' // Encoded pet.
+'{"kind":"DOG","name":"Beethoven","age":4}' // Encoded data (still readable).
 > str.length
 41 // Number of bytes in the encoding.
 ```
 
-JSON isn't always the most adequate serialization for a given use-case though:
+JSON isn't always the most adequate encoding though:
 
 + It produces relatively large encodings since the keys (`kind`, `name`, and
   `age` above) are repeated in the output.
 + It doesn't enforce any properties on the data, so any validation has to be
   done separately.
 
-Avro `type`s provide another serialization mechanism, with a different set of
-properties:
+Avro `type`s provide an alternate serialization mechanism, with a different set
+of properties:
 
 + Schema-aware.
 + Binary, compact, faster.
@@ -261,6 +260,8 @@ functions and their options. The [Advanced usage section](Advanced-usage) goes
 through a few more examples of advanced functionality.
 
 
+[avro]: https://avro.apache.org/docs/1.8.0/index.html
+[json]: http://www.json.org/
 [bitly]: https://bitly.com/
 [json-protocol]: https://avro.apache.org/docs/1.8.0/spec.html#Protocol+Declaration
 [transports]: https://avro.apache.org/docs/1.8.0/spec.html#Message+Transport
