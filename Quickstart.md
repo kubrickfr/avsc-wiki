@@ -30,11 +30,9 @@ supported families include:
 
 Once a value is encoded (also often referred to as _serialized_), it can be
 stored in a database, sent over the wire and decoded (_deserialized_) on a
-remote computer, etc.
-
-Other types of encodings exist. For example, JSON is very commonly used in the
-JavaScript community; it's built-in (via `JSON.parse` and `JSON.stringify`) and
-provides a human-readable serialization:
+remote computer, etc. Many types of encodings exist. For example, JSON is very
+commonly used in JavaScript: it's built-in (via `JSON.parse` and
+`JSON.stringify`) and produces human-readable encodings.
 
 ```javascript
 > pet = {kind: 'DOG', name: 'Beethoven', age: 4};
@@ -51,7 +49,8 @@ JSON isn't always the most adequate serialization for a given use-case though:
 + It doesn't enforce any properties on the data, so any validation has to be
   done separately.
 
-Avro defines another type of encoding with a different set of properties:
+Avro types provide another serialization mechanism, with a different set of
+properties:
 
 + Schema-aware.
 + Binary, compact.
@@ -62,9 +61,9 @@ Writing a schema can be daunting...
 > avro = require('avsc');
 > inferredType = avro.Type.forValue(pet);
 > inferredType.schema();
-{ type: 'record',
+{ type: 'record', // "Record" is Avro parlance for "structured object".
   fields:
-   [ { name: 'kind', type: 'string' },
+   [ { name: 'kind', type: 'string' }, // Each field corresponds to a property.
      { name: 'name', type: 'string' },
      { name: 'age', type: 'int' } ] }
 ```
