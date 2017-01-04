@@ -696,7 +696,7 @@ The field's type.
 
 Returns the array of fields contained in this record.
 
-### `type.valueConstructor`
+### `type.recordConstructor`
 
 The [`Record`](#class-record) constructor for instances of this type. Indeed,
 each [`RecordType`](#class-recordtypeattrs-opts) generates a corresponding
