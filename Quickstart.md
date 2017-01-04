@@ -21,7 +21,7 @@
 A `Type` is an JavaScript object which knows how to
 [`decode`](Api#typedecodebuf-pos-resolver) and
 [`encode`](Api#typeencodeval-buf-pos) a "family" of values. Examples of
-families include:
+supported families include:
 
 + All strings.
 + All arrays of numbers.
@@ -30,21 +30,33 @@ families include:
 
 Once a value is encoded (also often referred to as _serialized_), it can be
 stored in a database, sent over the wire and decoded (_deserialized_) on a
-remote computer, and so on.
+remote computer, etc.
 
-Other types of encodings exist. JSON for example is very commonly used in the
+Other types of encodings exist. For example, JSON is very commonly used in the
 JavaScript community; it's built-in (via `JSON.parse` and `JSON.stringify`) and
 provides a human-readable serialization:
 
 ```javascript
 > pet = {kind: 'DOG', name: 'Beethoven', age: 4};
 > str = JSON.stringify(pet);
-'{"kind":"DOG","name":"Beethoven","age":4}'
+'{"kind":"DOG","name":"Beethoven","age":4}' // Encoded pet.
 > str.length
-41 // Number of bytes in the serialized output.
+41 // Number of bytes in the encoding.
 ```
 
-TODO...
+JSON isn't always the most adequate serialization for a given use-case though:
+
++ It produces relatively large encodings since the keys (`kind`, `name`, and
+  `age` above) are repeated in the output.
++ It doesn't enforce any properties on the data, so any validation has to be
+  done separately.
+
+Avro defines another type of encoding with a different set of properties:
+
++ Schema-aware.
++ Binary, compact.
+
+Writing a schema can be daunting...
 
 ```javascript
 > avro = require('avsc');
@@ -57,9 +69,10 @@ TODO...
      { name: 'age', type: 'int' } ] }
 ```
 
+TODO...
 
 ```javascript
-> buf = inferredType.toBuffer(pet); // Length 16.
+> buf = inferredType.toBuffer(pet);
 > buf.length
 15 // 60% smaller than JSON!
 ```
@@ -89,9 +102,9 @@ true // All fields match.
 
 ```javascript
 > exactType.isValid({kind: 'PIG', name: 'Babe', age: 2});
-false // The `PIG` kind wasn't defined in our enum.
+false // The pig kind wasn't defined in our enum.
 > exactType.isValid({kind: 'DOG', name: 'Lassie', age: 5});
-true // But `DOG` was.
+true // But dog was.
 ```
 
 
