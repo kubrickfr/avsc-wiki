@@ -42,7 +42,7 @@ Avro `type`s provide an alternate serialization mechanism, with a different set
 of properties:
 
 + _Schema-aware_: each `type` is tied to a particular data structure and will
-  validate that any encoded data matches that structure.
+  validate that any encoded data matches this structure.
 + _Compact_: Avro's binary encoding isn't meant to be human-readable, it is
   instead optimized for size and speed. Depending on the data, `avsc` can be an
   order of magnitude faster and smaller than JSON.
@@ -60,7 +60,9 @@ supported families include:
 + All `Buffer`s of length 4.
 + All objects with an integer `id` property and string `name` property.
 
-Writing a schema can be daunting...
+By default, Avro uses [schemas][avro-schemas] to define which family a type
+supports. These schemas are written in JSON-format (the same encoding described
+earlier).
 
 ```javascript
 > avro = require('avsc');
@@ -153,7 +155,7 @@ the corresponding service as follows:
 // We first compile the IDL specification into a JSON protocol.
 avro.assembleProtocol('./LinkService.avdl', function (err, protocol) {
   // From which we can create our service.
-  const service = avro.Service.fromProtocol(protocol);
+  const service = avro.Service.forProtocol(protocol);
 });
 ```
 

@@ -30,6 +30,7 @@
     - [`type.toBuffer(val)`](#typetobufferval)
     - [`type.toString([val])`](#typetostringval)
     - [`type.typeName`](#typetypename)
+    - [`type.wrap(val)`](#typewrapval)
   - [Class `ArrayType(schema, [opts])`](#class-arraytypeschema-opts)
     - [`type.itemsType`](#typeitemstype)
   - [Class `EnumType(schema, [opts])`](#class-enumtypeschema-opts)
@@ -55,7 +56,7 @@
         - [`field.order`](#fieldorder)
         - [`field.type`](#fieldtype)
     - [`type.fields`](#typefields)
-    - [`type.valueConstructor`](#typevalueconstructor)
+    - [`type.recordConstructor`](#typerecordconstructor)
       - [Class `Record(...)`](#class-record)
         - [`Record.type`](#recordtype)
         - [`record.clone([opts])`](#recordcloneopts)
@@ -63,6 +64,7 @@
         - [`record.isValid([opts])`](#recordisvalidopts)
         - [`record.toBuffer()`](#recordtobuffer)
         - [`record.toString()`](#recordtostring)
+        - [`record.wrapped()`](#recordwrapped)
   - [Class `UnwrappedUnionType(schema, [opts])`](#class-unwrappeduniontypeschema-opts)
     - [`type.types`](#typetypes)
   - [Class `WrappedUnionType(schema, [opts])`](#class-wrappeduniontypeschema-opts)
@@ -197,8 +199,8 @@ factory methods described below.
   + `noAnonymousTypes` {Boolean} Throw an error if a named type (`enum`,
     `fixed`, `record`, or `error`) is missing its `name` field. By default
     anonymous types are supported; they behave exactly like their named
-    equivalent except that they cannot be referenced and can be resolved by any
-    compatible type.
+    equivalent except that they cannot be referenced, can be resolved by any
+    compatible type, and use the type's `typeName` as union branch.
   + `registry` {Object} Registry of predefined type names. This can for example
     be used to override the types used for primitives or to split a schema
     declaration over multiple files.
@@ -292,6 +294,10 @@ If `type` doesn't have a name, return its "type name" instead of `undefined`.
     namespace (which can cause collisions). Passing in this option will attempt
     to lookup unqualified names as well and return correctly qualified names.
     This option has no effect when used with unwrapped unions.
+  + `skipMissingFields` {Boolean} Ignore any missing fields (or equal to
+    `undefined`). This can be useful in combination with clone's other options
+    to perform validation after wrapping unions or coercing buffers. Fields
+    missing in the input will be set to undefined in the output.
   + `wrapUnions` {Boolean} Allow wrapping of union values into their first
     matching branch. This option has no effect when used with unwrapped unions.
 
@@ -488,6 +494,19 @@ Serialize an object into a JSON-encoded string.
 ### `type.typeName`
 
 Returns `type`'s "type name" (e.g. `'int'`, `'record'`, `'fixed'`).
+
+### `type.wrap(val)`
+
++ `val` {...} The value to wrap, this value should should be valid for `type`.
+  Behavior is otherwise undefined.
+
+Convenience method to wrap a value into a valid branch for use in a wrapped
+union:
+
+```javascript
+const intType = avro.Type.forSchema('int');
+intType.wrap(123); // {int: 123}
+```
 
 ## Class `ArrayType(schema, [opts])`
 
@@ -737,6 +756,10 @@ Convenience function to serialize the current record.
 
 Convenience function to serialize the current record using JSON encoding.
 
+##### `record.wrapped()`
+
+Convenience function to wrap the record into a valid wrapped union branch.
+
 ## Class `UnwrappedUnionType(schema, [opts])`
 
 + `schema` {Object} Decoded type attributes.
@@ -772,7 +795,6 @@ themselves).
 
 The possible types that this union can take.
 
-
 ## Class `WrappedUnionType(schema, [opts])`
 
 + `schema` {Object} Decoded type attributes.
@@ -796,6 +818,7 @@ const type = new avro.types.WrappedUnionType(['int', 'long']);
 const val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
 const branchType = val.constructor.getBranchType() // == <LongType>
 ```
+
 
 # Files and streams
 
@@ -850,7 +873,6 @@ container file. *Not available in the browser.*
 Extract header from an Avro container file synchronously. If no header is
 present (i.e. the path doesn't point to a valid Avro container file), `null` is
 returned. *Not available in the browser.*
-
 
 ## Class `BlockDecoder([opts])`
 
@@ -914,7 +936,6 @@ This event is guaranteed to be emitted before the first `'data'` event.
 
 Get built-in decompression functions (currently `null` and `deflate`).
 
-
 ## Class `BlockEncoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Schema used for encoding. Argument parsing
@@ -945,7 +966,6 @@ A duplex stream to create Avro container object files.
 
 Get built-in compression functions (currently `null` and `deflate`).
 
-
 ## Class `RawDecoder(schema, [opts])`
 
 + `schema` {Object|String|Type} Writer schema. Required since the input doesn't
@@ -961,7 +981,6 @@ with no headers or blocks.
 ### Event `'data'`
 
 + `data` {...} Decoded element or raw bytes.
-
 
 ## Class `RawEncoder(schema, [opts])`
 
@@ -991,11 +1010,17 @@ Avro also defines a way of executing remote procedure calls.
   + `ackVoidMessages` {Boolean} By default, using `void` as response type will
     mark the corresponding message as one-way. When this option is set, `void`
     becomes equivalent to `null`.
+  + `delimitedCollections` {Boolean} The parser will be default support
+    collections (`array` items and `map` values) even when they aren't
+    surrounded by `</>` markers; this tends to lead to cleaner inline
+    declarations. You can disable this extensions by setting this option.
   + `importHook(path, kind, cb)` {Function} Function called to load each file.
     The default will look up the files in the local file-system and load them
     via `fs.readFile`. `kind` is one of `'idl'`, `'protocol'`, or `'schema'`
     depending on the kind of import requested. *In the browser, no default
     is provided.*
+  + `typeRefs` {Object} Type references, used to expand custom type names. This
+    option defaults to values compatible with the Java implementation.
 + `cb(err, schema)` {Function} Callback. If an error occurred, its `path`
   property will contain the path to the file which caused it.
 
@@ -1017,14 +1042,13 @@ another server without having a local copy of the protocol.
 ## `readProtocol(spec, [opts])`
 
 + `spec` {String} Protocol IDL specification.
-+ `opts` {Object} Options:
-  + `ackVoidMessages` {Boolean} By default, using `void` as response type will
-    mark the corresponding message as one-way. When this option is set, `void`
-    becomes equivalent to `null`.
++ `opts` {Object} Options (see `assembleProtocol` for details).
+  + `ackVoidMessages` {Boolean} See `assembleProtocol`.
+  + `delimitedCollections` {Boolean} See `assembleProtocol`.
+  + `typeRefs` {Object} See `assembleProtocol`.
 
 Synchronous version of `assembleProtocol`. Note that it doesn't support
 imports.
-
 
 ## Class `Service`
 
@@ -1059,8 +1083,8 @@ Construct a service from a protocol.
     these protocols.
   + `server` {Server} Convenience function to connect the client to an existing
     server using an efficient in-memory channel.
-  + `strictErrors` {Boolean} Disable conversion of string errors to `Error`
-    objects.
+  + `strictTypes` {Boolean} Disable conversion of string errors to `Error`
+    objects and of `null` to `undefined`.
   + `transport` {Transport} Convenience option to add a transport to the newly
     created client.
 
@@ -1081,11 +1105,10 @@ send messages to a server for a compatible service.
     locally. This will save a handshake with clients connecting using one of
     these protocols.
   + `silent` {Boolean} Suppress default behavior of outputting handler errors
-    to stderr.
-    objects.
-  + `strictErrors` {Boolean} Disable automatic conversion of `Error` objects to
-    strings. When set, handlers' returned error parameters must either be a
-    valid union branch or `undefined`.
+    to standard error.
+  + `strictTypes` {Boolean} Disable automatic conversion of `Error` objects to
+    strings, and `null` to `undefined`. When set, handlers' returned error
+    parameters must either be a valid union branch or `undefined`.
   + `systemErrorFormatter(err)` {Function} Function called to format system
     errors before sending them to the calling client. It should return a
     string.
@@ -1160,12 +1183,12 @@ Convenience function to retrieve a type defined inside this service. Returns
 
 Returns a list of the types declared in this service.
 
-
 ## Class `Client`
 
 ### Event `'channel'`
 
 + `channel` {ClientChannel} The newly created channel.
++ `transport` {...} The channel's transport.
 
 Event emitted each time a channel is created.
 
@@ -1247,7 +1270,6 @@ The client's service.
 
 Install a middleware function.
 
-
 #### Class `WrappedRequest`
 
 ##### `headers`
@@ -1257,7 +1279,6 @@ Map of bytes.
 ##### `request`
 
 The decoded request.
-
 
 #### Class `WrappedResponse`
 
@@ -1274,7 +1295,6 @@ Map of bytes.
 
 Decoded response.
 
-
 #### Class `CallContext`
 
 ##### `channel`
@@ -1290,7 +1310,6 @@ and handlers.
 ##### `message`
 
 The message being processed.
-
 
 ## Class `Server`
 
@@ -1353,7 +1372,6 @@ Returns the server's service.
 
 Install a middleware function.
 
-
 ## Class `ClientChannel`
 
 Instance of this class are [`EventEmitter`s][event-emitter], with the following
@@ -1369,7 +1387,17 @@ no more pending requests.
 + `hreq` {Object} Handshake request.
 + `hres` {Object} Handshake response.
 
-Emitted when the server's handshake response is received.
+Emitted when the server's handshake response is received. Additionally, the
+following guarantees are made w.r.t. the timing of this event:
+
++ Destroying the channel inside a (synchronous) handler for this event will
+  interrupt any ongoing handshake. If the handshake response's match was
+  `NONE`, it will prevent a connection from taking place in the case of
+  stateful channels and cancel the retry of the request in the case of
+  stateless channels.
++ For stateful channels which do not reuse connections (i.e. created without
+  setting `noPing` to `true`), this event will be emitted before any
+  `'outgoingCall'` events.
 
 ### Event `'outgoingCall'`
 
@@ -1412,7 +1440,6 @@ emitted on this channel which haven't yet had a response).
 
 The channel's default timeout.
 
-
 ## Class `ServerChannel`
 
 ### Event `'eot'`
@@ -1425,7 +1452,10 @@ no more responses to send.
 + `hreq` {Object} Handshake request.
 + `hres` {Object} Handshake response.
 
-Emitted right before the server sends a handshake response.
+Emitted right before the server sends a handshake response. This event is
+guaranteed to be emitted before any `'incomingCall'` event. Additionally,
+destroying the channel synchronously in one of this event's handlers will
+prevent any responses from being sent back.
 
 ### Event `'incomingCall'`
 
