@@ -132,44 +132,23 @@ true // But dog was.
 
 Avro defines a compact way to store encoded values. These [object container
 files][object-container] hold serialized Avro records along with their schema.
-Reading them is as simple as calling
-[`createFileDecoder`](Api#createfiledecoderpath-opts):
+Reading them is as simple as calling `createFileDecoder`, which will return a
+[readable stream][rstream] of decoded records:
 
 ```javascript
-const personStream = avro.createFileDecoder('./persons.avro');
+avro.createFileDecoder('./persons.avro')
+  .on('data', function (person) {
+    if (person.address.city === 'San Francisco') {
+      doSomethingWith(person);
+    }
+  });
 ```
 
-`personStream` is a [readable stream][rstream] of decoded records, which we can
-for example use as follows:
-
-```javascript
-personStream.on('data', function (person) {
-  if (person.address.city === 'San Francisco') {
-    doSomethingWith(person);
-  }
-});
-```
-
-In case we need the records' `type` or the file's codec, they are available by
-listening to the `'metadata'` event:
-
-```javascript
-personStream.on('metadata', function (type, codec) { /* Something useful. */ });
-```
-
-To access a file's header synchronously, there also exists an
-[`extractFileHeader`](Api#extractfileheaderpath-opts) method:
-
-```javascript
-const header = avro.extractFileHeader('persons.avro');
-```
-
-Writing to an Avro container file is possible using
-[`createFileEncoder`](Api#createfileencoderpath-type-opts):
-
-```javascript
-const encoder = avro.createFileEncoder('./processed.avro', type);
-```
+In case we need the records' `type` or the file's codec, these are available by
+listening to the `'metadata'` event. To access a file's header synchronously,
+there also exists an `extractFileHeader` method. Finally, writing to an Avro
+container file is likewise possible using `createFileEncoder`, which will
+return a writable stream.
 
 
 # Services
