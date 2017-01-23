@@ -61,12 +61,15 @@ supported families include:
 + All objects with an integer `id` property and string `name` property.
 
 By default, Avro uses [schemas][avro-schemas] to define which family a type
-supports. These schemas are written in JSON-format (the same encoding described
-earlier).
+supports. These schemas are written using JSON (the human-readable encoding
+described earlier). The syntax can be confusing at first so `avsc` provides an
+alternate way of defining a type: given a decoded value, we will _infer_ a
+matching type. We can use this to view what the corresponding Avro schema would
+look like:
 
 ```javascript
 > avro = require('avsc');
-> inferredType = avro.Type.forValue(pet);
+> inferredType = avro.Type.forValue(pet); // Infer the type of a `pet`.
 > inferredType.schema();
 { type: 'record', // "Record" is Avro parlance for "structured object".
   fields:
@@ -75,13 +78,15 @@ earlier).
      { name: 'age', type: 'int' } ] }
 ```
 
-TODO...
+Now that we have a type matching our `pet` object, we can encode it:
 
 ```javascript
 > buf = inferredType.toBuffer(pet);
 > buf.length
 15 // 60% smaller than JSON!
 ```
+
+We can also validate other data:
 
 ```javascript
 > inferredType.isValid({kind: 'CAT', name: 'Garfield', age: 5.2});
@@ -91,6 +96,11 @@ false // The kind field is missing.
 > inferredType.isValid({kind: 'PIG', name: 'Babe', age: 2});
 true // All fields match.
 ```
+
+It is sometimes useful to define a type by hand, for example to declare
+assumptions that the inference logic can't make. Let's assume that the `kind`
+field should only ever contain values `'CAT'` or `'DOG'`. We can use this
+extra information to improve on the inferred schema:
 
 ```javascript
 > exactType = avro.Type.forSchema({
@@ -105,6 +115,8 @@ true // All fields match.
 > buf.length
 12 // 70% smaller than JSON!
 ```
+
+Validation is also tightenedd accordingly:
 
 ```javascript
 > exactType.isValid({kind: 'PIG', name: 'Babe', age: 2});
@@ -265,6 +277,7 @@ through a few more examples of advanced functionality.
 
 
 [avro]: https://avro.apache.org/docs/1.8.0/index.html
+[avro-schemas]: https://avro.apache.org/docs/1.8.0/spec.html#schemas
 [json]: http://www.json.org/
 [xml]: https://www.w3.org/XML/
 [message-pack]: http://msgpack.org/index.html
