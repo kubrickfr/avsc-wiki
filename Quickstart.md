@@ -4,8 +4,7 @@
 
 - [Types](#types)
   - [What is a `Type`?](#what-is-a-type)
-  - [How do I get a `Type`?](#how-do-i-get-a-type)
-  - [What about Avro files?](#what-about-avro-files)
+  - [Container files](#container-files)
 - [Services](#services)
   - [Defining a `Service`](#defining-a-service)
   - [Server implementation](#server-implementation)
@@ -84,9 +83,13 @@ Now that we have a type matching our `pet` object, we can encode it:
 > buf = inferredType.toBuffer(pet);
 > buf.length
 15 // 60% smaller than JSON!
+> inferredType.fromBuffer(buf);
+{ kind: 'DOG', // Loss-less serialization roundtrip.
+  name: 'Beethoven',
+  age: 4 }
 ```
 
-We can also validate other data:
+We can also validate other data against our inferred schema:
 
 ```javascript
 > inferredType.isValid({kind: 'CAT', name: 'Garfield', age: 5.2});
@@ -116,13 +119,56 @@ extra information to improve on the inferred schema:
 12 // 70% smaller than JSON!
 ```
 
-Validation is also tightenedd accordingly:
+Validation is also tightened accordingly:
 
 ```javascript
 > exactType.isValid({kind: 'PIG', name: 'Babe', age: 2});
 false // The pig kind wasn't defined in our enum.
 > exactType.isValid({kind: 'DOG', name: 'Lassie', age: 5});
 true // But dog was.
+```
+
+## Container files
+
+Avro defines a compact way to store encoded values. These [object container
+files][object-container] hold serialized Avro records along with their schema.
+Reading them is as simple as calling
+[`createFileDecoder`](Api#createfiledecoderpath-opts):
+
+```javascript
+const personStream = avro.createFileDecoder('./persons.avro');
+```
+
+`personStream` is a [readable stream][rstream] of decoded records, which we can
+for example use as follows:
+
+```javascript
+personStream.on('data', function (person) {
+  if (person.address.city === 'San Francisco') {
+    doSomethingWith(person);
+  }
+});
+```
+
+In case we need the records' `type` or the file's codec, they are available by
+listening to the `'metadata'` event:
+
+```javascript
+personStream.on('metadata', function (type, codec) { /* Something useful. */ });
+```
+
+To access a file's header synchronously, there also exists an
+[`extractFileHeader`](Api#extractfileheaderpath-opts) method:
+
+```javascript
+const header = avro.extractFileHeader('persons.avro');
+```
+
+Writing to an Avro container file is possible using
+[`createFileEncoder`](Api#createfileencoderpath-type-opts):
+
+```javascript
+const encoder = avro.createFileEncoder('./processed.avro', type);
 ```
 
 
