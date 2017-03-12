@@ -1100,9 +1100,6 @@ send messages to a server for a compatible service.
 ### `service.createServer([opts])`
 
 + `opts` {Object} Options:
-  + `errorFormatter(err)` {Function} Function called to serialize errors before
-    sending them over the wire. The default will use an error's `rpcCode`
-    attribute if it exists, otherwise the `'INTERNAL_SERVER_ERROR'` string.
   + `noCapitalize` {Boolean} By default, handler setters will be generated on
     the server using the convention `on<CapitalizedMessageName>` (e.g. message
     `resolveUrl` would correspond to `onResolveUrl`). Use this option to use
