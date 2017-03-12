@@ -214,9 +214,14 @@ factory methods described below.
     + [Representing `enum`s as integers rather than strings.](https://gist.github.com/mtth/c0088c745de048c4e466#file-long-enum-js)
     + [Obfuscating all names inside a schema.](https://gist.github.com/mtth/c0088c745de048c4e466#file-obfuscate-js)
     + [Inlining fields to implement basic inheritance between records.](https://gist.github.com/mtth/c0088c745de048c4e466#file-inline-js)
-  + `wrapUnions` {Boolean} Represent unions using a
-    [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts) instead of the
-    default [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts).
+  + `wrapUnions` {String|Boolean} Control whether unions should be represented
+    using a [`WrappedUnionType`](#class-wrappeduniontypeattrs-opts) or an
+    [`UnwrappedUnionType`](#class-unwrappeduniontypeattrs-opts). By default,
+    the "natural" unwrapped alternative will be used if possible, falling back
+    to wrapping if the former would lead to ambiguities. Possible values for
+    this option are: `'auto'` (the default); `'always'` or `true` (always wrap
+    unions); `'never'` or `false` (never wrap unions, an error will be thrown
+    if an ambiguous union is parsed in this case).
 
 Instantiate a type for its schema.
 
@@ -1067,24 +1072,25 @@ Construct a service from a protocol.
 ### `service.createClient([opts])`
 
 + `opts` {Object} Options:
-  + `timeout` {Number} Default timeout in milliseconds used when emitting
-    requests, specify `0` for no timeout (note that this may cause memory leaks
-    in the presence of communication errors). Defaults to `10000`. Note that it
-    can be overridden on a per-request basis.
+  + `buffering` {Boolean} By default emitting messages before any channels
+    become active will fail. Setting this option will instead cause messages to
+    be buffered until a channel becomes available.
   + `channelPolicy(channels)` {Function} Function to load balance between
     active channels. Should return one of the passed in channels. The default
     selects a channel at random.
-  + `noBuffering` {Boolean} By default messages emitted while no channels are
-    active will be buffered until a channel becomes available. Setting this
-    option will instead cause emitting a message to fail if no channels are
-    active at the time.
   + `remoteProtocols` {Object} Map of remote protocols, keyed by hash, to cache
-    locally. This will save a handshake with clients connecting using one of
-    these protocols.
+    locally. This will save a handshake when connecting using one of these
+    protocols.
   + `server` {Server} Convenience function to connect the client to an existing
     server using an efficient in-memory channel.
   + `strictTypes` {Boolean} Disable conversion of string errors to `Error`
     objects and of `null` to `undefined`.
+  + `timeout` {Number} Default timeout in milliseconds used when emitting
+    requests, specify `0` for no timeout (note that this may cause memory leaks
+    in the presence of communication errors). Defaults to `10000`. This timeout
+    can be overridden on a per-request basis. Finally, this timeout only
+    applies to RPC handling (i.e. neither middleware or buffering count towards
+    this timeout).
   + `transport` {Transport} Convenience option to add a transport to the newly
     created client.
 
@@ -1188,7 +1194,6 @@ Returns a list of the types declared in this service.
 ### Event `'channel'`
 
 + `channel` {ClientChannel} The newly created channel.
-+ `transport` {...} The channel's transport.
 
 Event emitted each time a channel is created.
 
