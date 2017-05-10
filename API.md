@@ -900,13 +900,22 @@ Sample use of the `codecs` option to decode a Snappy encoded file using
 handling](https://avro.apache.org/docs/1.8.0/spec.html#snappy)):
 
 ```javascript
+const crc32 = require('buffer-crc32');
 const snappy = require('snappy');
 
 const blockDecoder = new avro.streams.BlockDecoder({
   codecs: {
-    snappy: (buf, cb) => {
-      // The checksum is ignored here, we could use it for validation instead.
-      return snappy.uncompress(buf.slice(0, buf.length - 4), cb);
+    snappy: function (buf, cb) {
+      // Avro appends checksums to compressed blocks.
+      const len = buf.length;
+      const checksum = buf.slice(len - 4, len);
+      const inflated = snappy.uncompress(buf.slice(0, len - 4), cb);
+      if (!checksum.equals(crc32(inflated))) {
+        // We make sure that the checksum matches.
+        cb(new Error('invalid checksum'));
+        return;
+      }
+      cb(null, inflated);
     }
   }
 });
