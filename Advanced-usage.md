@@ -185,36 +185,6 @@ adequate with [`LongType.__with`](Api#longtype__withmethods-nounpack). Below
 are a few sample implementations for popular libraries (refer to the API
 documentation for details on each option):
 
-+ [`node-int64`](https://www.npmjs.com/package/node-int64):
-
-  ```javascript
-  const Long = require('node-int64');
-
-  const longType = avro.types.LongType.__with({
-    fromBuffer: (buf) => { return new Long(buf); },
-    toBuffer: (n) => { return n.toBuffer(); },
-    fromJSON: (obj) => { return new Long(obj); },
-    toJSON: (n) => { return +n; },
-    isValid: (n) => { return n instanceof Long; },
-    compare: (n1, n2) => { return n1.compare(n2); }
-  });
-  ```
-
-+ [`int64-native`](https://www.npmjs.com/package/int64-native):
-
-  ```javascript
-  const Long = require('int64-native');
-
-  const longType = avro.types.LongType.__with({
-    fromBuffer: (buf) => { return new Long('0x' + buf.toString('hex')); },
-    toBuffer: (n) => { return Buffer.from(n.toString().slice(2), 'hex'); },
-    fromJSON: (obj) => { return new Long(obj); },
-    toJSON: (n) => { return +n; },
-    isValid: (n) => { return n instanceof Long; },
-    compare: (n1, n2) => { return n1.compare(n2); }
-  });
-  ```
-
 + [`long`](https://www.npmjs.com/package/long):
 
   ```javascript
@@ -237,6 +207,21 @@ documentation for details on each option):
   });
   ```
 
++ [`int64-native`](https://www.npmjs.com/package/int64-native):
+
+  ```javascript
+  const Long = require('int64-native');
+
+  const longType = avro.types.LongType.__with({
+    fromBuffer: (buf) => { return new Long('0x' + buf.toString('hex')); },
+    toBuffer: (n) => { return Buffer.from(n.toString().slice(2), 'hex'); },
+    fromJSON: (obj) => { return new Long(obj); },
+    toJSON: (n) => { return +n; },
+    isValid: (n) => { return n instanceof Long; },
+    compare: (n1, n2) => { return n1.compare(n2); }
+  });
+  ```
+
 Any such implementation can then be used in place of the default `LongType` to
 provide full 64-bit support when decoding and encoding binary data. To do so,
 we override the default type used for `long`s by adding our implementation to
@@ -247,14 +232,10 @@ the `registry` when parsing a schema:
 // ones (applying to all longs inside of it).
 const type = avro.Type.forSchema('long', {registry: {'long': longType}});
 
-// Avro serialization of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly
-// rounded when represented as a double):
-const buf = Buffer.from([0x86, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x20]);
-
-// Assuming we are using the `node-int64` implementation.
-const obj = new Long(buf);
-const encoded = type.toBuffer(obj); // == buf
-const decoded = type.fromBuffer(buf); // == obj (No precision loss.)
+// Round-trip of Number.MAX_SAFE_INTEGER + 4 (which is incorrectly rounded when
+// represented as a double), assuming we are using the `Long` implementation.
+const encoded = type.toBuffer(Long.fromString('9007199254740995'));
+const decoded = type.fromBuffer(encoded); // No precision loss.
 ```
 
 Because the built-in JSON parser is itself limited by JavaScript's internal
