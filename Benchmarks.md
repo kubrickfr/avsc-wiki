@@ -34,7 +34,7 @@ API. The code to reproduce these results is available in
 
 ## Node.js throughputs
 
-_Note: these benchmarks where run on node version `5.0` which has a different performance profile than current versions. To get more up-to-date results for your system, run the benchmarks in `etc/benchmarks/js-serialization-libraries/` (which also include various other libraries)._
+_Note: these benchmarks were run on node version `5.0` which has a different performance profile than current versions. To get more up-to-date results for your system, run the benchmarks in `etc/benchmarks/js-serialization-libraries/` (which also include various other libraries)._
 
 As of `3.0.0` (`3f7a977`).
 
