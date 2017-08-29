@@ -965,8 +965,11 @@ Get built-in decompression functions (currently `null` and `deflate`).
     `uncompressedData` is a buffer of uncompressed data, and must call `cb(err,
     compressedData)` on completion. The default contains handlers for the
     `'null'` and `'deflate'` codecs.
-  + `omitHeader` {Boolean} Don't emit the header. This can be useful when
-    appending to an existing container file. Defaults to `false`.
+  + `writeHeader` {Boolean|String} Controls whether to write the header. Valid
+    parameter values are: `'always'`, `true` (always emit the header, even if
+    no records have been written); `'never'`, `false` (never emit the header,
+    useful when appending to an existing container file); `'auto'` (only emit
+    the header when the first data is written). Defaults to `'auto'`.
   + `syncMarker` {Buffer} 16 byte buffer to use as synchronization marker
     inside the file. If unspecified, a random value will be generated.
 
