@@ -988,13 +988,13 @@ handling](https://avro.apache.org/docs/1.8.0/spec.html#snappy)):
 const crc32 = require('buffer-crc32');
 const snappy = require('snappy');
 
-const blockDecoder = new avro.streams.BlockEncoder({
+const blockDecoder = new avro.streams.BlockEncoder(someType, {
   codec: 'snappy',
   codecs: {
     snappy: function (buf, cb) {
       // Avro requires appending checksums to compressed blocks.
       const checksum = crc32(buf);
-      snappy.uncompress(buf, function (err, deflated) {
+      snappy.compress(buf, function (err, deflated) {
         if (err) {
           cb(err);
           return;
@@ -1003,7 +1003,7 @@ const blockDecoder = new avro.streams.BlockEncoder({
         deflated.copy(block);
         checksum.copy(deflated.length);
         cb(null, block);
-       });
+      });
     }
   }
 });
