@@ -909,13 +909,18 @@ const blockDecoder = new avro.streams.BlockDecoder({
       // Avro appends checksums to compressed blocks.
       const len = buf.length;
       const checksum = buf.slice(len - 4, len);
-      const inflated = snappy.uncompress(buf.slice(0, len - 4), cb);
-      if (!checksum.equals(crc32(inflated))) {
-        // We make sure that the checksum matches.
-        cb(new Error('invalid checksum'));
-        return;
-      }
-      cb(null, inflated);
+      snappy.uncompress(buf.slice(0, len - 4), function (err, inflated) {
+        if (err) {
+          cb(err);
+          return;
+        }
+        if (!checksum.equals(crc32(inflated))) {
+          // We make sure that the checksum matches.
+          cb(new Error('invalid checksum'));
+          return;
+        }
+        cb(null, inflated);
+      });
     }
   }
 });
@@ -974,6 +979,35 @@ Get built-in decompression functions (currently `null` and `deflate`).
     inside the file. If unspecified, a random value will be generated.
 
 A duplex stream to create Avro container object files.
+
+Sample use of the `codecs` option to encode a file using
+[snappy](https://www.npmjs.com/package/snappy) (note [checksum
+handling](https://avro.apache.org/docs/1.8.0/spec.html#snappy)):
+
+```javascript
+const crc32 = require('buffer-crc32');
+const snappy = require('snappy');
+
+const blockDecoder = new avro.streams.BlockEncoder({
+  codec: 'snappy',
+  codecs: {
+    snappy: function (buf, cb) {
+      // Avro requires appending checksums to compressed blocks.
+      const checksum = crc32(buf);
+      snappy.uncompress(buf, function (err, deflated) {
+        if (err) {
+          cb(err);
+          return;
+        }
+        const block = Buffer.alloc(deflated.length + 4);
+        deflated.copy(block);
+        checksum.copy(deflated.length);
+        cb(null, block);
+       });
+    }
+  }
+});
+```
 
 ### Event `'data'`
 
