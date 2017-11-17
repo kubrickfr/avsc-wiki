@@ -288,7 +288,7 @@ http.createServer()
 // Similarly, an HTTP client:
 const client = service.createClient({transport: function (cb) {
   return http.request({method: 'POST', port: 8080})
-    .on('response', function (res) { cb(null, err); })
+    .on('response', function (res) { cb(null, res); })
     .on('error', cb);
 }});
 ```
