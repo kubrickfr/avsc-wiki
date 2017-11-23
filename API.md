@@ -887,6 +887,9 @@ returned. *Not available in the browser.*
     `compressedData` is a buffer of compressed data, and must call `cb(err,
     uncompressedData)` on completion. The default contains handlers for the
     `'null'` and `'deflate'` codecs.
+  + `readerSchema` {String|Object|Type} An optional schema used to resolve the
+    values encoded in the file. This schema should be compatible with the schema
+    used to write the file.
   + `noDecode` {Boolean} Do not decode records before returning them.
   + `parseHook(schema)` {Function} Function called to generate the type from the
     schema contained in the file. This can be used to pass in addtional options
@@ -988,7 +991,7 @@ handling](https://avro.apache.org/docs/1.8.0/spec.html#snappy)):
 const crc32 = require('buffer-crc32');
 const snappy = require('snappy');
 
-const blockDecoder = new avro.streams.BlockEncoder(someType, {
+const blockEncoder = new avro.streams.BlockEncoder(someType, {
   codec: 'snappy',
   codecs: {
     snappy: function (buf, cb) {
