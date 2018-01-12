@@ -821,7 +821,7 @@ type via its constructor. This is also typically faster than calling
 ```javascript
 const type = new avro.types.WrappedUnionType(['int', 'long']);
 const val = type.fromBuffer(new Buffer([2, 8])); // == {long: 4}
-const branchType = val.constructor.getBranchType() // == <LongType>
+const branchType = val.constructor.type // == <LongType>
 ```
 
 
