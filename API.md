@@ -1004,7 +1004,7 @@ const blockEncoder = new avro.streams.BlockEncoder(someType, {
         }
         const block = Buffer.alloc(deflated.length + 4);
         deflated.copy(block);
-        checksum.copy(deflated.length);
+        checksum.copy(block, deflated.length);
         cb(null, block);
       });
     }
